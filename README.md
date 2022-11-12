@@ -1,2 +1,2 @@
 # GeoSketch
-Draw on a world map.  Switch between general perspective and mercator projections.
+Draw on a world map.  Switch between globe and mercator projection.
