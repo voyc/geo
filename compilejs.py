@@ -6,13 +6,13 @@ if (len(sys.argv) < 3):
 	print "two parameters required"
 	sys.exit()
 
-url = 'http://model.voyc.com/'
+url = 'http://geosketch.voyc.com/'
 if (sys.argv[1] == "dev"):
-	url = 'http://model.hagstrand.com/'
+	url = 'http://geosketch.hagstrand.com/'
  
 arr = [
 	('code_url', url + 'js/namespace.js'),
-	('code_url', url + 'js/model.js'),
+	('code_url', url + 'js/geosketch.js'),
 	('code_url', url + 'js/view.js'),
 	('code_url', url + 'js/user.js'),
 	('code_url', url + 'js/account.js'),

@@ -3,17 +3,34 @@
 	<head>
 		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
 		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
-		<title>Model</title>
+		<title>GeoSketch</title>
 		<style>[hidden] {display:none ! important;}</style>
 
+		<style>
+		footer.fixed {
+			position:fixed;
+			bottom:0px;
+		}
+		#xhud {
+			position: fixed;
+			top: 50px;
+			z-index: -1;
+		}
+		#clearbtn {
+			position: fixed;
+			top: 50px;
+			left: 10px;
+			z-index: 1;
+		}
+		</style>
 <?php if (false) { ?>
 		<link href='minimal/normaleyes.css' rel='stylesheet' type='text/css'></link>
 		<link href='minimal/minimal.css' rel='stylesheet' type='text/css'></link>
 		<link href='minimal/theme/mahagony.css' rel='stylesheet' type='text/css'></link>
 		<link href='icon/icon.css' rel='stylesheet' type='text/css'></link>
-		<link href='css/model.css' rel='stylesheet' type='text/css'></link>
+		<link href='css/geosketch.css' rel='stylesheet' type='text/css'></link>
 		<script src="js/namespace.js"></script>
-		<script src="js/model.js"></script>
+		<script src="js/geosketch.js"></script>
 		<script src="js/view.js"></script>
 		<script src="js/user.js"></script>
 		<script src="js/account.js"></script>
@@ -24,6 +41,7 @@
 		<script src='icon/lib/gear.js'></script>
 		<script src='icon/lib/user.js'></script>
 		<script src='icon/lib/spinner.js'></script>
+		<script src='jslib/sketch.js'></script>
 		<script src='jslib/utils.js'></script>
 		<script src='jslib/dragger.js'></script>
 		<script src='jslib/comm.js'></script>
@@ -40,11 +58,29 @@
 	</head>
 
 	<body>
+		<div id='world' class='full'> this is the world</div>
+		<canvas id='sketch' class='full'></canvas>
+		<!--
+		<div id='hud'>
+			zoom map slider
+			layer checkbox menu
+			color menu
+			save button
+			fill button
+			fill masked button
+
+			footer
+				cursor position in lat/long
+				cursor position over which objects in each layer
+		</div>
+		-->
+		<button id='clearbtn'>Clear</button>
+
 		<!---- header ----------------------------->
 		<header class='fixed'>
 			<div class='group'>
 				<icon class='bit' type='draw' name='menu' open='leftnav-dialog'></icon>
-				<div class='bit hdr' id='hdrtitle'>Model</div>
+				<div class='bit hdr' id='hdrtitle'>GeoSketch</div>
 			</div>
 			<div id='headeruser' initially hidden class='group tright'>
 				<div class='bit' id="welcome">
@@ -65,29 +101,15 @@
 		</header>
 
 		<!---- content ----------------------------->
-		<section id='content-container'>
+		<section id='content-container' class='hidden'>
 			<section class='narrative' id='content-home'>
 				<h1>Home</h1>
-				<h2>Model - Application Framework</h2>
-				<p>Javascript, PHP, Postgres, AJAX</p>
-				<h3>Features</h3>
-				<ul>
-					<li>User Authentication and Management, via the account submodule.</li>
-					<li>Model-View-Controller architecture.</li>
-					<li>Object-oriented design.</li>
-					<li>Event-driven process flow, using the Observer pattern in the jslib submodule.</li>
-					<li>Responsive design.  Automatically adjusts to user's window-size.</li>
-					<li>A framework for AJAX services, using the Comm object in jslib submodule.</li>
-					<li>AJAX navigation honoring the browser's forward and back buttons, via the BrowserHistory object in the jslib submodule.</li>
-					<li>Popup dialogs, modeless and modal, provided by the minimal submodule.</li>
-					<li>Open Source.</li>
-					<li>Efficient, compact code.</li>
-					<li>Supports google closure compiler.</li>
-				</ul>
+				Step 1. sketch on top of content, both full screen
+				<h2>GeoSketch</h2>
 			</section>
 			<section hidden class='narrative' id='content-about'>
 				<h1>About</h1>
-				<p>A voyc project, <a href='https://github.com/voyc/model.git'>on github.</a></p>
+				<p>A voyc project, <a href='https://github.com/voyc/geosketch.git'>on github.</a></p>
 				<h3>Submodules</h3>
 				<ul>
 					<li>account</li>
@@ -117,6 +139,7 @@
 			<p><button close class='anchor' nav='home'     >Home</button></p>
 			<p><button close class='anchor' nav='about'    >About</button></p>
 			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
+			<p><button close class='anchor' id='clearmenu' >Clear   Esc</button></p>
 		</nav>
 		<aside initially hidden class='panel popup dropdown blu' id='settings-dialog'>
 			<div close class='closex'>&times;</div>
@@ -238,8 +261,7 @@
 				</p>
 			</form>
 		</div>
-
-		<footer>
+		<footer class='fixed'>
 			<div class='group'>
 				<a href='http://voyc.com/about' class='ftr voyc'>
 					<svg viewBox="0 0 550 200" xmlns="http://www.w3.org/2000/svg"><defs><mask id="cut-out"><rect id="bg" x="0" y="0" width="100%" height="100%" fill="#fff"/><rect x="0" y="0"   width="600" height="49" fill="#000" /><rect x="0" y="149" width="180" height="29" fill="#000" /><rect x="0" y="180" width="600" height="20" fill="#000" /><path d="M450 88 L520 88 L520 140" fill="#000" /></mask></defs><g stroke="#000" stroke-width="30" fill="none" mask="url(#cut-out)"><path d="M 50 40 L 85 160 M 79 150 L164 30"/><path d="M290 40 L330 149 M290 190 L410 30"/><ellipse cx="217" cy="100" rx="38" ry="36"/><ellipse cx="460" cy="100" rx="38" ry="36"/></g></svg>
@@ -251,5 +273,6 @@
 				</a>
 			</div>
 		</footer>
+
 	</body>
 </html>

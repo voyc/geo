@@ -1,4 +1,4 @@
-# build model
+# build geosketch
 
 if [ "$#" -ne 2 ]; then
 	echo Usage: ./build.sh prod compact or ./build.sh dev pretty
@@ -10,7 +10,7 @@ python compilejs.py $1 $2 >html/min.js
 
 # concatenate and compile the css files
 echo "minify the css files"
-cat html/minimal/normaleyes.css html/minimal/minimal.css html/minimal/theme/mahagony.css html/icon/icon.css html/css/model.css | 
+cat html/minimal/normaleyes.css html/minimal/minimal.css html/minimal/theme/mahagony.css html/icon/icon.css html/css/geosketch.css | 
     sed 's/+/%2b/g'  >html/min.css
 wget --post-data="input=`cat html/min.css`" --output-document=html/min.css https://cssminifier.com/raw
 

@@ -47,7 +47,7 @@ function setprofile() {
 	// attempt to read profile record
 	$profileid = 0;
 	$name = 'query-profile';
-	$sql = "select id from model.profile where userid = $1";
+	$sql = "select id from geosketch.profile where userid = $1";
 	$params = array($userid);
 	$result = execSql($conn, $name, $sql, $params, true);
 	if ($result) {
@@ -59,7 +59,7 @@ function setprofile() {
 	$a['status'] = 'ok';
 	if ($profileid) {
 		$name = 'update-profile';
-		$sql = "update model.profile set gender=$2, photo=$3, phone=$4 where id = $1";
+		$sql = "update geosketch.profile set gender=$2, photo=$3, phone=$4 where id = $1";
 		$params = array($profileid, $gender, $photo, $phone);
 		$result = execSql($conn, $name, $sql, $params, true);
 		if (!$result) {
@@ -69,7 +69,7 @@ function setprofile() {
 	}
 	else {
 		$name = 'insert-profile';
-		$sql = "insert into model.profile (userid, gender, photo, phone) values ($1,$2,$3,$4)";
+		$sql = "insert into geosketch.profile (userid, gender, photo, phone) values ($1,$2,$3,$4)";
 		$params = array($userid, $gender, $photo, $phone);
 		$result = execSql($conn, $name, $sql, $params, true);
 		if (!$result) {
