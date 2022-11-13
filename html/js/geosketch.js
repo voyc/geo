@@ -38,6 +38,7 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.observer.subscribe('setprofile-received' ,'geosketch' ,function(note) { self.onSetProfileReceived  (note); });
 	this.observer.subscribe('getprofile-received' ,'geosketch' ,function(note) { self.onGetProfileReceived  (note); });
 
+	// setup sketch layer
 	sketch = new voyc.Sketch(document.getElementById('sketch'));
 	sketch.draw();
 	document.getElementById('clearbtn').addEventListener('click', function() {sketch.clear()}, false);
@@ -47,6 +48,16 @@ voyc.GeoSketch.prototype.setup = function () {
 			sketch.clear();
 		}
 	})
+
+	// setup world layer
+	this.world = new voyc.World();
+	var divworld = document.getElementById('world') 
+	this.world.setup( 
+		divworld,
+		[80,20,0],  // start position: india 80E 20N
+		divworld.clientWidth,
+		divworld.clientHeight
+	 )
 
 	this.observer.publish('setup-complete', 'geosketch', {});
 	//(new voyc.3).nav('home');
