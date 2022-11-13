@@ -108,25 +108,25 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	this.iterateeCountries.projection = this.projection;
 	this.iterateeCountries.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
 
-	this.iterateeEmpire = new voyc.GeoIterate.iterateePolygonClipping();
-	voyc.merge(this.iterateeEmpire, new voyc.GeoIterate.iterateeDrawPerGeometry);
-	this.iterateeEmpire.projection = this.projection;
-	this.iterateeEmpire.ctx = this.getLayer(voyc.layer.EMPIRE).ctx;
-	this.iterateeEmpire.colorstack = voyc.empireColors;
-	this.iterateeEmpire.geometryStart = function(geometry) {
-		geometry['q'] = geometry['b'] < voyc.plunder.time.now && voyc.plunder.time.now < geometry['e'];
-		if (geometry['q']) {
-			this.ctx.beginPath();
-		}
-		return geometry.q;
-	};
-	this.iterateeEmpire.collectionStart = function(collection) {
-		this.ctx.clearRect(0,0,this.ctx.canvas.width,this.ctx.canvas.height);
-	};
+	//this.iterateeEmpire = new voyc.GeoIterate.iterateePolygonClipping();
+	//voyc.merge(this.iterateeEmpire, new voyc.GeoIterate.iterateeDrawPerGeometry);
+	//this.iterateeEmpire.projection = this.projection;
+	//this.iterateeEmpire.ctx = this.getLayer(voyc.layer.EMPIRE).ctx;
+	//this.iterateeEmpire.colorstack = voyc.empireColors;
+	//this.iterateeEmpire.geometryStart = function(geometry) {
+	//	geometry['q'] = geometry['b'] < voyc.plunder.time.now && voyc.plunder.time.now < geometry['e'];
+	//	if (geometry['q']) {
+	//		this.ctx.beginPath();
+	//	}
+	//	return geometry.q;
+	//};
+	//this.iterateeEmpire.collectionStart = function(collection) {
+	//	this.ctx.clearRect(0,0,this.ctx.canvas.width,this.ctx.canvas.height);
+	//};
 
-	this.iterateeTreasure = new voyc.GeoIterate.iterateePoint();
-	this.iterateeTreasure.projection = this.projection;
-	this.iterateeTreasure.ctx = this.getLayer(voyc.layer.FOREGROUND).ctx;
+	//this.iterateeTreasure = new voyc.GeoIterate.iterateePoint();
+	//this.iterateeTreasure.projection = this.projection;
+	//this.iterateeTreasure.ctx = this.getLayer(voyc.layer.FOREGROUND).ctx;
 
 	this.iterateeGrid = new voyc.GeoIterate.iterateeLine();
 	this.iterateeGrid.projection = this.projection;
@@ -135,75 +135,75 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	this.iterateeGrid.ctx.lineWidth = .5;
 	this.iterateeGrid.ctx.strokeOpacity = .5;
 
-	this.iterateeFeature = new voyc.GeoIterate.iterateePolygonClipping();
-	this.iterateeFeature.projection = this.projection;
-	this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
+	//this.iterateeFeature = new voyc.GeoIterate.iterateePolygonClipping();
+	//this.iterateeFeature.projection = this.projection;
+	//this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 
-	this.iterateeHitTest = new voyc.GeoIterate.iterateeHitTest();
-	this.iterateeHitTest.projection = this.projection;
+	//this.iterateeHitTest = new voyc.GeoIterate.iterateeHitTest();
+	//this.iterateeHitTest.projection = this.projection;
 
-	this.iterateeHitTestTreasure = new voyc.GeoIterate.iterateeHitTestPoint();
-	this.iterateeHitTestTreasure.projection = this.projection;
+	//this.iterateeHitTestTreasure = new voyc.GeoIterate.iterateeHitTestPoint();
+	//this.iterateeHitTestTreasure.projection = this.projection;
 
-	this.iterateeInit = new voyc.GeoIterate.iterateeInit();
+	//this.iterateeInit = new voyc.GeoIterate.iterateeInit();
 
-	this.iterateeRiver = new voyc.GeoIterate.iterateeLine();
-	this.iterateeRiver.projection = this.projection;
-	this.iterateeRiver.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
-	this.iterateeRiver.point = function(pt) {
-		var p = this.projection.project(pt);
-		if (p) {
-			if (!this.pointCount) {
-				this.ctx.moveTo(p[0],p[1]);
-			}
-			else {
-				this.ctx.lineTo(p[0],p[1]);
-			}
-			this.pointCount++;
-			this.pt.push(p);
-		}
-		else {
-			//console.log('invisible point');
-			this.pointCount = 0;
-		}
-	}
-	this.iterateeRiver.geometryStart = function(geometry) {
-		this.pt = [];
-		return true
-	}
-	this.iterateeRiver.geometryEnd = function(geometry) {
-		geometry.pt = this.pt;
-	}
+	//this.iterateeRiver = new voyc.GeoIterate.iterateeLine();
+	//this.iterateeRiver.projection = this.projection;
+	//this.iterateeRiver.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
+	//this.iterateeRiver.point = function(pt) {
+	//	var p = this.projection.project(pt);
+	//	if (p) {
+	//		if (!this.pointCount) {
+	//			this.ctx.moveTo(p[0],p[1]);
+	//		}
+	//		else {
+	//			this.ctx.lineTo(p[0],p[1]);
+	//		}
+	//		this.pointCount++;
+	//		this.pt.push(p);
+	//	}
+	//	else {
+	//		//console.log('invisible point');
+	//		this.pointCount = 0;
+	//	}
+	//}
+	//this.iterateeRiver.geometryStart = function(geometry) {
+	//	this.pt = [];
+	//	return true
+	//}
+	//this.iterateeRiver.geometryEnd = function(geometry) {
+	//	geometry.pt = this.pt;
+	//}
 
-	this.iterateeRiverAnim = new voyc.GeoIterate.iterateeLine();
-	this.iterateeRiverAnim.projection = this.projection;
-	this.iterateeRiverAnim.nth = 5;
-	this.iterateeRiverAnim.start = 0;
-	this.iterateeRiverAnim.geometryStart = function(geom) {
-		for (var i=0; i<geom.pt.length; i++) {
-			if (!((i + this.start) % this.nth)) {
-				this.ctx.beginPath();
-				this.ctx.arc(geom.pt[i][0], geom.pt[i][1], this.radius, 0, 2*Math.PI);
-				this.ctx.fill();
-			}
-		}
-		return false;
-	}
-	this.iterateeRiverAnim.collectionEnd = function(collection) {
-		this.start--;
-		if (this.start <= 0) {
-			this.start = this.nth;
-		}
-		collection.start = this.start;
-	}
-	this.iterateeRiverAnim.collectionStart = function(collection) {
-		this.ctx.fillStyle = '#00F';
-		this.ctx.lineWidth = 0;
-		if (!collection.start) {
-			collection.start = this.nth;
-		}
-		this.start = collection.start;
-	}
+	//this.iterateeRiverAnim = new voyc.GeoIterate.iterateeLine();
+	//this.iterateeRiverAnim.projection = this.projection;
+	//this.iterateeRiverAnim.nth = 5;
+	//this.iterateeRiverAnim.start = 0;
+	//this.iterateeRiverAnim.geometryStart = function(geom) {
+	//	for (var i=0; i<geom.pt.length; i++) {
+	//		if (!((i + this.start) % this.nth)) {
+	//			this.ctx.beginPath();
+	//			this.ctx.arc(geom.pt[i][0], geom.pt[i][1], this.radius, 0, 2*Math.PI);
+	//			this.ctx.fill();
+	//		}
+	//	}
+	//	return false;
+	//}
+	//this.iterateeRiverAnim.collectionEnd = function(collection) {
+	//	this.start--;
+	//	if (this.start <= 0) {
+	//		this.start = this.nth;
+	//	}
+	//	collection.start = this.start;
+	//}
+	//this.iterateeRiverAnim.collectionStart = function(collection) {
+	//	this.ctx.fillStyle = '#00F';
+	//	this.ctx.lineWidth = 0;
+	//	if (!collection.start) {
+	//		collection.start = this.nth;
+	//	}
+	//	this.start = collection.start;
+	//}
 }
 
 voyc.World.prototype.resize = function(w, h) {
@@ -262,11 +262,11 @@ voyc.World.prototype.setupData = function() {
 		]
 	}
 	
-	this.iterator.iterateCollection(window['voyc']['data']['deserts'], this.iterateeInit);
-	this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeInit);
-	this.iterator.iterateCollection(window['voyc']['data']['mediummountains'], this.iterateeInit);
-	this.iterator.iterateCollection(window['voyc']['data']['lowmountains'], this.iterateeInit);
-	this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['deserts'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['mediummountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['lowmountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
 }
 
 voyc.World.prototype.spin = function(dir) {
@@ -331,7 +331,7 @@ voyc.World.prototype.createLayer = function(useImageData, id) {
 	a.canvas.id = id;
 	a.canvas.classList.add('layer');
 	a.canvas.classList.add('visible');
-	a.canvas.classList.add('hidden');
+	//a.canvas.classList.add('hidden');
 	a.canvas.width  = this.w;
 	a.canvas.height = this.h;
 	a.canvas.style.width =  this.w + 'px';
@@ -367,7 +367,7 @@ voyc.World.prototype.createLayerDiv = function(eid) {
 	a.div.id = eid;
 	a.div.classList.add('layer');
 	a.div.classList.add('visible');
-	a.div.classList.add('hidden');
+	//a.div.classList.add('hidden');
 	a.div.style.width =  this.w + 'px';
 	a.div.style.height = this.h + 'px';
 	this.elem.appendChild(a.div);
@@ -465,7 +465,8 @@ voyc.World.prototype.drawOceansAndLand = function() {
 voyc.World.prototype.drawGrid = function() {
 	var ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
 	ctx.clearRect(0, 0, this.w, this.h);
-	if (voyc.plunder.getOption(voyc.option.GRATICULE)) {
+	//if (voyc.plunder.getOption(voyc.option.GRATICULE)) {
+	if (true) {
 		this.iterator.iterateCollection(window['voyc']['data']['grid'], this.iterateeGrid);
 	}
 }

@@ -26,3 +26,21 @@
 #settings-dialog td:last-child {
 	max-width:4cm;
 }
+
+html, body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	-webkit-text-size-adjust:none;  /* for iphone */
+}
+#background {
+	background-color:black;
+}
+/* each layer covers the screen */
+.layer {
+	position:absolute;
+	top:0;
+	left:0;
+}

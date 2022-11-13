@@ -59,8 +59,13 @@ voyc.GeoSketch.prototype.setup = function () {
 		divworld.clientHeight
 	 )
 
+	this.world.setupData()
+
 	this.observer.publish('setup-complete', 'geosketch', {});
 	//(new voyc.3).nav('home');
+
+	this.world.moved = true
+	this.render()
 }
 
 voyc.GeoSketch.prototype.onProfileRequested = function(note) {
@@ -131,7 +136,74 @@ voyc.GeoSketch.prototype.onSetProfileReceived = function(note) {
 	console.log('setprofile received');
 }
 
+voyc.GeoSketch.prototype.render = function (timestamp) {
+	if (timestamp) {
+		this.calcTime(timestamp);
+	}
+
+	// update
+	//if (!this.getOption(voyc.option.CHEAT)) {
+	//	var keyed = this.hud.checkKeyboard();
+	//	this.hero.move(keyed, timestamp);
+	//}
+
+	//if (this.world.moved) {
+	//	this.hero.updateDestination();
+	//}
+
+	// draw world		
+	if (this.world.moved || this.time.moved) {
+		var ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
+		ctx.clearRect(0, 0, this.world.w, this.world.h);
+		var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
+		ctx.clearRect(0, 0, this.world.w, this.world.h);
+	}
+	if (this.world.moved) {
+		this.world.drawOceansAndLand();
+		this.world.drawGrid();
+	}	
+	//if (this.world.moved && !this.world.dragging && !this.world.zooming) {
+	//	this.world.drawFeatures();
+	//	this.world.drawRivers();
+	//}
+	//if ((this.world.moved || this.time.moved) && !this.world.dragging && !this.world.zooming) {
+	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
+	//	this.drawEmpire(ctx);
+	//	ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
+	//	this.drawTreasure(ctx);
+	//	this.world.drawRiversAnim();
+	//}
+	//if ((this.world.moved || this.hero.moved) && !this.getOption(voyc.option.CHEAT)) {
+	//	this.hero.draw();
+	//}
+
+	//if ((this.getOption(voyc.option.CHEAT) && !this.world.dragging && !this.world.zooming)
+	//		|| (!this.getOption(voyc.option.CHEAT) && (this.hero.moved))) {
+	//	this.hitTestFeatures();
+	//}
+
+	//if ((this.time.moved || this.hero.moved) && !this.getOption(voyc.option.CHEAT)) {
+	//	this.hitTestTreasure();
+	//}
+
+	//this.hero.speed.now = (this.hero.moved) ? this.hero.speed.best : 0;
+	//this.hud.setSpeed(this.hero.speed.now);
+	////console.log('set speed: ' + this.hero.speed.now);
+
+	//this.drawEffects(ctx);
+	
+	this.world.moved = false;
+	//this.time.moved = false;
+	//this.hero.moved = false;
+	this.previousTimestamp = timestamp;
+	return;
+}
+
 /* on startup */
 window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
 }, false);
+
+window['voyc']['onScriptLoaded'] = function(filename) {
+	console.log(filename + ' loaded')
+}
