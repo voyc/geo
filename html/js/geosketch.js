@@ -6,7 +6,17 @@
 voyc.GeoSketch = function () {
 	if (voyc.GeoSketch._instance) return voyc.GeoSketch._instance;
 	voyc.GeoSketch._instance = this;
-	this.setup();
+
+	this.time = {
+		begin: 0,
+		end: 0,
+		now: 0,
+		step: 0,
+		moved: false,
+		sliding: false,
+		speed: 10 // years per second	
+	}
+	
 }
 
 voyc.GeoSketch.prototype.setup = function () {
@@ -66,6 +76,29 @@ voyc.GeoSketch.prototype.setup = function () {
 
 	this.world.moved = true
 	this.render()
+
+	this.hud = new voyc.Hud();
+	this.hud.setup(document.getElementById('hud'))
+	this.hud.attach()
+	this.hud.showCheat(true);
+
+	this.keyboard = new voyc.Keyboard();
+	this.keyboard.listenForEvents([
+		voyc.Key.LEFT, 
+		voyc.Key.RIGHT, 
+		voyc.Key.UP, 
+		voyc.Key.DOWN,
+	]);
+}
+
+voyc.option = {
+	HIRES:0,
+	CHEAT:1,
+	GRATICULE:2,
+	PRESENTDAY:3
+}
+voyc.GeoSketch.prototype.getOption = function(x) {
+	return true;
 }
 
 voyc.GeoSketch.prototype.onProfileRequested = function(note) {
@@ -202,6 +235,7 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 /* on startup */
 window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
+	voyc.geosketch.setup();
 }, false);
 
 window['voyc']['onScriptLoaded'] = function(filename) {

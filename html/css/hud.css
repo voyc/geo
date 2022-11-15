@@ -1,0 +1,137 @@
+.hud {
+	position:fixed;
+	border:4px solid yellow;
+	margin:.5rem;
+	padding:.5rem;
+	background: rgba(255, 255, 255, 0.8);
+	font-family:Comic Sans MS, Verdana;
+}
+#announce {
+	left:50%;
+	top:50%;
+	transform:translate(-50%,-50%);
+	-webkit-transform:translate(-50%,-50%);
+	width:50%;
+	height:30%;
+	background-color:#ff8;
+	border:4px ridge #ff4;
+	text-align:center;
+}
+#announcedone {
+	position:fixed;
+	bottom:5px;
+}
+#whereami {
+	left:0;
+	bottom:0;
+	width:12rem;
+	height:5rem;
+	border:4px ridge gray;
+	border-radius:4px;
+}
+#hudspeed {
+	float:right;
+}
+#hudpresentday {
+	color:red;
+	font-size:.8em;
+}
+#refglobe {
+	right:0;
+	bottom:0;
+	width:5rem;
+	height:5rem;
+}
+#menubtn {
+	left:0;
+	top:0;
+	cursor:pointer;
+	width:2rem;
+	height:2rem;
+	padding:0;
+	font-size:2rem;
+	font-family:arial;
+	color:black;
+	font-weight:bold;
+	background-color:yellow;
+	border:3px outset yellow;
+}
+#menubtn:before {
+	content:'\2630'; 
+	position:relative;
+	top:-.25em;
+}
+#menu {
+	left:0;
+	top:0;
+	width:15rem;
+	height:9rem;
+	background-color:#ff8;
+	border:4px ridge #ff4;
+}
+.tcenter {
+	text-align:center;
+}
+#score {
+	right:0;
+	top:0;
+	width:5rem;
+	height:2.5rem;
+	text-align:right;
+	border:4px ridge gray;
+	border-radius:4px;
+}
+#scorebox {
+	right:0;
+	top:2rem;
+	width:10rem;
+	height:5rem;
+	background-color:#ff8;
+	border:4px ridge #ff4;
+	text-align:center;
+}
+#time {
+	left:50%;
+	transform:translate(-50%);
+	-webkit-transform:translate(-50%);
+	bottom:0;
+	xwidth:5rem;
+	xheight:1rem;
+	text-align:center;
+	font-family:Verdana;
+	font-size:1.5rem;
+	font-weight:bold;
+	border:4px ridge gray;
+	border-radius:4px;
+}
+@font-face{
+    font-family: 'Glass Gauge';
+    src: url('GlassGauge.ttf');
+}
+#mapzoom {
+	right:0;
+	top:50%;
+	width:2rem;
+	height:7rem;
+	padding:0;
+	border:0;
+}
+#mapzoom input {
+	-webkit-appearance:slider-vertical;
+	width:2rem;
+	height:7rem;
+}
+#timeslide {
+	bottom:4rem;
+	width:15rem;
+	height:2rem;
+	padding:0;
+	border:0;
+	left:50%;
+	transform:translate(-50%);
+	-webkit-transform:translate(-50%);
+}
+#timeslide input {
+	width:15rem;
+	height:2rem;
+}

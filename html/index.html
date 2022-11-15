@@ -23,15 +23,19 @@
 			z-index: 1;
 		}
 		</style>
-<?php if (false) { ?>
+
 		<link href='minimal/normaleyes.css' rel='stylesheet' type='text/css'></link>
 		<link href='minimal/minimal.css' rel='stylesheet' type='text/css'></link>
 		<link href='minimal/theme/mahagony.css' rel='stylesheet' type='text/css'></link>
 		<link href='icon/icon.css' rel='stylesheet' type='text/css'></link>
 		<link href='css/geosketch.css' rel='stylesheet' type='text/css'></link>
+		<link href='css/world.css' rel='stylesheet' type='text/css'></link>
+		<link href='css/hud.css' rel='stylesheet' type='text/css'></link>
+
 		<script src="js/namespace.js"></script>
 		<script src="js/geosketch.js"></script>
 		<script src="js/world.js"></script>
+		<script src="js/hud.js"></script>
 		<script src="js/view.js"></script>
 		<script src="js/user.js"></script>
 		<script src="js/account.js"></script>
@@ -55,12 +59,7 @@
 		<script src="jslib/browserhistory.js"></script>
 		<script src="topojson/topojson.min.js"></script>
 		<script src="data/worldtopo.js"></script>
-<?php } else { ?>
-<!--<remove>
-		<script src='min.js'></script>
-		<link href='min.css' rel='stylesheet' type='text/css'></link>
-<remove>-->
-<?php } ?>
+		<script src="fx/keyboard.js"></script>
 	</head>
 
 	<body>
@@ -81,6 +80,40 @@
 		</div>
 		-->
 		<button id='clearbtn'>Clear</button>
+
+
+		<div id='hud' class='xfull'>
+			<div class='hud visible hidden' id='announce'>
+				<div id='announcemsg'>announcements</div>
+				<button id='announcedone'>OK</button>
+			</div>
+			<div class='hud visible' id='whereami'>
+				<div><span id='hudlatlng'></span><span id='hudspeed'></span></div>
+				<div id='hudgeo'></div>
+				<div id='hudpresentday'></div>
+			</div>
+			<div class='hud visible hidden' id='refglobe'>refglobe</div>
+			<div class='hud visible' id='score'>
+				<div id='hudscore'>0</div>
+				<div id='huduser'><a href='#'>Login</a></div>
+			</div>
+			<div class='hud visible hidden' id='scorebox'>
+				<div id='scorename'>name</div>
+				<div id='scoremsg'>msg</div>
+			</div>
+			<div class='hud visible hidden' id='menu'>Preferences:
+				<div><label for='menucheat'><input id='menucheat' type='checkbox' />Cheat (Alt-C)</label></div>
+				<div><label for='menugraticule'><input id='menugraticule' type='checkbox' />Show Meridians</label></div>
+				<div><label for='menupresentday'><input id='menupresentday' type='checkbox' />Show Present-Day Borders</label></div>
+				<div><label for='menuhires'><input id='menuhires' type='checkbox' />Hi-Res (90MB Download)</label></div>
+				<div class='tcenter'><button id='menudone'>Done</button></div>
+			</div>
+			<div class='hud visible' id='menubtn'></div>
+			<div class='hud visible' id='time'>1300 BCE</div>
+			<div class='hud visible hidden' id='mapzoom'><input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /></div>
+			<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
+		</div>
+
 
 		<!---- header ----------------------------->
 		<header class='fixed'>

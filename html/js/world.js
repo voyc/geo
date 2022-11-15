@@ -114,7 +114,7 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	//this.iterateeEmpire.ctx = this.getLayer(voyc.layer.EMPIRE).ctx;
 	//this.iterateeEmpire.colorstack = voyc.empireColors;
 	//this.iterateeEmpire.geometryStart = function(geometry) {
-	//	geometry['q'] = geometry['b'] < voyc.plunder.time.now && voyc.plunder.time.now < geometry['e'];
+	//	geometry['q'] = geometry['b'] < voyc.geosketch.time.now && voyc.geosketch.time.now < geometry['e'];
 	//	if (geometry['q']) {
 	//		this.ctx.beginPath();
 	//	}
@@ -281,7 +281,7 @@ voyc.World.prototype.spin = function(dir) {
 	}
 	this.moved = true;
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 
 // zoomStart,zoomValue,zoomStop called on slider
@@ -292,12 +292,12 @@ voyc.World.prototype.zoomValue = function(value) {
 	this.setScale(value);
 	this.zooming = true;
 	this.moved = true;
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 voyc.World.prototype.zoomStop = function() {
 	this.moved = true;
 	this.zooming = false;
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 
 // zoom called on keystrokes
@@ -314,14 +314,14 @@ voyc.World.prototype.zoom = function(dir) {
 	var scale = this.scale.now + (this.scale.now * x * this.option.scaleStep);
 	scale = range(scale, this.scale.min, this.scale.max);
 	this.setScale(scale);
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 
 voyc.World.prototype.setScale = function(newscale) {
 	this.scale.now = newscale;
 	this.projection.scale(this.scale.now);
 	this.moved = true;
-	voyc.plunder.hud.setZoom(this.scale.now);
+	voyc.geosketch.hud.setZoom(this.scale.now);
 }
 
 voyc.World.prototype.createLayer = function(useImageData, id) {
@@ -383,7 +383,7 @@ voyc.World.prototype.show = function() {
 	this.getLayer(voyc.layer.BACKGROUND).div.classList.remove('hidden');
 	this.getLayer(voyc.layer.FASTBACK).canvas.classList.remove('hidden');
 	this.getLayer(voyc.layer.FEATURES).canvas.classList.remove('hidden');
-	this.showHiRes(voyc.plunder.getOption(voyc.option.HIRES));
+	this.showHiRes(voyc.geosketch.getOption(voyc.option.HIRES));
 	this.getLayer(voyc.layer.RIVER0).canvas.classList.remove('hidden');
 	this.getLayer(voyc.layer.RIVER1).canvas.classList.remove('hidden');
 	this.getLayer(voyc.layer.RIVER2).canvas.classList.remove('hidden');
@@ -408,7 +408,7 @@ voyc.World.prototype.drag = function(pt) {
 		this.dragging = false;
 	}
 	this.moved = true;
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 
 voyc.World.prototype.moveToCoord = function(co) {
@@ -421,7 +421,7 @@ voyc.World.prototype.moveToPoint = function(pt) {
 	this.co = this.projection.invert(pt);
 	this.projection.center(this.co);
 	this.moved = true;
-	voyc.plunder.render(0);
+	voyc.geosketch.render(0);
 }
 voyc.World.prototype.getCenterPoint = function() {
 	return ([Math.round(this.w/2), Math.round(this.h/2)]);
@@ -465,7 +465,7 @@ voyc.World.prototype.drawOceansAndLand = function() {
 voyc.World.prototype.drawGrid = function() {
 	var ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
 	ctx.clearRect(0, 0, this.w, this.h);
-	//if (voyc.plunder.getOption(voyc.option.GRATICULE)) {
+	//if (voyc.geosketch.getOption(voyc.option.GRATICULE)) {
 	if (true) {
 		this.iterator.iterateCollection(window['voyc']['data']['grid'], this.iterateeGrid);
 	}
@@ -518,15 +518,15 @@ voyc.World.prototype.drawRiversAnim = function() {
 	}
 }
 
-//	if (voyc.plunder.getOption(voyc.option.HIRES)) {
+//	if (voyc.geosketch.getOption(voyc.option.HIRES)) {
 //		var ctx = this.getLayer(voyc.layer.SLOWBACKA).ctx;
 //		ctx.clearRect(0, 0, this.w, this.h);
 //		var dst = {w:this.w, h:this.h, projection:this.projection, ctx:this.getLayer(voyc.layer.SLOWBACKA).ctx, imageData:this.getLayer(voyc.layer.SLOWBACKA).imageData};
-//		voyc.Geo.drawTexture(dst, voyc.plunder.texture);
+//		voyc.Geo.drawTexture(dst, voyc.geosketch.texture);
 //	}
 
 
-//	if (voyc.plunder.getOption(voyc.option.PRESENTDAY)) {
+//	if (voyc.geosketch.getOption(voyc.option.PRESENTDAY)) {
 //		ctx.strokeStyle = '#f88';
 //		ctx.beginPath();
 //		this.iterator.iterateCollection(this.data.countries, this.iterateeCountries);
@@ -538,7 +538,7 @@ voyc.World.prototype.drawFeatures = function() {
 	ctx.clearRect(0, 0, this.w, this.h);
 
 	// deserts
-	var pattern = ctx.createPattern(voyc.plunder.asset.get('desert'), 'repeat');
+	var pattern = ctx.createPattern(voyc.geosketch.asset.get('desert'), 'repeat');
 	ctx.fillStyle = pattern;
 	//ctx.fillStyle = voyc.color.desert;
 	ctx.beginPath();
@@ -546,21 +546,21 @@ voyc.World.prototype.drawFeatures = function() {
 	ctx.fill();
 
 	// high mountains
-	var pattern = ctx.createPattern(voyc.plunder.asset.get('mtnhi'), 'repeat');
+	var pattern = ctx.createPattern(voyc.geosketch.asset.get('mtnhi'), 'repeat');
 	ctx.fillStyle = pattern;
 	ctx.beginPath();
 	this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeFeature);
 	ctx.fill();
 
 	// medium mountains
-	var pattern = ctx.createPattern(voyc.plunder.asset.get('mtnmed'), 'repeat');
+	var pattern = ctx.createPattern(voyc.geosketch.asset.get('mtnmed'), 'repeat');
 	ctx.fillStyle = pattern;
 	ctx.beginPath();
 	this.iterator.iterateCollection(window['voyc']['data']['mediummountains'], this.iterateeFeature);
 	ctx.fill();
 
 	// lo mountains
-	var pattern = ctx.createPattern(voyc.plunder.asset.get('mtnlo'), 'repeat');
+	var pattern = ctx.createPattern(voyc.geosketch.asset.get('mtnlo'), 'repeat');
 	ctx.fillStyle = pattern;
 	ctx.beginPath();
 	this.iterator.iterateCollection(window['voyc']['data']['lowmountains'], this.iterateeFeature);
