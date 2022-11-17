@@ -1,0 +1,57 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test fullscreen layers</title>
+
+		<style>
+			body {
+				margin:0px;
+			}
+			.full {
+				position:fixed;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:100%;
+			}
+			#red { xbackground-color: red; }    // background color affects appearance only, not behavior.  transparent by default.
+			#grn { xbackground-color: green; }
+			#blu { xbackground-color: blue; }
+			#container {
+				xposition:fixed;
+			}
+		</style>
+
+		<script>
+			window.addEventListener('load', function(e) {
+				document.getElementById('grn').addEventListener('mousedown', function(e) {  // never fired,  because blu is on top of grn
+					console.log(['mousedown', 'grn', e.button, e.offsetX, e.offsetY])
+				}, false)
+				document.getElementById('blu').addEventListener('mousedown', function(e) {
+					console.log(['mousedown', 'blu', e.button, e.offsetX, e.offsetY])
+				}, false)
+				document.getElementById('blu').addEventListener('mousedown', function(e) {
+					console.log(['mousedown', 'blu me', e.button, e.offsetX, e.offsetY])
+				}, false)
+				document.getElementById('container').addEventListener('mousedown', function(e) {
+					console.log(['mousedown', 'container', e.button, e.offsetX, e.offsetY])
+				}, false)
+				window.addEventListener('mousedown', function(e) {
+					console.log(['mousedown', 'window', e.button, e.offsetX, e.offsetY])
+				}, false)
+				window.addEventListener('keydown', function(e) {
+					console.log(['keydown', 'blu', e.button, e.offsetX, e.offsetY])
+				}, false)
+			}, false)	
+		</script>
+	</head>
+	<body>
+		<div id='container'>  <!-- all events bubble up to this container -->
+			<div id='red' class='full'>red</div>
+			<div id='grn' class='full'>grn</div>
+			<div id='blu' class='full'>blu</div>  <!-- last overlaid div is on top and receives all the events -->
+		</div>
+	</body>
+</html>

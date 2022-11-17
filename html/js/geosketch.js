@@ -49,7 +49,8 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.observer.subscribe('getprofile-received' ,'geosketch' ,function(note) { self.onGetProfileReceived  (note); });
 
 	// setup sketch layer
-	sketch = new voyc.Sketch(document.getElementById('sketch'));
+	sketch = new voyc.Sketch(document.getElementById('sketch'),null,document.getElementById('hud'));
+	sketch.buttons = [0]
 	sketch.draw();
 	document.getElementById('clearbtn').addEventListener('click', function() {sketch.clear()}, false);
 	document.getElementById('clearmenu').addEventListener('click', function() {sketch.clear()}, false);
@@ -78,6 +79,7 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.render()
 
 	this.hud = new voyc.Hud();
+	this.hud.buttons = [1]  // middle
 	this.hud.setup(document.getElementById('hud'))
 	this.hud.attach()
 	this.hud.showCheat(true);

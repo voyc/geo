@@ -11,13 +11,13 @@ voyc.Hud = function() {
 	else voyc.Hud._instance = this;
 
 	this.elem = {};
+	this.buttons = [0,1,2];  // left, middle, right
 	this.keyIsDown = false;
 	this.mapzoomer = {};
 	this.mapzoomerIsHot = false;
 	this.timeslider = {};
 	this.timesliderIsHot = false;
-	this.dragging = false;
-	this.dragOrigin = false;
+	this.dragging = false; this.dragOrigin = false;
 	this.dragCenter = false;
 	this.menuIsOpen = false;
 	this.scoreboxIsOpen = false;
@@ -25,6 +25,7 @@ voyc.Hud = function() {
 
 voyc.Hud.prototype.setup = function(elem) {
 	this.elem = elem;
+	this.elem = document.getElementById('touchpad')
 	//this.elem.innerHTML = voyc.Hud.html;
 	this.menuIsOpen = false;
 }
@@ -121,10 +122,15 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 
 	// enable map drag
-	this.elem.addEventListener('touchstart', voyc.Hud.dgrab, false);
-	this.elem.addEventListener('mousedown',  voyc.Hud.dgrab, false);
+	//this.elem.addEventListener('touchstart', voyc.Hud.dgrab, false);
+	this.elem.addEventListener('touchstart', function(e) { 
+		self.ongrab(e); 
+	}, false);
+	this.elem.addEventListener('mousedown', function(e) {
+		self.ongrab(e); 
+	}, false);
 
-    window.addEventListener('keydown', function(evt) {
+	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
 			voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
 			return;
@@ -167,7 +173,7 @@ voyc.Hud.prototype.attach = function() {
 			this.keyIsDown = true;
 		}
 	}, false);
-    window.addEventListener('keyup', function(evt) {
+	window.addEventListener('keyup', function(evt) {
 		if (this.keyIsDown) {
 			this.keyIsDown = false;
 			evt.preventDefault();
@@ -342,11 +348,13 @@ voyc.Hud.prototype.getMousePos = function(e) {
 	
 // Event Handler for mousedown, touchstart on a draggable element.
 voyc.Hud.prototype.ongrab = function(e) {
-	if (this.onMap(e)) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
-			//console.log('grabbed');
-			e.preventDefault();
-			e.stopPropagation();
+	if (!this.buttons.includes(e.button))
+		return	
+//	if (this.onMap(e)) {
+//		if (voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
+			console.log('grabbed');
+//			e.preventDefault();
+//			e.stopPropagation();
 
 			this.dragging = false;
 			this.dragOrigin = this.getMousePos(e);
@@ -356,11 +364,11 @@ voyc.Hud.prototype.ongrab = function(e) {
 			this.elem.addEventListener('mousemove', voyc.Hud.ddrag, false);
 			this.elem.addEventListener('touchend' , voyc.Hud.ddrop, false);
 			this.elem.addEventListener('mouseup'  , voyc.Hud.ddrop, false);
-		}
-		else {
-			this.ontap(this.getMousePos(e));
-		}
-	}
+//		}
+//		else {
+//			this.ontap(this.getMousePos(e));
+//		}
+//	}
 }
 
 // Event Handler for mousemove, touchmove while dragging

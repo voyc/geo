@@ -63,26 +63,20 @@
 	</head>
 
 	<body>
-		<div id='world' class='full'> this is the world</div>
-		<canvas id='sketch' class='full'></canvas>
-		<!--
-		<div id='hud'>
-			zoom map slider
-			layer checkbox menu
-			color menu
-			save button
-			fill button
-			fill masked button
-
-			footer
-				cursor position in lat/long
-				cursor position over which objects in each layer
+		<!-- 
+		Four overlaid fullscreen divs.
+		Mouse events target hud, bubble up to touchpad and window.
+		Keyboard events target window.
+		 -->
+		<div id='touchpad' class='full'>
+			<div id='world' class='full'></div>
+			<canvas id='sketch' class='full'></canvas>
+			<div id='hud' class='full'></div>
 		</div>
-		-->
-		<button id='clearbtn'>Clear</button>
 
-
-		<div id='hud' class='xfull'>
+		<!---- hud ----------------------------->
+		<div id='hud-bits'>
+			<button id='clearbtn'>Clear</button>
 			<div class='hud visible hidden' id='announce'>
 				<div id='announcemsg'>announcements</div>
 				<button id='announcedone'>OK</button>
@@ -114,11 +108,10 @@
 			<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
 		</div>
 
-
 		<!---- header ----------------------------->
 		<header class='fixed'>
 			<div class='group'>
-				<icon class='bit' type='draw' name='menu' open='leftnav-dialog'></icon>
+				<icon class='bit' type='draw' name='menu' open='sketch-palette'></icon>
 				<div class='bit hdr' id='hdrtitle'>GeoSketch</div>
 			</div>
 			<div id='headeruser' initially hidden class='group tright'>
@@ -198,6 +191,43 @@
 			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
 		</aside>
 
+		<nav initially hidden class='panel popup leftnav blu' id='sketch-palette'>
+			<div close class='closex'>&times;</div>
+			<h3>Go To...</h3>
+			<p><input type='radio' id='globe'    name='projection' checked/><label for='globe'   > Globe</label><p/> 
+			<p><input type='radio' id='mercator' name='projection'        /><label for='mercator'> Mercator</label><p/> 
+			<p><button close class='anchor' nav='profile'  >Color</button></p>
+			<p><button close class='anchor' id='clearmenu' >Brush Size</button></p>
+			<p><button close class='anchor' id='clearmenu' >Clear   Esc</button></p>
+			<!--
+			Point
+			Line
+			Shortest line
+			Polygon
+			Oval, circle, rectangle
+			Fill
+			Fill mask - interact with world layers
+			Save, name
+			Name each object, each layer
+			Enter date range for each object
+			Choose layer to draw in, w new layer
+			
+			
+			Pallette
+			Color
+			Pen, brush size
+			
+			Save into custom layers
+			
+			World palette
+			Layers checkbox on off, color Swatch 
+			Multicolor option
+			HUD element checkboxes
+			
+			Globe, Mercator radiobox
+			-->
+		</nav>
+
 		<!---- modal dialog container ----------------------------->
 		<div hidden id='modalcontainer' class='full smoke'>
 			<div class='centered modal'>
@@ -212,7 +242,7 @@
 			</div>
 		</div>
 
-		<!---- forms which will be moved to modal dialog container on open ---->
+		<!---- modal dialog forms --------------------------------->
 		<div hidden id='offscreen'>
 			<form modal id='login' svc='ua' class='dialog' title='Login to Your Account'>
 				<p><input name='both' type='text' placeholder='Username or Email' autofocus required pattern='[a-zA-Z0-9_@.+]{6,100}' title='Letters and numbers or @ or period or underscore. Length between 6 and 100.'></p>
