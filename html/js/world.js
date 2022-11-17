@@ -302,7 +302,7 @@ voyc.World.prototype.zoomStop = function() {
 
 // zoom called on keystrokes
 voyc.World.prototype.zoom = function(dir) {
-	function range(x,min,max) {
+	function clamp(x,min,max) {
 		return Math.round(Math.min(max, Math.max(min, x)));
 	}
 	this.zooming = true;
@@ -312,7 +312,7 @@ voyc.World.prototype.zoom = function(dir) {
 		case voyc.Spin.OUT: x = -1; break;
 	}
 	var scale = this.scale.now + (this.scale.now * x * this.option.scaleStep);
-	scale = range(scale, this.scale.min, this.scale.max);
+	scale = clamp(scale, this.scale.min, this.scale.max);
 	this.setScale(scale);
 	voyc.geosketch.render(0);
 }

@@ -130,13 +130,9 @@ voyc.Hud.prototype.attach = function() {
 		self.ongrab(e); 
 	}, false);
 
-
-//		elem.addEventListener('wheel',     function(e) {self.wheel(e)}, false);
-//	wheel: function (e) {
-//		//this.paint = false;
-//		console.log(['deltaY: ', e.deltaY])
-//	},
-
+	this.elem.addEventListener('wheel', function(e) {
+		self.mapZoomWheel(e)
+	}, false);
 
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
@@ -204,6 +200,12 @@ voyc.Hud.prototype.mapZoomerMove = function (evt) {
 		voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
 	}
 }
+
+voyc.Hud.prototype.mapZoomWheel = function(evt) {
+	var spin = (evt.deltaY > 0) ? voyc.Spin.IN : voyc.Spin.OUT
+	voyc.geosketch.world.zoom(spin)	
+}
+
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
 	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 		evt.stopPropagation();
