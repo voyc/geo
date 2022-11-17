@@ -130,6 +130,14 @@ voyc.Hud.prototype.attach = function() {
 		self.ongrab(e); 
 	}, false);
 
+
+//		elem.addEventListener('wheel',     function(e) {self.wheel(e)}, false);
+//	wheel: function (e) {
+//		//this.paint = false;
+//		console.log(['deltaY: ', e.deltaY])
+//	},
+
+
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
 			voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
