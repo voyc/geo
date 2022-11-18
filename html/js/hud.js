@@ -181,9 +181,13 @@ voyc.Hud.prototype.attach = function() {
 		if (this.keyIsDown) {
 			this.keyIsDown = false;
 			evt.preventDefault();
-			voyc.geosketch.world.zoomStop();
+			//voyc.geosketch.world.zoomStop();
 		}
 	}, false);
+
+
+	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
+	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
 }
 
 // mapzoomer
@@ -191,7 +195,6 @@ voyc.Hud.prototype.mapZoomerDown = function (evt) {
 	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 		evt.stopPropagation();
 		this.mapzoomerIsHot = true;
-		voyc.geosketch.world.zoomStart();
 	}
 }
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
@@ -202,14 +205,13 @@ voyc.Hud.prototype.mapZoomerMove = function (evt) {
 }
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
-	var spin = (evt.deltaY > 0) ? voyc.Spin.IN : voyc.Spin.OUT
+	var spin = (evt.deltaY > 0) ? voyc.Spin.OUT : voyc.Spin.IN
 	voyc.geosketch.world.zoom(spin)	
 }
 
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
 	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 		evt.stopPropagation();
-		voyc.geosketch.world.zoomStop();
 		this.mapzoomerIsHot = false;
 	}
 }

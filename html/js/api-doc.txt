@@ -107,5 +107,94 @@ voyc.Hud.dgrab = function(e) { (new voyc.Hud()).ongrab(e); }
 voyc.Hud.ddrag = function(e) { (new voyc.Hud()).ondrag(e); }
 voyc.Hud.ddrop = function(e) { (new voyc.Hud()).ondrop(e); }
 
+----------------------------------------
+
+-
+voyc.geosketch.game.start();
+voyc.geosketch.game.stop();
+voyc.geosketch.game.toggle();
+
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT);
+voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
+voyc.geosketch.getOption(voyc.option.GRATICULE);
+voyc.geosketch.getOption(voyc.option.HIRES);
+voyc.geosketch.getOption(voyc.option.PRESENTDAY);
+
+voyc.geosketch.hero.createDestination(pos, false);
+voyc.geosketch.hero.createDestination(pt, true);
+voyc.geosketch.hero.pt[0] + ((left + right) * arbitrary);
+voyc.geosketch.hero.pt[1] + ((up + down) * arbitrary);
+voyc.geosketch.hero.setLocation(voyc.geosketch.world.co);
+
+voyc.geosketch.keyboard;
+
+voyc.geosketch.render(0);
+voyc.geosketch.render(voyc.geosketch.previousTimestamp + 100);
+
+voyc.geosketch.score;
+
+voyc.geosketch.setOption(voyc.option.CHEAT, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
+voyc.geosketch.setOption(voyc.option.GRATICULE, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.HIRES, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.PRESENTDAY, evt.target.checked);
+
+voyc.geosketch.timeBackward(); break;
+
+voyc.geosketch.time.begin;
+voyc.geosketch.time.end;
+
+voyc.geosketch.timeForward(); break;
+
+voyc.geosketch.timeslideStart();
+
+voyc.geosketch.timeslideStop();
+
+voyc.geosketch.timeslideValue(parseInt(this.value,10));
+voyc.geosketch.timeslideValue(this.value);
+
+
+
+
+voyc.geosketch.world.mercator()}, false);
+voyc.geosketch.world.orthographic()}, false);
+
+voyc.geosketch.world.getCenterPoint();
+voyc.geosketch.world.moveToPoint(pos);  // setCenterPoint  ?
+
+voyc.geosketch.world.drag(false);
+voyc.geosketch.world.drag(newCenter);
+
+voyc.geosketch.world.scale.max;
+voyc.geosketch.world.scale.min;
+
+voyc.geosketch.world.spin(voyc.Spin.CCW); break;
+voyc.geosketch.world.spin(voyc.Spin.CW); break;
+voyc.geosketch.world.spin(voyc.Spin.DOWN); break;
+voyc.geosketch.world.spin(voyc.Spin.LEFT); break;
+voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
+voyc.geosketch.world.spin(voyc.Spin.UP); break;
+
+voyc.geosketch.world.zoom(spin)
+voyc.geosketch.world.zoom(voyc.Spin.IN); break;
+voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
+
+voyc.geosketch.world.zoomStart();
+
+voyc.geosketch.world.zoomStop();
+voyc.geosketch.world.zoomStop();
+
+voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
 
 

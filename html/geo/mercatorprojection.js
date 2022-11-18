@@ -1,5 +1,5 @@
 /** 
-	class OrthographicProjection
+	class MercatorProjection
 	@constructor 
 	Inspired by d3.js version 3.5.17, 17 June 2016.
 	
@@ -19,7 +19,7 @@
 		co is a [lng,lat] coordinate in degrees
 		ro is a [λ,φ,γ] set of angles in degrees
 */
-voyc.OrthographicProjection = function() {
+voyc.MercatorProjection = function() {
 	// rotate
 	this.δλ = 0;  // delta lambda, horizontal angle in radians
 	this.δφ = 0;  // delta phi, vertical angle in radians
@@ -30,7 +30,15 @@ voyc.OrthographicProjection = function() {
 	this.sinδγ = 0;
 
 	// translate
-	this.pt = 0;  // centerpoint in pixels
+	this.pt = []; // centerpoint in pixels
+	this.wd = 0;
+	this.ht = 0;
+	this.co = []; // center coordinate
+	this.w  = 0;
+	this.e  = 0;
+	this.n  = 0;
+	this.s  = 0;
+
 	this.δx = 0;  // delta x in pixels
 	this.δy = 0;  // delta y in pixels
 
@@ -38,7 +46,10 @@ voyc.OrthographicProjection = function() {
 	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
 
 	// clip
-	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
+	this.clipAngle = 0;  // in degrees  (always 90)
+	this.radius = 0;  // radius in radians
+	this.cr = 0;  // cosine radius, used for clipping
+	this.clipType = 'polygon';
 }
 
 /**
@@ -50,7 +61,13 @@ voyc.OrthographicProjection = function() {
 		γ = gamma  = roll = spin on the z axis, optional
 	See https://www.jasondavies.com/maps/rotate/
 */
-voyc.OrthographicProjection.prototype.rotate = function(ro) {
+voyc.MercatorProjection.prototype.rotate = function(ro) {
+	var lng = 0 - ro[0]
+	var lat = 0 - ro[1]
+	this.co = [lng,lat]
+	return
+
+
 	this.δλ = ro[0] % 360 * voyc.Geo.to_radians;   // delta lambda (horizontal)
 	this.δφ = ro[1] % 360 * voyc.Geo.to_radians;   // delta phi (vertical)
 	if (ro.length > 2) {
@@ -68,8 +85,21 @@ voyc.OrthographicProjection.prototype.rotate = function(ro) {
 	Sets the projection’s scale factor to the specified value.
 	In the Orthographic projection, scale is equal to the radius of the globe.
 */
-voyc.OrthographicProjection.prototype.scale = function(k) {
+voyc.MercatorProjection.prototype.scale = function(k) {
+	console.log(['k',k])  // range 241 - 2892
 	this.k = k;
+
+	var scale = voyc.geosketch.world.scale
+	var pctscale = (k - scale.min) / (scale.max - scale.min)
+
+	lngspread = (360 * pctscale) / 2
+	latspread = (180 * pctscale) / 2
+
+	this.w = this.co[0] - lngspread 
+	this.e = this.co[0] + lngspread
+	this.n = this.co[1] - latspread 
+	this.s = this.co[1] + latspread
+	console.log([this.k,pctscale,this.w,this.e,this.n,this.s])
 }
 
 /**
@@ -77,8 +107,20 @@ voyc.OrthographicProjection.prototype.scale = function(k) {
 	Sets the projection’s center to the specified coordinate, 
 	a three-element array of longitude in degrees.
 */
-voyc.OrthographicProjection.prototype.center = function(co) {
-	this.rotate([0-co[0], 0-co[1]]);
+voyc.MercatorProjection.prototype.center = function(co) {
+	//this.rotate([0-co[0], 0-co[1]]);
+	this.co = co
+	//this.pt = this.project(co)
+	var scale = voyc.geosketch.world.scale
+	var pctscale = (this.k - scale.min) / (scale.max - scale.min)
+
+	lngspread = (360 * pctscale) / 2
+	latspread = (180 * pctscale) / 2
+
+	this.w = this.co[0] - lngspread 
+	this.e = this.co[0] + lngspread
+	this.n = this.co[1] - latspread 
+	this.s = this.co[1] + latspread
 }
 
 /**
@@ -87,10 +129,34 @@ voyc.OrthographicProjection.prototype.center = function(co) {
 	to the specified two-element array [x, y] in pixels.
 	This is normally the center point of the viewport window.
 */
-voyc.OrthographicProjection.prototype.translate = function(pt) {
+voyc.MercatorProjection.prototype.translate = function(pt) {
 	this.pt = pt;
-	this.δx = this.pt[0];
-	this.δy = this.pt[1];
+	this.wd = this.pt[0] * 2
+	this.ht = this.pt[1] * 2
+	this.co = this.invert(pt)
+
+	var nw = this.invert([0,0])
+	var se = this.invert([this.wd,this.ht])
+
+	this.w = nw[0]
+	this.n = nw[1]
+	this.e = se[0]
+	this.s = se[1]
+
+	//this.δx = this.pt[0];
+	//this.δy = this.pt[1];
+}
+
+/**
+	clipAngle(angle) in degrees
+	Sets the projection’s clipping circle radius to the specified angle in degrees.
+	This is used for "small-circle" clipping of each coordinate during project().
+	We always use 90 degrees, which is the exact circle of the visible hemisphere.
+*/
+voyc.MercatorProjection.prototype.clip = function(angle) {
+	this.clipAngle = angle;
+	this.radius = this.clipAngle * voyc.Geo.to_radians;
+	this.cr = Math.cos(this.radius);
 }
 
 /**
@@ -105,29 +171,16 @@ voyc.OrthographicProjection.prototype.translate = function(pt) {
 		2. "extent" clipping, performed after point projection, 
 			by comparing the output [x,y] point to the visible rectangle of the viewport window.
 */
-voyc.OrthographicProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
+voyc.MercatorProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
 	// not implemented
-}
-
-/**
-	clipAngle(angle) in degrees
-	Sets the projection’s clipping circle radius to the specified angle in degrees.
-	This is used for "small-circle" clipping of each coordinate during project().
-	We always use 90 degrees, which is the exact circle of the visible hemisphere.
-*/
-voyc.OrthographicProjection.prototype.clipAngle = function(angle) {
-	var clipAngle = angle;
-	var clipRadians = clipAngle * voyc.Geo.to_radians;
-	var cr = Math.cos(clipRadians);
-	return cr
 }
 
 /**
 	isPointVisible(λ, φ)
 	Returns true or false.
-	Called by project() to implement small-circle clipping of a coordinate.
+	Called by project() to implements small-circle clipping of a coordinate.
 */
-voyc.OrthographicProjection.prototype.isPointVisible = function(λ, φ) {
+voyc.MercatorProjection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
 }
 
@@ -149,7 +202,15 @@ voyc.OrthographicProjection.prototype.isPointVisible = function(λ, φ) {
 			adaptive resampling (not implemented) 
 		clip to the rectangle extent of the viewport (not implemented)
 */
-voyc.OrthographicProjection.prototype.project = function(co) {
+voyc.MercatorProjection.prototype.project = function(co) {
+
+	lng = co[0]
+	lat = 0-co[1]
+
+	x = voyc.interpolate(lng, this.w, this.e, 0, this.wd)
+	y = voyc.interpolate(lat, this.n, this.s, 0, this.ht)
+	return [x,y];
+
 	// convert degrees to radians
 	var λ = co[0] * voyc.Geo.to_radians;  // lambda (small)
 	var φ = co[1] * voyc.Geo.to_radians;  // phi (small)
@@ -166,8 +227,10 @@ voyc.OrthographicProjection.prototype.project = function(co) {
 	φ = this.asin(k * this.cosδγ + y * this.sinδγ);
 
 	// clip to small circle
-	if (!this.isPointVisible(λ,φ))
+	var boo = this.isPointVisible(λ,φ);
+	if (!boo) {
 		return false;
+	}
 
 	// scale
 	var cosλ = Math.cos(λ);
@@ -182,7 +245,6 @@ voyc.OrthographicProjection.prototype.project = function(co) {
 	var work3y = this.δy - work2y * this.k;
 	
 	// clip extent (not implemented)
-	//clipExtent()
 	return [work3x,work3y];
 }
 
@@ -193,7 +255,11 @@ voyc.OrthographicProjection.prototype.project = function(co) {
 	to spherical coordinates (in degrees). 
 	Returns an array [longitude, latitude] given the input array [x, y]. 
 */
-voyc.OrthographicProjection.prototype.invert = function(pt) {
+voyc.MercatorProjection.prototype.invert = function(pt) {
+	lng = voyc.interpolate(pt[0], 0, this.wd, this.w, this.e)
+	lat = voyc.interpolate((0-pt[1]), 0, this.ht, this.n, this.s)
+	return [lng,lat];
+
 	var x = (pt[0] - this.δx) / this.k;
 	var y = (this.δy - pt[1]) / this.k;
 
@@ -221,7 +287,7 @@ voyc.OrthographicProjection.prototype.invert = function(pt) {
 }
 
 // constrain within pos or neg half pi
-voyc.OrthographicProjection.prototype.asin = function(x) {
+voyc.MercatorProjection.prototype.asin = function(x) {
 	return x > 1 ? voyc.Geo.halfπ : x < -1 ? -voyc.Geo.halfπ : Math.asin(x);
 }
 
@@ -233,7 +299,7 @@ voyc.OrthographicProjection.prototype.asin = function(x) {
 	Defaults to Math.SQRT(1/2).
 	A precision of 0 disables adaptive resampling.
 */
-voyc.OrthographicProjection.prototype.precision = function(x) {
+voyc.MercatorProjection.prototype.precision = function(x) {
 	// not implemented
 	// We do NOT do adaptive resampling.
 	// "Adaptive resampling" inserts additional points in a line

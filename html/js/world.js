@@ -29,7 +29,6 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.zooming = false;
 	
 	this.option = {
 		scaleStep: .14,  // percentage of scale
@@ -66,19 +65,21 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 		b:this.h - this.option.margin
 	};
 
+	this.projection = new voyc.OrthographicProjection();
+	//this.projection = new voyc.MercatorProjection();
+	//this.projection.mix = voyc.Projection.mercator;
+
+	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
+	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
+	this.projection.scale(this.scale.now);                  // size of the circle in pixels
+	
 	// scale in pixels
 	this.diameter = Math.min(this.w, this.h);
 	this.radius = Math.round(this.diameter / 2);
 	this.scale.min = this.radius * .5;  // small number, zoomed out
 	this.scale.max = this.radius * 6;   // large number, zoomed in
 	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStep);
-	this.scale.game = this.radius * 4;
-	this.scale.now = this.scale.game;
-	
-	this.projection = new voyc.OrthographicProjection();
-	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
-	this.projection.scale(this.scale.now);                  // size of the circle in pixels
-	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
+	this.scale.now = this.radius * 4;
 	
 	//this.pathsvg = d3.geo.path();
 	//this.pathsvg.projection(this.projection);
@@ -100,8 +101,9 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	// setup interator objects
 	this.iterator = new voyc.GeoIterate();
 	
+	var self = this
 	this.iterateeLand = new voyc.GeoIterate.iterateePolygonClipping();
-	this.iterateeLand.projection = this.projection;
+	this.iterateeLand.projection = this.projection
 	this.iterateeLand.ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
 
 	this.iterateeCountries = new voyc.GeoIterate.iterateePolygonClipping();
@@ -206,6 +208,18 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	//}
 }
 
+voyc.World.prototype.mercator = function() {
+	this.projection.mix = voyc.Projection.mercator
+	this.moved = true
+	voyc.geosketch.render(0);
+}
+
+voyc.World.prototype.orthographic = function() {
+	this.projection.mix = voyc.Projection.orthographic
+	this.moved = true
+	voyc.geosketch.render(0);
+}
+
 voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
@@ -270,7 +284,6 @@ voyc.World.prototype.setupData = function() {
 }
 
 voyc.World.prototype.spin = function(dir) {
-	this.zooming = true;
 	switch(dir) {
 		case voyc.Spin.LEFT : this.co[0] += this.option.spinStep; break;
 		case voyc.Spin.RIGHT: this.co[0] -= this.option.spinStep; break;
@@ -284,44 +297,29 @@ voyc.World.prototype.spin = function(dir) {
 	voyc.geosketch.render(0);
 }
 
-// zoomStart,zoomValue,zoomStop called on slider
-voyc.World.prototype.zoomStart = function() {
-	this.zooming = true;
-}
+// zoom by value: slider, setup
 voyc.World.prototype.zoomValue = function(value) {
 	this.setScale(value);
-	this.zooming = true;
-	this.moved = true;
-	voyc.geosketch.render(0);
-}
-voyc.World.prototype.zoomStop = function() {
-	this.moved = true;
-	this.zooming = false;
-	voyc.geosketch.render(0);
 }
 
-// zoom called on keystrokes
+// zoom by increment: keystroke, wheel
 voyc.World.prototype.zoom = function(dir) {
-	function clamp(x,min,max) {
-		return Math.round(Math.min(max, Math.max(min, x)));
-	}
-	this.zooming = true;
 	var x = 0;
 	switch(dir) {
 		case voyc.Spin.IN: x = 1; break;
 		case voyc.Spin.OUT: x = -1; break;
 	}
-	var scale = this.scale.now + (this.scale.now * x * this.option.scaleStep);
-	scale = clamp(scale, this.scale.min, this.scale.max);
-	this.setScale(scale);
-	voyc.geosketch.render(0);
+	var newscale = this.scale.now + (this.scale.now * x * this.option.scaleStep);
+	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
+	this.setScale(newscale);
 }
 
 voyc.World.prototype.setScale = function(newscale) {
-	this.scale.now = newscale;
+	this.scale.now = newscale || this.scale.now
 	this.projection.scale(this.scale.now);
-	this.moved = true;
 	voyc.geosketch.hud.setZoom(this.scale.now);
+	this.moved = true;
+	voyc.geosketch.render(0);
 }
 
 voyc.World.prototype.createLayer = function(useImageData, id) {

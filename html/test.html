@@ -44,6 +44,16 @@
 				window.addEventListener('keydown', function(e) {
 					console.log(['keydown', 'blu', e.button, e.offsetX, e.offsetY])
 				}, false)
+
+
+				var a = {name:'john', eyes:'blue'}
+				var b = {name:'cheryl', eyes:'brown'}
+				var c = a
+				var d = (function() {return c})
+				var z = c
+				var w = d()
+				c = b
+				var x = 3
 			}, false)	
 		</script>
 	</head>

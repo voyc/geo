@@ -17,6 +17,7 @@ voyc.GeoSketch = function () {
 		speed: 10 // years per second	
 	}
 	
+	this.options = {};
 }
 
 voyc.GeoSketch.prototype.setup = function () {
@@ -91,6 +92,8 @@ voyc.GeoSketch.prototype.setup = function () {
 		voyc.Key.UP, 
 		voyc.Key.DOWN,
 	]);
+
+	this.world.setScale()
 }
 
 voyc.option = {
@@ -102,6 +105,18 @@ voyc.option = {
 voyc.GeoSketch.prototype.getOption = function(x) {
 	return true;
 }
+voyc.GeoSketch.prototype.setOption = function (option,value) {
+	this.options[option] = value;
+	localStorage.setItem(voyc.GeoSketch.storageKey, JSON.stringify(this.options));
+	//if (option == voyc.option.CHEAT) {
+	//	this.cheat(value);
+	//}
+	//if (option == voyc.option.HIRES) {
+	//	this.world.showHiRes(value);
+	//}
+	this.world.moved = true;
+}
+
 
 voyc.GeoSketch.prototype.onProfileRequested = function(note) {
 	var svcname = 'getprofile';
@@ -239,6 +254,17 @@ window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
 	voyc.geosketch.setup();
 }, false);
+
+window.addEventListener('resize', function(evt) {
+	voyc.geosketch.resize()
+}, false);
+
+voyc.GeoSketch.prototype.resize = function (evt) {
+	this.world.resize(document.body.clientWidth, document.body.clientHeight);
+	this.world.moved = true;
+	this.render(0);
+}
+
 
 window['voyc']['onScriptLoaded'] = function(filename) {
 	console.log(filename + ' loaded')
