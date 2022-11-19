@@ -84,6 +84,7 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.hud.setup(document.getElementById('hud'))
 	this.hud.attach()
 	this.hud.showCheat(true);
+	this.world.setScale() // to set the zoomer 
 
 	this.keyboard = new voyc.Keyboard();
 	this.keyboard.listenForEvents([
@@ -92,8 +93,6 @@ voyc.GeoSketch.prototype.setup = function () {
 		voyc.Key.UP, 
 		voyc.Key.DOWN,
 	]);
-
-	this.world.setScale()
 }
 
 voyc.option = {

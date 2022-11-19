@@ -61,10 +61,10 @@ voyc.DualProjection = function() {
 	this.wd = 0;
 	this.ht = 0;
 	this.co = []; // center coordinate
-	this.w  = 0;
-	this.e  = 0;
-	this.n  = 0;
-	this.s  = 0;
+	//this.w  = 0;
+	//this.e  = 0;
+	//this.n  = 0;
+	//this.s  = 0;
 
 	// scale
 	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
@@ -90,7 +90,7 @@ voyc.DualProjection = function() {
 voyc.DualProjection.prototype.rotate = function(ro) {
 	// for mercator, set the center coordinate
 	var lng = 0 - ro[0]
-	var lat = 0 - ro[1]
+	var lat = ro[1]
 	this.co = [lng,lat]
 
 	// for orthographic, set three rotation amounts
@@ -117,18 +117,8 @@ voyc.DualProjection.prototype.scale = function(k) {
 	// for orthographic, set the scale amount, k
 	this.k = k;
 
-	// for mercator, set the coordinate boundaries, nsew
-	var scale = voyc.geosketch.world.scale
-	var pctscale = (k - scale.min) / (scale.max - scale.min)
-
-	lngspread = (360 * pctscale) / 2
-	latspread = (180 * pctscale) / 2
-
-	this.w = this.co[0] - lngspread 
-	this.e = this.co[0] + lngspread
-	this.n = this.co[1] - latspread 
-	this.s = this.co[1] + latspread
-	console.log([this.k,pctscale,this.w,this.e,this.n,this.s])
+	// for mercator, also set the ratio
+	this.pxlPerDgr = (k * 4) / 360
 }
 
 /**
@@ -139,12 +129,8 @@ voyc.DualProjection.prototype.scale = function(k) {
 	Called by World.drag() and Hud.ontap().  Hud.ondrop() calls ontap().
 */
 voyc.DualProjection.prototype.center = function(co) {
-	// for orthographic, set the rotation so coordinate co is centered on the screen
 	this.rotate([0-co[0], 0-co[1]]);
-
-	// for mercator, save the coordinate, and recalc the boundaries nsew
-	this.co = co
-	this.scale(this.k)
+	// legacy - replace with rotate
 }
 
 /**
@@ -156,7 +142,6 @@ voyc.DualProjection.prototype.center = function(co) {
 	Called by voyc.World.setup() and resize()
 */
 voyc.DualProjection.prototype.translate = function(pt) {
-
 	// save the center point in pixels
 	this.pt = pt;
 
@@ -230,11 +215,17 @@ voyc.DualProjection.prototype.project = function(co) {
 	ym = yo = 0
 
 	if (this.mix != voyc.Projection.orthographic) {
-		var lng = co[0]
-		var lat = 0-co[1]
-	
-		xm = voyc.interpolate(lng, this.w, this.e, 0, this.wd)
-		ym = voyc.interpolate(lat, this.n, this.s, 0, this.ht)
+		// rotate
+		lng = co[0]     - this.co[0]
+		lat = (0-co[1]) - this.co[1]
+
+		// scale
+		xm = lng * this.pxlPerDgr
+		ym = lat * this.pxlPerDgr
+
+		// translate
+		xm += this.pt[0]
+		ym += this.pt[1]
 	}
 
 	if (this.mix != voyc.Projection.mercator) {
@@ -280,6 +271,7 @@ voyc.DualProjection.prototype.project = function(co) {
 	var y = ym || yo
 
 	if (this.mix != voyc.Projection.mercator && this.mix != voyc.Projection.orthographic) {
+		// in-between, mix
 	}
 	return [x,y];
 }
@@ -296,8 +288,14 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	lngm = lngo = 0;
 
 	if (this.mix != voyc.Projection.orthographic) {
-		lngm = voyc.interpolate(pt[0], 0, this.wd, this.w, this.e)
-		latm = voyc.interpolate((0-pt[1]), 0, this.ht, this.n, this.s)
+		x = pt[0] - this.pt[0]
+		y = pt[1] - this.pt[1]
+
+		lng = x / this.pxlPerDgr
+		lat = 0 - (y / this.pxlPerDgr)
+
+		lngm += this.co[0]
+		latm -= this.co[1]
 	}
 
 	if (this.mix != voyc.Projection.mercator) {

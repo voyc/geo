@@ -65,14 +65,6 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 		b:this.h - this.option.margin
 	};
 
-	this.projection = new voyc.OrthographicProjection();
-	//this.projection = new voyc.MercatorProjection();
-	//this.projection.mix = voyc.Projection.mercator;
-
-	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
-	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
-	this.projection.scale(this.scale.now);                  // size of the circle in pixels
-	
 	// scale in pixels
 	this.diameter = Math.min(this.w, this.h);
 	this.radius = Math.round(this.diameter / 2);
@@ -80,6 +72,14 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	this.scale.max = this.radius * 6;   // large number, zoomed in
 	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStep);
 	this.scale.now = this.radius * 4;
+	
+	//this.projection = new voyc.OrthographicProjection();
+	this.projection = new voyc.MercatorProjection();
+	//this.projection.mix = voyc.Projection.mercator;
+
+	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
+	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
+	this.projection.scale(this.scale.now);                  // size of the circle in pixels
 	
 	//this.pathsvg = d3.geo.path();
 	//this.pathsvg.projection(this.projection);
@@ -314,6 +314,7 @@ voyc.World.prototype.zoom = function(dir) {
 	this.setScale(newscale);
 }
 
+// up = zoom in, like g-earth: up wheel, up slider, up shift-arrow
 voyc.World.prototype.setScale = function(newscale) {
 	this.scale.now = newscale || this.scale.now
 	this.projection.scale(this.scale.now);
@@ -401,6 +402,7 @@ voyc.World.prototype.drag = function(pt) {
 		this.dragging = true;
 		this.co = this.dragProjection.invert(pt);
 		this.projection.center(this.co);
+		//this.projection.rotate([0-this.co[0], 0-this.co[1]]);
 	}
 	else { // last time
 		this.dragging = false;
@@ -445,10 +447,22 @@ voyc.World.prototype.drawOceansAndLand = function() {
 	ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
 	ctx.clearRect(0, 0, this.w, this.h);
 	
-	// sphere, oceans
+	// oceans
 	ctx.fillStyle = voyc.color.water;
 	ctx.beginPath();
-	ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
+	if (this.projection.mix == voyc.Projection.orthographic)
+		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
+	else { // mercator 
+		//nw = this.projection.project([-180,90])
+		//se = this.projection.project([180,-90])
+		//ctx.rect(nw[0], se[0], nw[1], se[1])
+		var n = (this.h/2) - this.scale.now
+		var s = (this.h/2) + this.scale.now
+		var w = (this.w/2) - this.scale.now
+		var e = (this.w/2) + this.scale.now
+		console.log([n, w, s, e])
+		ctx.rect(n, w, s, e)
+	}
 	ctx.fill();
 
 	// land
