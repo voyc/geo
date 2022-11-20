@@ -223,6 +223,8 @@ voyc.DualProjection.prototype.project = function(co) {
 		xm = lng * this.pxlPerDgr
 		ym = lat * this.pxlPerDgr
 
+		ym *= 1.2 // difference between equirectangular and mercator
+
 		// translate
 		xm += this.pt[0]
 		ym += this.pt[1]
@@ -291,8 +293,8 @@ voyc.DualProjection.prototype.invert = function(pt) {
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 
-		lng = x / this.pxlPerDgr
-		lat = 0 - (y / this.pxlPerDgr)
+		lngm = x / this.pxlPerDgr
+		latm = 0 - (y / this.pxlPerDgr)
 
 		lngm += this.co[0]
 		latm -= this.co[1]

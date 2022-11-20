@@ -66,9 +66,10 @@ voyc.GeoSketch.prototype.setup = function () {
 	var divworld = document.getElementById('world') 
 	this.world.setup( 
 		divworld,
-		[80,20,0],  // start position: india 80E 20N
+		[140,20,0],  // start position: india 80E 20N
 		divworld.clientWidth,
-		divworld.clientHeight
+		divworld.clientHeight,
+		.5	// starting scale factor
 	 )
 
 	this.world.setupData()

@@ -47,12 +47,14 @@ voyc.World = function() {
 	this.iterateeInit = {};
 	
 	this.riverpass = 0;
+
+	this.stitchctx = {}
 }
 
 /** @const */
 voyc.World.radiusKm = 6371; // earth radius in kilometers
 
-voyc.World.prototype.setup = function(elem, co, w, h) {
+voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.elem = elem;
 	this.co = co;
 	this.w = w;
@@ -71,11 +73,12 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	this.scale.min = this.radius * .5;  // small number, zoomed out
 	this.scale.max = this.radius * 6;   // large number, zoomed in
 	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStep);
-	this.scale.now = this.radius * 4;
+	this.scale.now = this.radius * scalefactor
 	
 	//this.projection = new voyc.OrthographicProjection();
-	this.projection = new voyc.MercatorProjection();
-	//this.projection.mix = voyc.Projection.mercator;
+	//this.projection = new voyc.MercatorProjection();
+	this.projection = new voyc.DualProjection();
+	this.projection.mix = voyc.Projection.orthographic;
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
@@ -83,25 +86,40 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	
 	//this.pathsvg = d3.geo.path();
 	//this.pathsvg.projection(this.projection);
-
-	// these are the map layers
-	this.layer[voyc.layer.BACKGROUND] = this.createLayerDiv('background');
-	this.layer[voyc.layer.FASTBACK] = this.createLayer(false, 'fastback');
-	this.layer[voyc.layer.FEATURES] = this.createLayer(false, 'features');
-	this.layer[voyc.layer.SLOWBACKA] = this.createLayer(true, 'slowbacka');
+/*
+	changes:
+	dump svg layers - not used, code still available in plunder
+	dump div layers - use separate html, like hud and sketch
+	keep canvas layers only
+	draw all static layers on one canvas
+	use separate sets of layers for river animations
+	therefore: only one stitch for background
+	only lines and polygons require stitching, not points, ie not river and hero animations
+	hittest works by iterating collection, not canvas 
+	write layer logic to use separate or shared canvas
+*/
+	// create map layers and attach in bottom-to-top order
+	this.layer[voyc.layer.BACKGROUND] = this.createLayerDiv('background');  // solid black div style
+	this.layer[voyc.layer.FASTBACK] = this.createLayer(false, 'fastback');  // land and water
+	this.layer[voyc.layer.FEATURES] = this.createLayer(false, 'features');  // mountains, deserts
+	this.layer[voyc.layer.SLOWBACKA] = this.createLayer(true, 'slowbacka'); // hi-res tiles
 	this.layer[voyc.layer.RIVER0] = this.createLayer(true, 'river0');
 	this.layer[voyc.layer.RIVER1] = this.createLayer(true, 'river1');
 	this.layer[voyc.layer.RIVER2] = this.createLayer(true, 'river2');
-	this.layer[voyc.layer.REFERENCE] = this.createLayer(false, 'reference');
-	this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');
-	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground');
-	this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
-	this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+	this.layer[voyc.layer.REFERENCE] = this.createLayer(false, 'reference');   // graticule
+	this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');         // political polygons
+	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
+	//this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
+	//this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+
+        var canvas = document.createElement('canvas')
+        canvas.width = this.w * 2
+        canvas.height = this.h
+        this.stitchctx = canvas.getContext('2d');
 
 	// setup interator objects
 	this.iterator = new voyc.GeoIterate();
 	
-	var self = this
 	this.iterateeLand = new voyc.GeoIterate.iterateePolygonClipping();
 	this.iterateeLand.projection = this.projection
 	this.iterateeLand.ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
@@ -208,10 +226,33 @@ voyc.World.prototype.setup = function(elem, co, w, h) {
 	//}
 }
 
+voyc.World.prototype.doubleStitch = function(ctx, leftedge) {
+	return
+        this.stitchctx.drawImage(ctx.canvas, 0, 0);
+        this.stitchctx.drawImage(ctx.canvas, this.w, 0);
+        ctx.clearRect(0, 0, this.w, this.h);
+        ctx.drawImage(this.stitchctx.canvas, 0-leftedge, 0)
+}
+
 voyc.World.prototype.mercator = function() {
 	this.projection.mix = voyc.Projection.mercator
 	this.moved = true
 	voyc.geosketch.render(0);
+
+	/* todo: Mercator stitch
+		during iteratee project for polygon object
+		objects going across the antimeridian project normally
+		objects going across the left (or right) edge must be duplicated
+			project one onto the right edge
+			project the other onto the left edge 
+		project() is called by the iterator
+		the iterator does the ctx fill() and stroke() commands
+		thererfore, the data need not be modified, it can all be handled during drawing
+			project() must return null when a point is off screen
+			drawer must split the object on all gaps of null points
+			or
+			drawer must note when a line crosses the boundary
+	*/
 }
 
 voyc.World.prototype.orthographic = function() {
@@ -257,6 +298,9 @@ voyc.World.prototype.resize = function(w, h) {
 	//if (useImageData) {
 	//	a.imageData = a.ctx.createImageData(this.w, this.h);
 	//}
+
+        this.stitchctx.canvas.width = this.w * 2
+        this.stitchctx.canvas.height = this.h
 }
 
 voyc.World.prototype.setupData = function() {
@@ -453,15 +497,9 @@ voyc.World.prototype.drawOceansAndLand = function() {
 	if (this.projection.mix == voyc.Projection.orthographic)
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
 	else { // mercator 
-		//nw = this.projection.project([-180,90])
-		//se = this.projection.project([180,-90])
-		//ctx.rect(nw[0], se[0], nw[1], se[1])
-		var n = (this.h/2) - this.scale.now
-		var s = (this.h/2) + this.scale.now
-		var w = (this.w/2) - this.scale.now
-		var e = (this.w/2) + this.scale.now
-		console.log([n, w, s, e])
-		ctx.rect(n, w, s, e)
+		nw = this.projection.project([-180,85])
+		se = this.projection.project([180,-85])
+		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
 	}
 	ctx.fill();
 
@@ -471,7 +509,7 @@ voyc.World.prototype.drawOceansAndLand = function() {
 	ctx.beginPath();
 	this.iterator.iterateCollection(this.data.land, this.iterateeLand);
 	ctx.fill();
-
+	this.doubleStitch(ctx, 1500)
 }
 
 voyc.World.prototype.drawGrid = function() {
