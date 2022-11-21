@@ -25,7 +25,7 @@ voyc.World = function() {
 	this.radiusKm = 6371;
 	this.projection = {};
 	this.globe = {};
-	this.layer = [];
+	this.layer = [];  // array of layer objects, layer is a canvas
 
 	this.moved = true;
 	this.dragging = false;
@@ -109,8 +109,8 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.layer[voyc.layer.REFERENCE] = this.createLayer(false, 'reference');   // graticule
 	this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');         // political polygons
 	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
-	//this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
-	//this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+	this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
+	this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
 
         var canvas = document.createElement('canvas')
         canvas.width = this.w * 2
@@ -155,9 +155,9 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.iterateeGrid.ctx.lineWidth = .5;
 	this.iterateeGrid.ctx.strokeOpacity = .5;
 
-	//this.iterateeFeature = new voyc.GeoIterate.iterateePolygonClipping();
-	//this.iterateeFeature.projection = this.projection;
-	//this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
+	this.iterateeFeature = new voyc.GeoIterate.iterateePolygonClipping();
+	this.iterateeFeature.projection = this.projection;
+	this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 
 	//this.iterateeHitTest = new voyc.GeoIterate.iterateeHitTest();
 	//this.iterateeHitTest.projection = this.projection;
@@ -584,6 +584,7 @@ voyc.World.prototype.drawRiversAnim = function() {
 //	}
 
 voyc.World.prototype.drawFeatures = function() {
+	return
 	var ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 	ctx.clearRect(0, 0, this.w, this.h);
 

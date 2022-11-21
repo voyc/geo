@@ -103,7 +103,7 @@ voyc.AccountView.prototype.closeModal = function(note) {
 // refresh the header and dialogs
 voyc.AccountView.prototype.refresh = function(note) {
 	this.uname = note.payload['uname'] || '';
-
+return
 	// refresh header
 	var x = voyc.getAuth();
 	switch (x) {

@@ -4,7 +4,6 @@
 	manages the Hud as the top layer of the map
 	@constructor
 */
-
 voyc.Hud = function() {
 	// singleton
 	if (voyc.Hud._instance) return voyc.Hud._instance;
@@ -32,25 +31,18 @@ voyc.Hud.prototype.setup = function(elem) {
 
 voyc.Hud.prototype.attach = function() {
 	var self = this;
-	document.getElementById('menubtn').addEventListener('click', function(evt) {
-		evt.stopPropagation();
-		self.populateMenu();
-		self.hide(document.getElementById('menubtn'));
-		self.show(document.getElementById('menu'));
-		self.menuIsOpen = true;
-	}, false);
-	document.getElementById('menu').addEventListener('click', function(evt) {
-		if (self.menuIsOpen) {
-			evt.stopPropagation();
-		}
-	}, false);
-	document.getElementById('menudone').addEventListener('click', function(evt) {
-		//console.log('menu closed');
-		evt.stopPropagation();
-		self.hide(document.getElementById('menu'));
-		self.show(document.getElementById('menubtn'));
-		self.menuIsOpen = false;
-	}, false);
+	//document.getElementById('menubtn').addEventListener('click', function(evt) {
+	//	//evt.stopPropagation();
+	//	if (self.menuIsOpen) {
+	//		self.hide(document.getElementById('menu'));
+	//		self.menuIsOpen = false;
+	//	}
+	//	else {
+	//		self.populateMenu();
+	//		self.show(document.getElementById('menu'));
+	//		self.menuIsOpen = true;
+	//	}
+	//}, false);
 	document.getElementById('menuhires').addEventListener('click', function(evt) {
 		evt.stopPropagation();
 		voyc.geosketch.setOption(voyc.option.HIRES, evt.target.checked);
@@ -121,6 +113,11 @@ voyc.Hud.prototype.attach = function() {
 		}
 	}, false);
 
+	// track the mouse all over the screen no  matter what
+	this.elem.addEventListener('mousemove', function(evt) {
+		self.showWhereami(evt)
+	}, false)
+
 	// enable map drag
 	//this.elem.addEventListener('touchstart', voyc.Hud.dgrab, false);
 	this.elem.addEventListener('touchstart', function(e) { 
@@ -132,6 +129,13 @@ voyc.Hud.prototype.attach = function() {
 
 	this.elem.addEventListener('wheel', function(e) {
 		self.mapZoomWheel(e)
+	}, false);
+
+	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.Spin.IN)	
+	}, false);
+	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.Spin.OUT)	
 	}, false);
 
 	window.addEventListener('keydown', function(evt) {
@@ -166,10 +170,10 @@ voyc.Hud.prototype.attach = function() {
 			}
 			else {
 				switch (evt.keyCode) {
-					case 39: voyc.geosketch.world.spin(voyc.Spin.LEFT); break;
-					case 37: voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
-					case 38: voyc.geosketch.world.spin(voyc.Spin.UP); break;
-					case 40: voyc.geosketch.world.spin(voyc.Spin.DOWN); break;
+					case 39: voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
+					case 37: voyc.geosketch.world.spin(voyc.Spin.LEFT ); break;
+					case 38: voyc.geosketch.world.spin(voyc.Spin.DOWN ); break;
+					case 40: voyc.geosketch.world.spin(voyc.Spin.UP   ); break;
 					default: return;
 				}
 			}
@@ -185,9 +189,17 @@ voyc.Hud.prototype.attach = function() {
 		}
 	}, false);
 
-
 	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
 	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
+}
+
+voyc.Hud.prototype.showWhereami = function (evt) {
+	var co = voyc.geosketch.world.projection.invert([evt.clientX, evt.clientY])
+	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
+	latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
+	lng = Math.abs(Math.round(co[0]))
+	lat = Math.abs(Math.round(co[1]))
+	voyc.$('hudlatlng').innerHTML = lat + latd + lng + lngd
 }
 
 // mapzoomer
@@ -243,6 +255,7 @@ voyc.Hud.prototype.hide = function(elem) {
 }
 
 voyc.Hud.prototype.showCheat = function(boo) {
+	return
 	if (boo) {
 		//voyc.geosketch.game.stop();
 		this.show(document.getElementById('mapzoom'));
