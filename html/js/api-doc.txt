@@ -1,0 +1,200 @@
+
+world api
+
+constructor
+setup
+voyc.World.prototype.show = function() {
+voyc.World.prototype.showHiRes = function(boo) {
+
+voyc.World.prototype.resize = function(w, h) {
+voyc.World.prototype.setScale = function(newscale) {
+
+voyc.World.prototype.spin = function(dir) {
+
+voyc.World.prototype.zoomStart = function() {
+voyc.World.prototype.zoomValue = function(value) {
+voyc.World.prototype.zoomStop = function() {
+voyc.World.prototype.zoom = function(dir) {
+
+voyc.World.prototype.drag = function(pt) {
+
+voyc.World.prototype.moveToCoord = function(co) {
+voyc.World.prototype.moveToPoint = function(pt) {
+voyc.World.prototype.getCenterPoint = function() {
+
+internal methods
+
+setupData
+
+voyc.World.prototype.createLayer = function(useImageData, id) {
+voyc.World.prototype.createLayerSVG = function() {
+voyc.World.prototype.createLayerDiv = function(eid) {
+voyc.World.prototype.getLayer = function(layer) {
+
+voyc.World.prototype.drawOceansAndLand = function() {
+voyc.World.prototype.drawGrid = function() {
+voyc.World.prototype.drawRivers = function() {
+voyc.World.prototype.drawRiversAnim = function() {
+voyc.World.prototype.drawFeatures = function() {
+
+
+
+hud
+interface between ui and world api
+
+plunder and geosketch can have completely different UI, with the identical world api
+
+world
+default layers
+custom user layers
+
+full screen on/off  Esc=exit full screen
+
+full screen permanent, move mouse to left to popup hud
+
+pop and erase strokes
+
+The event object passed to the mouse event handler has a property called button that indicates which mouse button was pressed on the mouse to trigger the event.
+The mouse button is represented by a number:
+0: the main mouse button is pressed, usually the left button.
+1: the auxiliary button is pressed, usually the middle button or the wheel button.
+2: the secondary button is pressed, usually the right button.
+3: the fourth button is pressed, usually the Browser Back button.
+4: the fifth button is pressed, usually the Browser Forward button.
+https://www.javascripttutorial.net/javascript-dom/javascript-mouse-events/
+
+document.getElementById("myDIV").addEventListener("wheel", myFunction);
+function myFunction() {
+  this.style.fontSize = "35px";
+}
+https://www.w3schools.com/jsreF/event_onwheel.asp
+
+-------------------------------------
+
+constructor
+voyc.Hud.prototype.setup - copies html string to element
+voyc.Hud.prototype.attach - add listeners on menus, buttons, map zoomer, time slider, map drag, map spin
+voyc.Hud.prototype.mapZoomerDown = function (evt) {
+voyc.Hud.prototype.mapZoomerMove = function (evt) {
+voyc.Hud.prototype.mapZoomerUp = function (evt) {
+voyc.Hud.prototype.checkKeyboard = function () {
+
+voyc.Hud.prototype.show = function(elem) {
+voyc.Hud.prototype.hide = function(elem) {
+voyc.Hud.prototype.showCheat = function(boo) {
+voyc.Hud.prototype.populateMenu = function() {
+voyc.Hud.prototype.announce = function(msg,duration) {
+voyc.Hud.prototype.closeAnnouncement = function() {
+voyc.Hud.prototype.setWhereami = function(location, geo, presentday) {
+voyc.Hud.prototype.setSpeed = function(speed) {
+voyc.Hud.prototype.setTime = function(time) {
+voyc.Hud.prototype.setScore = function(score, name, msg) {
+voyc.Hud.prototype.closeScoreBox = function() {
+voyc.Hud.prototype.setZoom = function(newvalue) {
+
+/**
+	Mouse and Touch
+*/
+voyc.Hud.prototype.onMap = function(e) { 
+voyc.Hud.prototype.getMousePos = function(e) { 
+voyc.Hud.prototype.ongrab = function(e) {
+voyc.Hud.prototype.ondrag = function(e) {
+voyc.Hud.prototype.ondrop = function(e) {
+voyc.Hud.prototype.ontap = function(pos) {
+
+// global functions.  (Methods cannot be used with removeEventListener.)
+voyc.Hud.dgrab = function(e) { (new voyc.Hud()).ongrab(e); }
+voyc.Hud.ddrag = function(e) { (new voyc.Hud()).ondrag(e); }
+voyc.Hud.ddrop = function(e) { (new voyc.Hud()).ondrop(e); }
+
+----------------------------------------
+
+-
+voyc.geosketch.game.start();
+voyc.geosketch.game.stop();
+voyc.geosketch.game.toggle();
+
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT)) {
+voyc.geosketch.getOption(voyc.option.CHEAT);
+voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
+voyc.geosketch.getOption(voyc.option.GRATICULE);
+voyc.geosketch.getOption(voyc.option.HIRES);
+voyc.geosketch.getOption(voyc.option.PRESENTDAY);
+
+voyc.geosketch.hero.createDestination(pos, false);
+voyc.geosketch.hero.createDestination(pt, true);
+voyc.geosketch.hero.pt[0] + ((left + right) * arbitrary);
+voyc.geosketch.hero.pt[1] + ((up + down) * arbitrary);
+voyc.geosketch.hero.setLocation(voyc.geosketch.world.co);
+
+voyc.geosketch.keyboard;
+
+voyc.geosketch.render(0);
+voyc.geosketch.render(voyc.geosketch.previousTimestamp + 100);
+
+voyc.geosketch.score;
+
+voyc.geosketch.setOption(voyc.option.CHEAT, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
+voyc.geosketch.setOption(voyc.option.GRATICULE, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.HIRES, evt.target.checked);
+voyc.geosketch.setOption(voyc.option.PRESENTDAY, evt.target.checked);
+
+voyc.geosketch.timeBackward(); break;
+
+voyc.geosketch.time.begin;
+voyc.geosketch.time.end;
+
+voyc.geosketch.timeForward(); break;
+
+voyc.geosketch.timeslideStart();
+
+voyc.geosketch.timeslideStop();
+
+voyc.geosketch.timeslideValue(parseInt(this.value,10));
+voyc.geosketch.timeslideValue(this.value);
+
+
+
+
+voyc.geosketch.world.mercator()}, false);
+voyc.geosketch.world.orthographic()}, false);
+
+voyc.geosketch.world.getCenterPoint();
+voyc.geosketch.world.moveToPoint(pos);  // setCenterPoint  ?
+
+voyc.geosketch.world.drag(false);
+voyc.geosketch.world.drag(newCenter);
+
+voyc.geosketch.world.scale.max;
+voyc.geosketch.world.scale.min;
+
+voyc.geosketch.world.spin(voyc.Spin.CCW); break;
+voyc.geosketch.world.spin(voyc.Spin.CW); break;
+voyc.geosketch.world.spin(voyc.Spin.DOWN); break;
+voyc.geosketch.world.spin(voyc.Spin.LEFT); break;
+voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
+voyc.geosketch.world.spin(voyc.Spin.UP); break;
+
+voyc.geosketch.world.zoom(spin)
+voyc.geosketch.world.zoom(voyc.Spin.IN); break;
+voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
+
+voyc.geosketch.world.zoomStart();
+
+voyc.geosketch.world.zoomStop();
+voyc.geosketch.world.zoomStop();
+
+voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
+
+

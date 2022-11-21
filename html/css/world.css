@@ -1,0 +1,77 @@
+html, body {
+	width: 100%;
+	height: 100%;
+	overflow: hidden;
+	padding: 0;
+	margin: 0;
+	-webkit-text-size-adjust:none;  /* for iphone */
+}
+#background {
+	background-color:black;
+}
+/* each layer covers the screen */
+.layer {
+	position:absolute;
+	top:0;
+	left:0;
+}
+#empire {
+	opacity:.4;
+}
+/* river styles */
+.river {
+	stroke:#00f;
+	fill:none;
+}
+.wid1 {
+	stroke-width:3;
+}
+.wid2 {
+	stroke-width:2.5;
+}
+.wid3 {
+	stroke-width:2;
+}
+.wid4 {
+	stroke-width:1.5;
+}
+.wid5 {
+	stroke-width:1;
+}
+.wid6 {
+	stroke-width:.5;
+}
+.ariver {
+	stroke:#88f;
+	fill:none;
+	stroke-dasharray: 4;
+	animation-name:flow;
+	animation-duration:.5s;
+	animation-iteration-count: infinite;
+}
+@keyframes flow {
+	  0% {stroke-dashoffset: 8;}
+	 12% {stroke-dashoffset: 7;}
+	 25% {stroke-dashoffset: 6;}
+	 37% {stroke-dashoffset: 5;}
+	 50% {stroke-dashoffset: 4;}
+	 62% {stroke-dashoffset: 3;}
+	 75% {stroke-dashoffset: 2;}
+	 87% {stroke-dashoffset: 1;}
+	100% {stroke-dashoffset: 0;}
+}
+.ariver.wid4, .ariver.wid5 {
+	stroke:#ccf;
+}
+.ariver.wid6 {
+	stroke:#fff;
+}
+
+.visible {
+  opacity: 1;
+  transition: opacity .5s linear;
+}
+.hidden {
+  opacity: 0;
+  transition: opacity .5s linear;
+}

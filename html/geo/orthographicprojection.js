@@ -24,7 +24,7 @@ voyc.OrthographicProjection = function() {
 	this.δλ = 0;  // delta lambda, horizontal angle in radians
 	this.δφ = 0;  // delta phi, vertical angle in radians
 	this.δγ = 0;  // delta gamma, elevation
-    this.cosδφ = 0;
+	this.cosδφ = 0;
 	this.sinδφ = 0;
 	this.cosδγ = 0;
 	this.sinδγ = 0;
@@ -38,10 +38,7 @@ voyc.OrthographicProjection = function() {
 	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
 
 	// clip
-	this.clipAngle = 0;  // in degrees  (always 90)
-	this.radius = 0;  // radius in radians
-	this.cr = 0;  // cosine radius, used for clipping
-	this.clipType = 'polygon';
+	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
 }
 
 /**
@@ -60,7 +57,7 @@ voyc.OrthographicProjection.prototype.rotate = function(ro) {
 		this.δγ = ro[2] % 360 * voyc.Geo.to_radians;  // delta gamma (z-axis)
 	}
 
-    this.cosδφ = Math.cos(this.δφ);
+	this.cosδφ = Math.cos(this.δφ);
 	this.sinδφ = Math.sin(this.δφ);
 	this.cosδγ = Math.cos(this.δγ);
 	this.sinδγ = Math.sin(this.δγ);
@@ -97,18 +94,6 @@ voyc.OrthographicProjection.prototype.translate = function(pt) {
 }
 
 /**
-	clipAngle(angle) in degrees
-	Sets the projection’s clipping circle radius to the specified angle in degrees.
-	This is used for "small-circle" clipping of each coordinate during project().
-	We always use 90 degrees, which is the exact circle of the visible hemisphere.
-*/
-voyc.OrthographicProjection.prototype.clip = function(angle) {
-	this.clipAngle = angle;
-	this.radius = this.clipAngle * voyc.Geo.to_radians;
-	this.cr = Math.cos(this.radius);
-}
-
-/**
 	clipExtent([x1,y1,x2,y2]) in pixels
 	Sets the projection’s viewport clip extent 
 	to the specified rectangle bounds in pixels.
@@ -125,9 +110,22 @@ voyc.OrthographicProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
 }
 
 /**
+	clipAngle(angle) in degrees
+	Sets the projection’s clipping circle radius to the specified angle in degrees.
+	This is used for "small-circle" clipping of each coordinate during project().
+	We always use 90 degrees, which is the exact circle of the visible hemisphere.
+*/
+voyc.OrthographicProjection.prototype.clipAngle = function(angle) {
+	var clipAngle = angle;
+	var clipRadians = clipAngle * voyc.Geo.to_radians;
+	var cr = Math.cos(clipRadians);
+	return cr
+}
+
+/**
 	isPointVisible(λ, φ)
 	Returns true or false.
-	Called by project() to implements small-circle clipping of a coordinate.
+	Called by project() to implement small-circle clipping of a coordinate.
 */
 voyc.OrthographicProjection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
@@ -168,10 +166,8 @@ voyc.OrthographicProjection.prototype.project = function(co) {
 	φ = this.asin(k * this.cosδγ + y * this.sinδγ);
 
 	// clip to small circle
-	var boo = this.isPointVisible(λ,φ);
-	if (!boo) {
+	if (!this.isPointVisible(λ,φ))
 		return false;
-	}
 
 	// scale
 	var cosλ = Math.cos(λ);
@@ -186,6 +182,7 @@ voyc.OrthographicProjection.prototype.project = function(co) {
 	var work3y = this.δy - work2y * this.k;
 	
 	// clip extent (not implemented)
+	//clipExtent()
 	return [work3x,work3y];
 }
 

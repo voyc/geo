@@ -6,7 +6,18 @@
 voyc.GeoSketch = function () {
 	if (voyc.GeoSketch._instance) return voyc.GeoSketch._instance;
 	voyc.GeoSketch._instance = this;
-	this.setup();
+
+	this.time = {
+		begin: 0,
+		end: 0,
+		now: 0,
+		step: 0,
+		moved: false,
+		sliding: false,
+		speed: 10 // years per second	
+	}
+	
+	this.options = {};
 }
 
 voyc.GeoSketch.prototype.setup = function () {
@@ -39,9 +50,9 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.observer.subscribe('getprofile-received' ,'geosketch' ,function(note) { self.onGetProfileReceived  (note); });
 
 	// setup sketch layer
-	sketch = new voyc.Sketch(document.getElementById('sketch'));
+	sketch = new voyc.Sketch(document.getElementById('sketch'),null,document.getElementById('hud'));
+	sketch.buttons = [0]
 	sketch.draw();
-	document.getElementById('clearbtn').addEventListener('click', function() {sketch.clear()}, false);
 	document.getElementById('clearmenu').addEventListener('click', function() {sketch.clear()}, false);
 	document.addEventListener('keydown', function(event) {
 		if (event.key == "Escape") {
@@ -49,14 +60,42 @@ voyc.GeoSketch.prototype.setup = function () {
 		}
 	})
 
+	//voyc.$('touchpad').appendChild(voyc.$('hud-bits'));
+//	voyc.$('touchpad').insertBefore(voyc.$('hud-bits'), voyc.$('hud'));
+
+	var path = 'assets/';
+	var list = [
+		//{key:'hero'    ,path:path+'sprites/survivor-walk-16.png'},
+		//{key:'explode' ,path:path+'sprites/explosion-1.png'},
+		{key:'tileset' ,path:path+'images/tiles.png'},
+		{key:'reddot'  ,path:path+'images/reddot.png'},
+		{key:'crosshair',path:path+'images/crosshair.png'},
+		{key:'redxbox' ,path:path+'images/red-xbox.png'},
+		{key:'bluebox' ,path:path+'images/blue-xbox.png'},
+		{key:'treasure',path:path+'images/chest32.png'},
+		{key:'mtnhi'   ,path:path+'images/mtnhi.png'},
+		{key:'mtnmed'  ,path:path+'images/mtnmed.png'},
+		{key:'mtnlo'   ,path:path+'images/mtnlo.png'},
+		{key:'desert'  ,path:path+'images/desert.png'},
+	];
+
+	this.asset = new voyc.Asset();
+	var self = this;
+	this.asset.load(list, function(success, key) {
+		//if (!key) {
+		//	self.sync('visual', success);	
+		//}
+	});
+
 	// setup world layer
 	this.world = new voyc.World();
 	var divworld = document.getElementById('world') 
 	this.world.setup( 
 		divworld,
-		[80,20,0],  // start position: india 80E 20N
+		[140,20,0],  // start position: india 80E 20N
 		divworld.clientWidth,
-		divworld.clientHeight
+		divworld.clientHeight,
+		.5	// starting scale factor
 	 )
 
 	this.world.setupData()
@@ -64,9 +103,46 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.observer.publish('setup-complete', 'geosketch', {});
 	//(new voyc.3).nav('home');
 
+	this.hud = new voyc.Hud();
+	this.hud.buttons = [1]  // middle
+	this.hud.setup(document.getElementById('hud'))
+	this.hud.attach()
+	this.hud.showCheat(true);
+	this.world.setScale() // to set the zoomer 
+
+	this.keyboard = new voyc.Keyboard();
+	this.keyboard.listenForEvents([
+		voyc.Key.LEFT, 
+		voyc.Key.RIGHT, 
+		voyc.Key.UP, 
+		voyc.Key.DOWN,
+	]);
+
 	this.world.moved = true
 	this.render()
 }
+
+voyc.option = {
+	HIRES:0,
+	CHEAT:1,
+	GRATICULE:2,
+	PRESENTDAY:3
+}
+voyc.GeoSketch.prototype.getOption = function(x) {
+	return true;
+}
+voyc.GeoSketch.prototype.setOption = function (option,value) {
+	this.options[option] = value;
+	localStorage.setItem(voyc.GeoSketch.storageKey, JSON.stringify(this.options));
+	//if (option == voyc.option.CHEAT) {
+	//	this.cheat(value);
+	//}
+	//if (option == voyc.option.HIRES) {
+	//	this.world.showHiRes(value);
+	//}
+	this.world.moved = true;
+}
+
 
 voyc.GeoSketch.prototype.onProfileRequested = function(note) {
 	var svcname = 'getprofile';
@@ -162,10 +238,10 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 		this.world.drawOceansAndLand();
 		this.world.drawGrid();
 	}	
-	//if (this.world.moved && !this.world.dragging && !this.world.zooming) {
-	//	this.world.drawFeatures();
+	if (this.world.moved && !this.world.dragging && !this.world.zooming) {
+		this.world.drawFeatures();
 	//	this.world.drawRivers();
-	//}
+	}
 	//if ((this.world.moved || this.time.moved) && !this.world.dragging && !this.world.zooming) {
 	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
 	//	this.drawEmpire(ctx);
@@ -202,7 +278,19 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 /* on startup */
 window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
+	voyc.geosketch.setup();
 }, false);
+
+window.addEventListener('resize', function(evt) {
+	voyc.geosketch.resize()
+}, false);
+
+voyc.GeoSketch.prototype.resize = function (evt) {
+	this.world.resize(document.body.clientWidth, document.body.clientHeight);
+	this.world.moved = true;
+	this.render(0);
+}
+
 
 window['voyc']['onScriptLoaded'] = function(filename) {
 	console.log(filename + ' loaded')

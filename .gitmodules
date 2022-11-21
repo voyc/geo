@@ -10,3 +10,6 @@
 [submodule "html/jslib"]
 	path = html/jslib
 	url = https://github.com/voyc/jslib
+[submodule "html/fx"]
+	path = html/fx
+	url = https://github.com/voyc/fx

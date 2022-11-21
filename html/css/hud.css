@@ -1,0 +1,110 @@
+.hud {
+	position:fixed;
+	margin:.5rem;
+	padding:.5rem;
+	background: rgba(255, 255, 255, 0.8);
+	font-family: Verdana;
+}
+.leftnav {
+	top:3em;
+}
+button[g] {
+	padding-top:4px;	
+}
+icon {
+	width:2em;
+	height:2em;
+}
+#menubtn {
+	left:0;
+	top:0;
+	margin-left:.5rem;
+	margin-top:.5rem;
+}
+#announce {
+	left:50%;
+	top:50%;
+	transform:translate(-50%,-50%);
+	-webkit-transform:translate(-50%,-50%);
+	width:50%;
+	height:30%;
+	background-color:#ff8;
+	border:4px ridge #ff4;
+	text-align:center;
+}
+#announcedone {
+	position:fixed;
+	bottom:5px;
+}
+#whereami {
+	left:0;
+	bottom:0;
+	height:1em;
+	width:5.5em;
+	text-align:center;
+}
+#hudspeed {
+	float:right;
+}
+#hudpresentday {
+	color:red;
+	font-size:.8em;
+}
+#refglobe {
+	right:0;
+	bottom:0;
+	width:5rem;
+	height:5rem;
+}
+.tcenter {
+	text-align:center;
+}
+#score {
+	right:0;
+	top:0;
+	width:5rem;
+	height:2.5rem;
+	text-align:right;
+	border:4px ridge gray;
+	border-radius:4px;
+}
+#scorebox {
+	right:0;
+	top:2rem;
+	width:10rem;
+	height:5rem;
+	background-color:#ff8;
+	border:4px ridge #ff4;
+	text-align:center;
+}
+@font-face{
+    font-family: 'Glass Gauge';
+    src: url('GlassGauge.ttf');
+}
+#mapzoom {
+	right:0;
+	bottom:0;
+}
+#mapzoom input {
+	-webkit-appearance:slider-vertical;
+	width:2rem;
+	height:7rem;
+}
+#time {
+	bottom:0;
+	left:calc(50% - 5em);
+}
+#timeslide {
+	bottom:4rem;
+	width:15rem;
+	height:2rem;
+	padding:0;
+	border:0;
+	left:50%;
+	transform:translate(-50%);
+	-webkit-transform:translate(-50%);
+}
+#timeslide input {
+	width:15rem;
+	height:2rem;
+}
