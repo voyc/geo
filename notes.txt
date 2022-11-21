@@ -1,0 +1,91 @@
+
+UI: world vs sketch vs plunder
+
+sketch
+	mouse (left btn)
+	
+spin (pan)j
+	keybd (arrow keys, shift for gamma spin)
+	mouse (middle btn)
+
+zoom
+	keybd (shift + up,down arrow keys)
+	mouse wheel
+	button
+	slider
+
+time
+	keybd (ctrl + right,left arrow keys)
+	button
+	slider
+
+
+
+x Drawing vs spinning 
+animate Globe vs Mercator 
+Drawing upgrades
+wheel zoom to cursor
+zoom buttons and sketch drawing do not work on android
+time buttons from +/- to right/left.
+
+globe icon
+palette icon, pen
+
+- sketch upgrade
+	- each object must be a discrete event, with points, size, color, name, begin, end
+	- multipolygon?
+	 -after drawing, object must become part of map and move along with it
+	 - save objects
+	 - create layers
+	 - make a layer the currently edited one, save objects into chosen layer
+
+- Drawing upgrades
+	- Palettes
+	- Line drawing by palette or alt key
+	- Line is one side of a polygon
+	- Fill
+	- Mask land
+	- mask water
+
+- edit map layers
+- create new custom layers
+
+
+menu:
+        user mgmt
+	sketch
+        projectio
+        map palette
+        sketch palette
+        settings
+*/
+
+
+   <!--
+                        Point
+                        Line
+                        Shortest line
+                        Polygon
+                        Oval, circle, rectangle
+                        Fill
+                        Fill mask - interact with world layers
+                        Save, name
+                        Name each object, each layer
+                        Enter date range for each object
+                        Choose layer to draw in, w new layer
+                        
+                        
+                        Pallette
+                        Color
+                        Pen, brush size
+                        
+                        Save into custom layers
+                        
+                        World palette
+                        Layers checkbox on off, color Swatch 
+                        Multicolor option
+                        HUD element checkboxes
+                        
+                        Globe, Mercator radiobox
+                        -->
+
