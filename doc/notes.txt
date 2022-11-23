@@ -1,5 +1,15 @@
+ setOptions: function(options) {
+                this.penColor = (options.penColor) ? options.penColor : this.penColor;
+                this.brushSize = (options.brushSize) ? options.brushSize : this.brushSize;
+                this.hasGrid = (options.hasGrid) ? options.hasGrid : this.hasGrid;
+                this.gridColor = (options.gridColor) ? options.gridColor : this.gridColor;
+                this.gridSize = (options.gridSize) ? options.gridSize : this.gridSize;
+        },
+
 
 UI: world vs sketch vs plunder
+plunder: you move the character, directions are relative to him
+world: you drag the land, directions are relative to him
 
 sketch
 	mouse (left btn)
@@ -51,6 +61,8 @@ palette icon, pen
 - create new custom layers
 
 
+draw | drag
+
 menu:
         user mgmt
 	sketch
@@ -58,8 +70,23 @@ menu:
         map palette
         sketch palette
         settings
-*/
 
+points
+line
+polygon
+end line
+close polygon
+cancel line/polygon
+save object
+select layer
+
+mode: points, line, polygon
+actions: keep, erase, save
+layer: choose from menu, create new layer
+size:
+color:
+
+point medalions
 
    <!--
                         Point

@@ -191,6 +191,12 @@ voyc.Hud.prototype.attach = function() {
 
 	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
 	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
+	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
+	document.getElementById('line' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('line')}, false);
+	document.getElementById('poly' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('poly')}, false);
+	document.getElementById('finish').addEventListener('click', function() {voyc.geosketch.sketch.finish()}, false);
+	document.getElementById('erase').addEventListener('click', function() {voyc.geosketch.sketch.erase()}, false);
+	document.getElementById('save' ).addEventListener('click', function() {voyc.geosketch.sketch.save()}, false);
 }
 
 voyc.Hud.prototype.showWhereami = function (evt) {

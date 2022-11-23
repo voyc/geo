@@ -50,18 +50,13 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.observer.subscribe('getprofile-received' ,'geosketch' ,function(note) { self.onGetProfileReceived  (note); });
 
 	// setup sketch layer
-	sketch = new voyc.Sketch(document.getElementById('sketch'),null,document.getElementById('hud'));
-	sketch.buttons = [0]
-	sketch.draw();
-	document.getElementById('clearmenu').addEventListener('click', function() {sketch.clear()}, false);
+	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));
+	document.getElementById('clearmenu').addEventListener('click', function() {self.sketch.clear()}, false);
 	document.addEventListener('keydown', function(event) {
 		if (event.key == "Escape") {
-			sketch.clear();
+			self.sketch.clear();
 		}
 	})
-
-	//voyc.$('touchpad').appendChild(voyc.$('hud-bits'));
-//	voyc.$('touchpad').insertBefore(voyc.$('hud-bits'), voyc.$('hud'));
 
 	var path = 'assets/';
 	var list = [
@@ -287,6 +282,7 @@ window.addEventListener('resize', function(evt) {
 
 voyc.GeoSketch.prototype.resize = function (evt) {
 	this.world.resize(document.body.clientWidth, document.body.clientHeight);
+	this.sketch.resize(document.body.clientWidth, document.body.clientHeight);
 	this.world.moved = true;
 	this.render(0);
 }

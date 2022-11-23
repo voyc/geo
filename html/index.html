@@ -16,6 +16,7 @@
 
 		<script src="js/namespace.js"></script>
 		<script src="js/geosketch.js"></script>
+		<script src='js/sketchpad.js'></script>
 		<script src="js/world.js"></script>
 		<script src="js/hud.js"></script>
 		<script src="js/view.js"></script>
@@ -30,7 +31,6 @@
 		<script src='icon/lib/gear.js'></script>
 		<script src='icon/lib/user.js'></script>
 		<script src='icon/lib/spinner.js'></script>
-		<script src='jslib/sketch.js'></script>
 		<script src='jslib/utils.js'></script>
 		<script src='jslib/comm.js'></script>
 		<script src="jslib/observer.js"></script>
@@ -41,6 +41,8 @@
 		<script src="data/worldtopo.js"></script>  <!-- land and countries arcs -->
 		<script src="fx/keyboard.js"></script>
 		<script src="fx/asset.js"></script>
+
+		<script src='jslib/debug.js'></script>
 
 		<script type="text/javascript" src="data/treasure.js"></script>
 		<script type="text/javascript" src="data/empire.js"></script>
@@ -79,7 +81,7 @@
 					<div hidden id='hudpresentday'></div>
 				</div>
 
-				<div class='hud visible' id='time'>
+				<div class='hud visible' id='chronometer'>
 					<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
 					<button g id='timeminusbtn'><img src='i/minus_black.png' alt='time back'/></button>
 					<span id='time'>1300 BCE</span>	
@@ -97,14 +99,6 @@
 		
 		<!---- modeless dialogs ----------------------------------------->
 
-		<nav initially hidden class='panel popup leftnav blu' id='leftnav-dialog'>
-			<div close class='closex'>&times;</div>
-			<h3>Go To...</h3>
-			<p><button close class='anchor' nav='home'     >Home</button></p>
-			<p><button close class='anchor' nav='about'    >About</button></p>
-			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
-			<p><button close class='anchor' id='clearmenu' >Clear   Esc</button></p>
-		</nav>
 		<aside initially hidden class='panel popup leftnav blu' id='settings-dialog'>
 			<div close class='closex'>&times;</div>
 			<h3>Settings</h3>
@@ -129,12 +123,19 @@
 			<p><input type='radio' id='globe'    name='projection' checked/><label for='globe'   > Globe</label><p/> 
 			<p><input type='radio' id='mercator' name='projection'        /><label for='mercator'> Mercator</label><p/> 
 			<p><button close class='anchor' nav='profile'  >Color</button></p>
-			<p><button close class='anchor' id='clearmenu' >Brush Size</button></p>
+			<p><button close class='anchor' id='brushsizebtn' >Brush Size</button></p>
 			<p><button close class='anchor' id='clearmenu' >Clear   Esc</button></p>
 			<div>
 				<button id='userbtn' open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
 				<button id='settingsbtn' open='settings-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			</div>
+			<p><input type='radio' id='point'  name='drawwhat'        /><label for='point'  > Point</label><p/> 
+			<p><input type='radio' id='line'   name='drawwhat'        /><label for='line'   > Line</label><p/> 
+			<p><input type='radio' id='poly'   name='drawwhat' checked/><label for='poly'   > Polygon</label><p/> 
+
+			<p><button class='anchor' id='finish'>Finish</button></p>
+			<p><button class='anchor' id='erase' >Erase</button></p>
+			<p><button class='anchor' id='save'  >Save</button></p>
 		</nav>
 
 		<!---- modal dialog container and forms ----------------------------->
