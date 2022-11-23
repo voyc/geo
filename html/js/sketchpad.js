@@ -1,3 +1,10 @@
+voyc.getPointerPosition = function(e) {
+	// am i touch or mouse ?
+	// do i have page or nota?
+	// what about current vs target ?
+	// while we're here... what about double touch ?
+},
+
 /**
 	class SketchPad
 	@constructor
@@ -51,7 +58,7 @@ voyc.SketchPad.prototype = {
 			type: this.what,
 			id:0,
 			name:'my object',
-			points:[[x,y]],
+			points:[],
 			proj:1,  // 1:orthographic, 2:mercator
 			coordinates:[],
 			desc: 'recommendations on color and linewidth',
@@ -61,13 +68,25 @@ voyc.SketchPad.prototype = {
 		this.strokes.push(stroke)
 	},
 
-	addPoint: function (x, y) {
+	addPoint: function (ptr,e) {
+		var x,y
+		if (ptr == 'touch') {
+			x = e.targetTouches[0].pageX - e.target.offsetLeft
+			y = e.targetTouches[0].pageY - e.target.offsetTop
+		}
+		else { // 'mouse'
+			x = e.pageX - e.currentTarget.offsetLeft
+			y = e.pageY - e.currentTarget.offsetTop
+		}
+
+		//voyc.logger(voyc.prepString('x:$1 y:$2',[x,y]))
+		voyc.logger(['x,y', x, y])
+
 		var ndx = this.strokes.length-1
 		this.strokes[ndx].points.push([x,y])
 	},
 
 	// ---- drawing
-
 
 	clearCanvas: function (ctx) {
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -129,21 +148,21 @@ voyc.SketchPad.prototype = {
 	attach: function (elem) {
 		// Add mouse event listeners
 		var self = this;
-		elem.addEventListener('mousedown', function(e) {self.press(e)}, false);
-		elem.addEventListener('mousemove', function(e) {self.drag(e)}, false);
-		elem.addEventListener('mouseup',   function(e) {self.release(e)}, false);
-		elem.addEventListener('mouseout',  function(e) {self.hold(e)}, false);
+		elem.addEventListener('mousedown', function(e) {self.down('mouse',e)}, false);
+		elem.addEventListener('mousemove', function(e) {self.move('mouse',e)}, false);
+		elem.addEventListener('mouseup',   function(e) {self.up('mouse',e)}, false);
+		//elem.addEventListener('mouseout',  function(e) {self.hold(e)}, false);
 
 		// Add touch event listeners
-		elem.addEventListener('touchstart',  function(e) {self.press(e)}, false);
-		elem.addEventListener('touchmove',   function(e) {self.drag(e)}, false);
-		elem.addEventListener('touchend',    function(e) {self.release(e)}, false);
-		elem.addEventListener('touchcancel', function(e) {self.hold(e)}, false);
+		elem.addEventListener('touchstart',  function(e) {self.down('touch',e)}, false);
+		elem.addEventListener('touchmove',   function(e) {self.move('touch',e)}, false);
+		elem.addEventListener('touchend',    function(e) {self.up('touch',e)}, false);
+		//elem.addEventListener('touchcancel', function(e) {self.hold(e)}, false);
 
 		//debugEventBubbling('mousemove', 'touchpad', 4)
 	},
 
-	press: function (e) {
+	down: function (ptr,e) {
 		
 		if (this.options.supportedButtons.includes( e.button) &&
 			e.currentTarget == e.target &&
@@ -152,25 +171,17 @@ voyc.SketchPad.prototype = {
 
 		this.downOnHud = true
 
-		// Mouse down location
-		var sizeHotspotStartX,
-			mouseX = e.pageX - e.target.offsetLeft,
-			mouseY = e.pageY - e.target.offsetTop;
-
-		if (e.targetTouches) {
-			mouseX = e.targetTouches[0].pageX - e.target.offsetLeft;
-			mouseY = e.targetTouches[0].pageY - e.target.offsetTop;
-		}	
-
-		this.createStroke(mouseX, mouseY);
+		if ((this.what == 'poly') || (this.strokes.length < 1))
+			this.createStroke();
+			this.addPoint(ptr,e)
 
 		this.draw();
 	},
 
-	drag: function (e) {
-		e.preventDefault(); // Prevent grab and drag of other stuff, like the whole page on mobile
+	move: function (ptr,e) {
+		e.preventDefault(); // Prevent drag of other stuff, like the whole page on mobile
 
-		if (this.downOnHud && e.currentTarget == this.touchpad) ;
+		if ((this.downOnHud && e.currentTarget == this.touchpad)) ;// continue
 		else return
 
 		var x,y
@@ -183,12 +194,14 @@ voyc.SketchPad.prototype = {
 			y = e.pageY - e.currentTarget.offsetTop
 		}
 
-		this.addPoint(x,y)
+		this.addPoint(ptr,e)
 		this.draw();
 	},
 
-	release: function (e) {
+	up: function (ptr, e) {
 		this.downOnHud = false;
+		if (this.what == 'poly')
+			this.addPoint(ptr,e)
 		this.draw();
 	},
 
@@ -196,16 +209,10 @@ voyc.SketchPad.prototype = {
 	},
 
 
-
+	// ---- public
 
 	drawWhat: function(w) {
 		this.what = w
-	},
-
-	finish: function(w) {
-		this.release()
-		//this.createStroke()
-		//this.draw();
 	},
 
 	erase: function(w) {
@@ -224,6 +231,13 @@ voyc.SketchPad.prototype = {
 	endLine: function(w) {
 		this.strokes.pop()
 		this.draw();
+	},
+
+
+	finish: function(w) {
+		//this.release()
+		//this.createStroke()
+		//this.draw();
 	},
 
 	save: function(w) {

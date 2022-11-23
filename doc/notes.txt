@@ -1,11 +1,19 @@
- setOptions: function(options) {
-                this.penColor = (options.penColor) ? options.penColor : this.penColor;
-                this.brushSize = (options.brushSize) ? options.brushSize : this.brushSize;
-                this.hasGrid = (options.hasGrid) ? options.hasGrid : this.hasGrid;
-                this.gridColor = (options.gridColor) ? options.gridColor : this.gridColor;
-                this.gridSize = (options.gridSize) ? options.gridSize : this.gridSize;
-        },
+save layers in these categories:
+Choke point
+Threshold
+Pressure point
+Nexus, Knot
+Single lifespan empire
+CEO
+Geographic, chronological, cultural
+Continents, canals, passages
 
+isms
+cracy and archy
+categorical thinking
+government, economics, religious, technology, cultural?
+
+the chosen people, the one, 
 
 UI: world vs sketch vs plunder
 plunder: you move the character, directions are relative to him

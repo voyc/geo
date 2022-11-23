@@ -100,16 +100,12 @@
 		<!---- modeless dialogs ----------------------------------------->
 
 		<aside initially hidden class='panel popup leftnav blu' id='settings-dialog'>
-			<div close class='closex'>&times;</div>
-			<h3>Settings</h3>
 			<div><label for='menucheat'><input id='menucheat' type='checkbox' />Cheat (Alt-C)</label></div>
 			<div><label for='menugraticule'><input id='menugraticule' type='checkbox' />Show Meridians</label></div>
 			<div><label for='menupresentday'><input id='menupresentday' type='checkbox' />Show Present-Day Borders</label></div>
 			<div><label for='menuhires'><input id='menuhires' type='checkbox' />Hi-Res (90MB Download)</label></div>
 		</aside>
 		<aside initially hidden class='panel popup leftnav blu' id='user-dialog'>
-			<div close class='closex'>&times;</div>
-			<h3>User</h3>
 			<p><button close class='anchor' request='logout'        >Logout</button></p>
 			<p><button close class='anchor' request='forgotpassword'>Forgot Password</button></p>
 			<p><button close class='anchor' request='changeusername'>Change Username</button></p>
@@ -118,17 +114,16 @@
 			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
 		</aside>
 		<nav initially hidden class='panel popup leftnav blu' id='sketch-palette'>
-			<div close class='closex'>&times;</div>
-			<h3>Go To...</h3>
+			<p>
+				<button id='userbtn' open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
+				<button id='settingsbtn' open='settings-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
+			</p>
 			<p><input type='radio' id='globe'    name='projection' checked/><label for='globe'   > Globe</label><p/> 
 			<p><input type='radio' id='mercator' name='projection'        /><label for='mercator'> Mercator</label><p/> 
+			<p><hr/></p>
 			<p><button close class='anchor' nav='profile'  >Color</button></p>
 			<p><button close class='anchor' id='brushsizebtn' >Brush Size</button></p>
 			<p><button close class='anchor' id='clearmenu' >Clear   Esc</button></p>
-			<div>
-				<button id='userbtn' open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
-				<button id='settingsbtn' open='settings-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
-			</div>
 			<p><input type='radio' id='point'  name='drawwhat'        /><label for='point'  > Point</label><p/> 
 			<p><input type='radio' id='line'   name='drawwhat'        /><label for='line'   > Line</label><p/> 
 			<p><input type='radio' id='poly'   name='drawwhat' checked/><label for='poly'   > Polygon</label><p/> 
