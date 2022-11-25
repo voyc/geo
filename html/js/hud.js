@@ -23,7 +23,7 @@ voyc.Hud = function() {
 
 	// touch gesture constants
 	this.periodtap = 500
-	this.perioddoubletap = 500
+	this.perioddoubletap = 250
 	this.pinchThreshold = .1
 	this.twistThreshold = .001
 
@@ -34,6 +34,7 @@ voyc.Hud = function() {
 	this.timetap        = new Date()
 	this.hypo  = false
 	this.angle = false
+	this.pttouchstart = false
 }
 
 voyc.Hud.prototype.setup = function(elem) {
@@ -133,12 +134,12 @@ voyc.Hud.prototype.attach = function() {
 
 	// enable map drag
 	//this.elem.addEventListener('touchstart', voyc.Hud.dgrab, false);
-	this.elem.addEventListener('touchstart', function(e) { 
-		self.ongrab(e); 
-	}, false);
-	this.elem.addEventListener('mousedown', function(e) {
-		self.ongrab(e); 
-	}, false);
+//	this.elem.addEventListener('touchstart', function(e) { 
+//		self.ongrab(e); 
+//	}, false);
+//	this.elem.addEventListener('mousedown', function(e) {
+//		self.ongrab(e); 
+//	}, false);
 
 	this.elem.addEventListener('wheel', function(e) {
 		self.mapZoomWheel(e)
@@ -202,6 +203,7 @@ voyc.Hud.prototype.attach = function() {
 		}
 	}, false);
 
+	// button clicks
 	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
 	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
 	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
@@ -210,6 +212,7 @@ voyc.Hud.prototype.attach = function() {
 	document.getElementById('finish').addEventListener('click', function() {voyc.geosketch.sketch.finish()}, false);
 	document.getElementById('erase').addEventListener('click', function() {voyc.geosketch.sketch.erase()}, false);
 	document.getElementById('save' ).addEventListener('click', function() {voyc.geosketch.sketch.save()}, false);
+	document.getElementById('clear' ).addEventListener('click', function() {voyc.geosketch.sketch.clear()}, false);
 }
 
 voyc.Hud.prototype.showWhereami = function (evt) {
@@ -562,32 +565,42 @@ voyc.Hud.prototype.gesture = function(evt) {
 	return g
 }
 
+voyc.Hud.prototype.ptTouch = function(evt) {
+	return [Math.round(evt.targetTouches[0].pageX - evt.target.offsetLeft),
+		Math.round(evt.targetTouches[0].pageY - evt.target.offsetTop)]
+}
+
 voyc.Hud.prototype.ontouchmove = function(evt) {
+	if (this.touchdown && evt.currentTarget == this.elem) ; else return
 	var time = new Date()
 	voyc.logger(['onmove', evt.touches.length])
 
 	if (evt.touches.length > 1) {
 		g = this.gesture(evt)
-		this.publish(['twofingermove', g['x'], g['y'],g['pinch'], g['twist']])
+		this.publish(evt, 'twofingermove', [g['x'], g['y']], g['pinch'], g['twist'])
 	}
 	else {
-		var x = Math.round(evt.targetTouches[0].pageX - evt.target.offsetLeft)
-		var y = Math.round(evt.targetTouches[0].pageY - evt.target.offsetTop)
-		this.publish(['onefingermove', x,y])
+		this.publish(evt, 'onefingermove', this.ptTouch(evt))
 	}
 
 	this.timetouchmove = time
 }
 
 voyc.Hud.prototype.ontouchstart = function(evt) {
+	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
+	this.touchdown = true
 	var time = new Date()
 	voyc.logger(['onstart', evt.targetTouches.length])
 
 
 	this.timetouchstart = time
+	this.pttouchstart = this.ptTouch(evt)
 }
 
 voyc.Hud.prototype.ontouchend  = function(evt) {
+	if (this.touchdown && evt.currentTarget == this.elem) ; else return
+	this.touchdown = false
+
 	var time = new Date()
 	voyc.logger(['onend', evt.touches.length])
 
@@ -595,10 +608,10 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 	if (((time - this.timetouchstart) < this.periodtap) &&
 			(this.timetouchstart > this.timetouchmove)) {
 		if ((time - this.timetap) < this.perioddoubletap) {
-			this.publish('doubletap')
+			this.publish(evt, 'doubletap')
 		}
 		else {
-			this.publish('tap')
+			this.publish(evt, 'tap', this.pttouchstart)
 			this.timetap = time
 		}
 	}
@@ -608,13 +621,20 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 	this.timetouchend = time
 }
 
-voyc.Hud.prototype.publish = function(msg) {
-	voyc.logger([msg])
+voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
+	// window events: touchstart, touchend, touchmove
+	// geosketch events: tap, doubletap, onefingermove, twofingermove
+	voyc.logger(name)
 
-	//publish tap                 draw: add point
-	//publish doubletap           draw: make previous point the last point in line/poly
-	//publish onefingermove       draw: add point
-	//publish twofingermove       world: spin up/down/left/right
-	//publish pinch               world zoom in/out
-	//publish twist               world spin cw/ccw
+	if (name == 'tap') 
+		voyc.geosketch.sketch.addPoint(pt)
+	else if (name == 'doubletap') 
+		voyc.geosketch.sketch.finish()
+	else if (name == 'onefingermove') 
+		voyc.geosketch.sketch.addPoint(pt)
+	else if (name == 'twofingermove') {
+		voyc.geosketch.world.rotate(x,y,twist)
+		voyc.geosketch.world.zoom(pinch)
+	}
 }
+

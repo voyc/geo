@@ -19,7 +19,7 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 	this.canvas = canvas;
 	this.touchpad = touchpad || canvas;
 	this.resize()
-	this.attach(this.touchpad);
+	//this.attach(this.touchpad);
 
 	// options
 	this.options = {}
@@ -27,39 +27,73 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 	this.options.penColor = getComputedStyle(this.canvas).color;
 	this.options.brushSize = 5;
 	this.options.hasGrid = false;
-	this.options.gridColor = 'blue';
-	this.options.gridSize = 12;
 	if (options)
 		voyc.utils.merge(this.options.options)
 
 	this.strokes = []
 	this.what = 'poly'   // point, line, poly
 	this.downOnHud = false;
+
+	this.pointImage = document.getElementById('yellow-dot')
 }
 
 voyc.SketchPad.prototype = {
 
 	// ---- public
 
-	resize: function(w,h) {
-		this.canvas.width = parseInt(getComputedStyle(this.canvas).width,10);
-		this.canvas.height = parseInt(getComputedStyle(this.canvas).height,10);
+	drawWhat: function(w) {
+		voyc.logger(['drawWhat', w])
+		this.what = w
+		this.finish()
 	},
 
 	clear: function () {
 		this.strokes = []
-		this.draw();  // why do this?  it might redraw the grid
+		this.draw()
+	},
+
+	undo: function() {
+		// erase the current or most recent stroke
+		voyc.logger(['undo'])
+		if (this.strokes.length > 0)
+			this.strokes.pop()
+		this.draw()
+	},
+
+	finish: function() {
+		voyc.logger(['finish'])
+		this.newStroke()
+	},
+
+	save: function(w) {
+		// popup a dialog to get name of object
 	},
 
 	// ---- data
 
-	createStroke: function(x,y) {
+	newStroke: function() {
+		// if a stroke is sitting there empty, delete it
+		var ndx = this.strokes.length-1
+		if (ndx >= 0) {
+			var numpoints = this.strokes[ndx].points.length
+			if (numpoints < 1) {
+				this.strokes.pop()
+			}
+			else {
+				// if a poly stroke is in progress, close it now
+				if (this.strokes[ndx].type == 'poly') {
+					this.closePoly()
+				}
+			}
+		}
+
+		// now create the new stroke
 		var stroke = {
 			type: this.what,
 			id:0,
 			name:'my object',
+			type:this.what,
 			points:[],
-			proj:1,  // 1:orthographic, 2:mercator
 			coordinates:[],
 			desc: 'recommendations on color and linewidth',
 			color: 000,
@@ -68,32 +102,29 @@ voyc.SketchPad.prototype = {
 		this.strokes.push(stroke)
 	},
 
-	addPoint: function (ptr,e) {
-		var x,y
-		if (ptr == 'touch') {
-			x = e.targetTouches[0].pageX - e.target.offsetLeft
-			y = e.targetTouches[0].pageY - e.target.offsetTop
-			//voyc.logger(['touch', e.targetTouches.length, x, y])
-			//voyc.logger(voyc.dumpElement(e))
-			//voyc.logger(voyc.dumpElement(e.touches[0]))
-			//voyc.logger(voyc.dumpElement(e.touches[1]))
-			//voyc.logger(e.touches)
-			//voyc.logger(e.targetTouches)
-			//voyc.logger(e.changedTouches)
-		}
-		else { // 'mouse'
-			x = e.pageX - e.currentTarget.offsetLeft
-			y = e.pageY - e.currentTarget.offsetTop
-			//voyc.logger(['mouse', x, y])
-			//voyc.logger(voyc.dumpElement(e))
-		}
-
-
+	addPoint: function (pt) {
+		if (this.strokes.length < 1)
+			this.newStroke()
 		var ndx = this.strokes.length-1
-		this.strokes[ndx].points.push([x,y])
+		this.strokes[ndx].points.push(pt)
+		this.draw()
+	},
+
+	closePoly: function() {
+		// close the polygon by duplicating the first point as the last point
+		// note: there is no need to close point or line objects
+		voyc.logger('closePoly')
+		var ndx = this.strokes.length-1
+		var firstPoint = this.strokes[ndx].points[0]
+		this.addPoint(firstPoint)
 	},
 
 	// ---- drawing
+
+	resize: function(w,h) {
+		this.canvas.width = parseInt(getComputedStyle(this.canvas).width,10);
+		this.canvas.height = parseInt(getComputedStyle(this.canvas).height,10);
+	},
 
 	clearCanvas: function (ctx) {
 		ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
@@ -102,52 +133,32 @@ voyc.SketchPad.prototype = {
 	draw: function () {
 		var ctx = this.canvas.getContext('2d');
 		this.clearCanvas(ctx);
-		if (this.options.hasGrid) {
-			ctx.lineWidth = .07;
-			ctx.strokeStyle = this.options.gridColor;
-			this.drawGrid(ctx, this.canvas.width, this.canvas.height, this.options.gridSize);      // delete
-		}
-		
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
 
-
-		// draw each point of each stroke
 		for (var i=0; i<this.strokes.length; i++) {
 			var stroke = this.strokes[i]
-			ctx.beginPath();
-			ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
-			for (var j=1; j<stroke.points.length; j++) {
-				ctx.lineTo(stroke.points[j][0], stroke.points[j][1]);
+			if (stroke.type == 'point') {
+				for (var j=0; j<stroke.points.length; j++) {
+					pt = stroke.points[j]
+					ctx.drawImage( this.pointImage,0,0,22,22, pt[0]-11, pt[1]-11,22,22)
+				}
 			}
-			// if only one point, make a mark
-			if (stroke.points.length == 1) 
-				ctx.lineTo(stroke.points[0][0]-1, stroke.points[0][1]);
+			else {  // poly or line
+				ctx.lineCap = "round";
+				ctx.lineJoin = "round";
+				ctx.strokeStyle = stroke.penColor;
+				ctx.lineWidth = stroke.brushSize;
 
-			ctx.strokeStyle = this.options.penColor;
-			ctx.lineWidth = this.options.brushSize;
-			ctx.stroke();
+				ctx.beginPath();
+				ctx.moveTo(stroke.points[0][0], stroke.points[0][1]);
+				for (var j=1; j<stroke.points.length; j++) {
+					ctx.lineTo(stroke.points[j][0], stroke.points[j][1]);
+				}
+				// if only one point, make a mark
+				if (stroke.points.length == 1) 
+					ctx.lineTo(stroke.points[0][0]-1, stroke.points[0][1]);
+				ctx.stroke();
+			}
 		}
-	},
-
-	drawGrid: function(ctx, w, h, g) {
-		// ctx.lineWidth  set by caller
-		// ctx.strokeStyle  set by caller
-		ctx.beginPath();
-
-		// verticals
-		for (var x = 0.5; x < w; x += g) {
-			ctx.moveTo(x, 0);
-			ctx.lineTo(x, h);
-		}
-
-		// horizontals
-		for (var y = 0.5; y < h; y += g) {
-			ctx.moveTo(0, y);
-			ctx.lineTo(w, y);
-		}
-
-		ctx.stroke();
 	},
 
 	// ---- event handlers
@@ -180,7 +191,7 @@ voyc.SketchPad.prototype = {
 		this.downOnHud = true
 
 		if ((this.what == 'poly') || (this.strokes.length < 1))
-			this.createStroke();
+			this.newStroke();
 			this.addPoint(ptr,e)
 
 		this.draw();
@@ -212,44 +223,5 @@ voyc.SketchPad.prototype = {
 			this.addPoint(ptr,e)
 		this.draw();
 	},
-
-	hold: function (e) {
-	},
-
-
-	// ---- public
-
-	drawWhat: function(w) {
-		this.what = w
-	},
-
-	erase: function(w) {
-		this.strokes.pop()
-		this.draw();
-	},
-
-	closePoly: function(w) {
-		if (this.what == 'poly') 
-			this.closePoly()
-		else if (this.what == 'line') 
-			this.endLine()
-		this.draw();
-	},
-
-	endLine: function(w) {
-		this.strokes.pop()
-		this.draw();
-	},
-
-
-	finish: function(w) {
-		//this.release()
-		//this.createStroke()
-		//this.draw();
-	},
-
-	save: function(w) {
-		// popup a dialog to get name of object
-		this.draw();
-	},
 }
+

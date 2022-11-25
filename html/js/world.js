@@ -98,7 +98,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	hittest works by iterating collection, not canvas 
 	write layer logic to use separate or shared canvas
 */
-	// create map layers and attach in bottom-to-top order
+	// create map layers and append in bottom-to-top order
 	this.layer[voyc.layer.BACKGROUND] = this.createLayerDiv('background');  // solid black div style
 	this.layer[voyc.layer.FASTBACK] = this.createLayer(false, 'fastback');  // land and water
 	this.layer[voyc.layer.FEATURES] = this.createLayer(false, 'features');  // mountains, deserts
@@ -327,6 +327,8 @@ voyc.World.prototype.setupData = function() {
 	//this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
 }
 
+//---------------- public movement
+
 voyc.World.prototype.spin = function(dir) {
 	switch(dir) {
 		case voyc.Spin.LEFT : this.co[0] += this.option.spinStep; break;
@@ -366,6 +368,8 @@ voyc.World.prototype.setScale = function(newscale) {
 	this.moved = true;
 	voyc.geosketch.render(0);
 }
+
+//------------- data
 
 voyc.World.prototype.createLayer = function(useImageData, id) {
 	var a = {};

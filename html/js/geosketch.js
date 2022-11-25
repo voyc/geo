@@ -51,12 +51,12 @@ voyc.GeoSketch.prototype.setup = function () {
 
 	// setup sketch layer
 	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));
-	document.getElementById('clearmenu').addEventListener('click', function() {self.sketch.clear()}, false);
-	document.addEventListener('keydown', function(event) {
-		if (event.key == "Escape") {
-			self.sketch.clear();
-		}
-	})
+	//document.getElementById('clearmenu').addEventListener('click', function() {self.sketch.clear()}, false);
+	//document.addEventListener('keydown', function(event) {
+	//	if (event.key == "Escape") {
+	//		self.sketch.clear();
+	//	}
+	//})
 
 	var path = 'assets/';
 	var list = [
@@ -72,6 +72,7 @@ voyc.GeoSketch.prototype.setup = function () {
 		{key:'mtnmed'  ,path:path+'images/mtnmed.png'},
 		{key:'mtnlo'   ,path:path+'images/mtnlo.png'},
 		{key:'desert'  ,path:path+'images/desert.png'},
+		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];
 
 	this.asset = new voyc.Asset();
