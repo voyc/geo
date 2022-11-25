@@ -274,10 +274,9 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
 	voyc.geosketch.setup();
-}, false);
-
-window.addEventListener('resize', function(evt) {
-	voyc.geosketch.resize()
+	window.addEventListener('resize', function(evt) {
+		voyc.geosketch.resize()
+	}, false);
 }, false);
 
 voyc.GeoSketch.prototype.resize = function (evt) {
@@ -286,7 +285,6 @@ voyc.GeoSketch.prototype.resize = function (evt) {
 	this.world.moved = true;
 	this.render(0);
 }
-
 
 window['voyc']['onScriptLoaded'] = function(filename) {
 	console.log(filename + ' loaded')

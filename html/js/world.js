@@ -110,7 +110,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');         // political polygons
 	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
 	this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
-	this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+	//this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
 
         var canvas = document.createElement('canvas')
         canvas.width = this.w * 2

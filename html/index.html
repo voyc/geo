@@ -37,34 +37,34 @@
 		<script src="jslib/session.js"></script>
 		<script src="jslib/cookie.js"></script>
 		<script src="jslib/browserhistory.js"></script>
-		<script src="topojson/topojson.min.js"></script>  <!-- javascript implementation of topojson -->
-		<script src="data/worldtopo.js"></script>  <!-- land and countries arcs -->
+		<script src="topojson/topojson.min.js"></script>
 		<script src="fx/keyboard.js"></script>
 		<script src="fx/asset.js"></script>
 
 		<script src='jslib/debug.js'></script>
 
-		<script type="text/javascript" src="data/treasure.js"></script>
-		<script type="text/javascript" src="data/empire.js"></script>
-		<script type="text/javascript" src="data/deserts.js"></script>
-		<script type="text/javascript" src="data/highmountains.js"></script>
-		<script type="text/javascript" src="data/lowmountains.js"></script>
-		<script type="text/javascript" src="data/mediummountains.js"></script>
-		<script type="text/javascript" src="data/river1.js"></script>
-		<script type="text/javascript" src="data/river2.js"></script>
-		<script type="text/javascript" src="data/river3.js"></script>
-		<script type="text/javascript" src="data/river4.js"></script>
-		<script type="text/javascript" src="data/river5.js"></script>
-		<script type="text/javascript" src="data/river6.js"></script>
+		<script src="data/worldtopo.js"></script>  <!-- land and countries arcs -->
+		<script src="data/treasure.js"></script>
+		<script src="data/empire.js"></script>
+		<script src="data/deserts.js"></script>
+		<script src="data/highmountains.js"></script>
+		<script src="data/lowmountains.js"></script>
+		<script src="data/mediummountains.js"></script>
+		<script src="data/river1.js"></script>
+		<script src="data/river2.js"></script>
+		<script src="data/river3.js"></script>
+		<script src="data/river4.js"></script>
+		<script src="data/river5.js"></script>
+		<script src="data/river6.js"></script>
 	</head>
 
 	<body>
 		<!-- 
 		Four overlaid fullscreen divs.
-		Mouse events target hud, bubble up to touchpad and window.
+		Mouse/touch events target hud, bubble up to pad and window.
 		Keyboard events target window.
 		-->
-		<div id='touchpad' class='full'>
+		<div id='pad' class='full'>
 			<div id='world' class='full'></div>
 			<canvas id='sketch' class='full'></canvas>
 			<div id='hud' class='full'>

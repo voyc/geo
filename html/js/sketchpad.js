@@ -73,14 +73,21 @@ voyc.SketchPad.prototype = {
 		if (ptr == 'touch') {
 			x = e.targetTouches[0].pageX - e.target.offsetLeft
 			y = e.targetTouches[0].pageY - e.target.offsetTop
+			//voyc.logger(['touch', e.targetTouches.length, x, y])
+			//voyc.logger(voyc.dumpElement(e))
+			//voyc.logger(voyc.dumpElement(e.touches[0]))
+			//voyc.logger(voyc.dumpElement(e.touches[1]))
+			//voyc.logger(e.touches)
+			//voyc.logger(e.targetTouches)
+			//voyc.logger(e.changedTouches)
 		}
 		else { // 'mouse'
 			x = e.pageX - e.currentTarget.offsetLeft
 			y = e.pageY - e.currentTarget.offsetTop
+			//voyc.logger(['mouse', x, y])
+			//voyc.logger(voyc.dumpElement(e))
 		}
 
-		//voyc.logger(voyc.prepString('x:$1 y:$2',[x,y]))
-		voyc.logger(['x,y', x, y])
 
 		var ndx = this.strokes.length-1
 		this.strokes[ndx].points.push([x,y])
@@ -154,9 +161,9 @@ voyc.SketchPad.prototype = {
 		//elem.addEventListener('mouseout',  function(e) {self.hold(e)}, false);
 
 		// Add touch event listeners
-		elem.addEventListener('touchstart',  function(e) {self.down('touch',e)}, false);
-		elem.addEventListener('touchmove',   function(e) {self.move('touch',e)}, false);
-		elem.addEventListener('touchend',    function(e) {self.up('touch',e)}, false);
+//		elem.addEventListener('touchstart',  function(e) {self.down('touch',e)}, false);
+//		elem.addEventListener('touchmove',   function(e) {self.move('touch',e)}, false);
+//		elem.addEventListener('touchend',    function(e) {self.up('touch',e)}, false);
 		//elem.addEventListener('touchcancel', function(e) {self.hold(e)}, false);
 
 		//debugEventBubbling('mousemove', 'touchpad', 4)
@@ -164,7 +171,8 @@ voyc.SketchPad.prototype = {
 
 	down: function (ptr,e) {
 		
-		if (this.options.supportedButtons.includes( e.button) &&
+		if ((this.options.supportedButtons.includes( e.button) ||
+			ptr == 'touch') &&
 			e.currentTarget == e.target &&
 			e.currentTarget == this.touchpad) ;
 		else return
