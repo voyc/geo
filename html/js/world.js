@@ -6,7 +6,7 @@
 */
 voyc.World = function() {
 	this.elem = {};
-	this.co = [];
+	this.co = [];    // center [lng,lat]  E and N are positive
 	this.gamma = 0;
 	this.w = 0;
 	this.h = 0;
@@ -28,7 +28,6 @@ voyc.World = function() {
 	this.layer = [];  // array of layer objects, layer is a canvas
 
 	this.moved = true;
-	this.dragging = false;
 	
 	this.option = {
 		scaleStep: .14,  // percentage of scale
@@ -56,7 +55,7 @@ voyc.World.radiusKm = 6371; // earth radius in kilometers
 
 voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.elem = elem;
-	this.co = co;
+	this.co = [0,0] //co;
 	this.w = w;
 	this.h = h;
 	
@@ -234,6 +233,21 @@ voyc.World.prototype.doubleStitch = function(ctx, leftedge) {
         ctx.drawImage(this.stitchctx.canvas, 0-leftedge, 0)
 }
 
+// --------  public options
+
+voyc.World.prototype.showHiRes = function(boo) {
+	if (boo) {
+		this.getLayer(voyc.layer.SLOWBACKA).canvas.classList.remove('hidden');
+//		this.getLayer(voyc.layer.FASTBACK).canvas.classList.add('hidden');
+//		this.getLayer(voyc.layer.FEATURES).canvas.classList.add('hidden');
+	}
+	else {
+		this.getLayer(voyc.layer.SLOWBACKA).canvas.classList.add('hidden');
+//		this.getLayer(voyc.layer.FASTBACK).canvas.classList.remove('hidden');
+//		this.getLayer(voyc.layer.FEATURES).canvas.classList.remove('hidden');
+	}
+}
+
 voyc.World.prototype.mercator = function() {
 	this.projection.mix = voyc.Projection.mercator
 	this.moved = true
@@ -261,87 +275,7 @@ voyc.World.prototype.orthographic = function() {
 	voyc.geosketch.render(0);
 }
 
-voyc.World.prototype.resize = function(w, h) {
-	this.w = w;
-	this.h = h;
-	this.diameter = Math.min(this.w, this.h);
-	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
-
-	this.marginRect = {
-		l:0 + this.option.margin,
-		t:0 + this.option.margin,
-		r:this.w - this.option.margin,
-		b:this.h - this.option.margin
-	};
-
-	var a = {};
-	for (var i in voyc.layer) {
-		a = this.getLayer(voyc.layer[i]);
-		if (a.type == 'canvas') {
-			a.canvas.width  = this.w;
-			a.canvas.height = this.h;
-			a.canvas.style.width =  this.w + 'px';
-			a.canvas.style.height = this.h + 'px';
-		}
-		else if (a.type == 'svg') {
-			a.svg.width  = this.w + 'px';
-			a.svg.height = this.h + 'px';
-			a.svg.style.width =  this.w + 'px';
-			a.svg.style.height = this.h + 'px';
-		}
-		else if (a.type == 'div') {
-			a.div.style.width =  this.w + 'px';
-			a.div.style.height = this.h + 'px';
-		}
-	}
-	
-	//if (useImageData) {
-	//	a.imageData = a.ctx.createImageData(this.w, this.h);
-	//}
-
-        this.stitchctx.canvas.width = this.w * 2
-        this.stitchctx.canvas.height = this.h
-}
-
-voyc.World.prototype.setupData = function() {
-	this.data = [];
-	this.data.countries = topojson.object(worldtopo, worldtopo['objects']['countries']);
-	this.data.land = {
-		'type':'GeometryCollection',
-		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
-	};
-	window['voyc']['data']['grid'] = {
-		'type': 'GeometryCollection',
-		'geometries': [
-			{
-				'type': "MultiLineString", 
-				'coordinates': voyc.Geo.graticule(),
-			}
-		]
-	}
-	
-	//this.iterator.iterateCollection(window['voyc']['data']['deserts'], this.iterateeInit);
-	//this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeInit);
-	//this.iterator.iterateCollection(window['voyc']['data']['mediummountains'], this.iterateeInit);
-	//this.iterator.iterateCollection(window['voyc']['data']['lowmountains'], this.iterateeInit);
-	//this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
-}
-
-//---------------- public movement
-
-voyc.World.prototype.spin = function(dir) {
-	switch(dir) {
-		case voyc.Spin.LEFT : this.co[0] += this.option.spinStep; break;
-		case voyc.Spin.RIGHT: this.co[0] -= this.option.spinStep; break;
-		case voyc.Spin.UP   : this.co[1] += this.option.spinStep; break;
-		case voyc.Spin.DOWN : this.co[1] -= this.option.spinStep; break;
-		case voyc.Spin.CW   : this.gamma += this.option.spinStep; break;
-		case voyc.Spin.CCW  : this.gamma -= this.option.spinStep; break;
-	}
-	this.moved = true;
-	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
-	voyc.geosketch.render(0);
-}
+// --------  public zoom
 
 // zoom by value: slider, setup
 voyc.World.prototype.zoomValue = function(value) {
@@ -369,7 +303,82 @@ voyc.World.prototype.setScale = function(newscale) {
 	voyc.geosketch.render(0);
 }
 
-//------------- data
+// --------  public move
+
+voyc.World.prototype.spin = function(dir) {
+	switch(dir) {
+		case voyc.Spin.LEFT : this.co[0] += this.option.spinStep; break;
+		case voyc.Spin.RIGHT: this.co[0] -= this.option.spinStep; break;
+		case voyc.Spin.UP   : this.co[1] += this.option.spinStep; break;
+		case voyc.Spin.DOWN : this.co[1] -= this.option.spinStep; break;
+		case voyc.Spin.CW   : this.gamma += this.option.spinStep; break;
+		case voyc.Spin.CCW  : this.gamma -= this.option.spinStep; break;
+	}
+	this.moved = true;
+	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
+	voyc.geosketch.render(0);
+}
+
+voyc.World.prototype.move = function(pt,prev) {
+	var coNew = this.projection.invert(pt);
+	var coOld = this.projection.invert(prev);
+	var rotation = voyc.subtractArray(coNew,coOld)
+	this.projection.rotateIncr(rotation)
+	this.moved = true;
+	voyc.geosketch.render(0);
+	this.co = this.flipLat(this.projection.co)
+}
+
+voyc.World.prototype.flipLat = function(co) {
+	// in projection, S is positive. Everywhere else, N is positive.
+	return [co[0], 0-co[1]]
+}
+
+voyc.World.prototype.moveToCoord = function(co) {
+	this.co = co
+	this.projection.rotate([0-co[0], 0-co[1]])
+	this.moved = true;
+	voyc.geosketch.render(0);
+}
+
+voyc.World.prototype.test = function() {
+	var india = [+80, +20] // 80E, 20N
+	var rio =   [-43, -23] // 40W, 20S
+	this.moveToCoord(india)
+	console.log(['moved india', this.co[0], this.co[1], this.projection.co[0], this.projection.co[1]])
+	this.moveToCoord(rio)
+	console.log(['moved rio', this.co[0], this.co[1], this.projection.co[0], this.projection.co[1]])
+}
+
+voyc.World.prototype.getCenterPoint = function() {
+	return ([Math.round(this.w/2), Math.round(this.h/2)]);
+}
+
+// --------  data
+
+voyc.World.prototype.setupData = function() {
+	this.data = [];
+	this.data.countries = topojson.object(worldtopo, worldtopo['objects']['countries']);
+	this.data.land = {
+		'type':'GeometryCollection',
+		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
+	};
+	window['voyc']['data']['grid'] = {
+		'type': 'GeometryCollection',
+		'geometries': [
+			{
+				'type': "MultiLineString", 
+				'coordinates': voyc.Geo.graticule(),
+			}
+		]
+	}
+	
+	//this.iterator.iterateCollection(window['voyc']['data']['deserts'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['mediummountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['lowmountains'], this.iterateeInit);
+	//this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
+}
 
 voyc.World.prototype.createLayer = function(useImageData, id) {
 	var a = {};
@@ -441,51 +450,48 @@ voyc.World.prototype.show = function() {
 	this.getLayer(voyc.layer.HUD).div.classList.remove('hidden');
 }
 
-// dragging, called by Hud when mouse or touch is dragging the globe
-voyc.World.prototype.drag = function(pt) {
-	if (pt) {
-		if (!this.dragging) {  // first time
-			this.dragProjection = voyc.clone(this.projection);
+// --------  drawing
+
+voyc.World.prototype.resize = function(w, h) {
+	this.w = w;
+	this.h = h;
+	this.diameter = Math.min(this.w, this.h);
+	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
+
+	this.marginRect = {
+		l:0 + this.option.margin,
+		t:0 + this.option.margin,
+		r:this.w - this.option.margin,
+		b:this.h - this.option.margin
+	};
+
+	var a = {};
+	for (var i in voyc.layer) {
+		a = this.getLayer(voyc.layer[i]);
+		if (a.type == 'canvas') {
+			a.canvas.width  = this.w;
+			a.canvas.height = this.h;
+			a.canvas.style.width =  this.w + 'px';
+			a.canvas.style.height = this.h + 'px';
 		}
-		this.dragging = true;
-		this.co = this.dragProjection.invert(pt);
-		this.projection.center(this.co);
-		//this.projection.rotate([0-this.co[0], 0-this.co[1]]);
+		else if (a.type == 'svg') {
+			a.svg.width  = this.w + 'px';
+			a.svg.height = this.h + 'px';
+			a.svg.style.width =  this.w + 'px';
+			a.svg.style.height = this.h + 'px';
+		}
+		else if (a.type == 'div') {
+			a.div.style.width =  this.w + 'px';
+			a.div.style.height = this.h + 'px';
+		}
 	}
-	else { // last time
-		this.dragging = false;
-	}
-	this.moved = true;
-	voyc.geosketch.render(0);
-}
+	
+	//if (useImageData) {
+	//	a.imageData = a.ctx.createImageData(this.w, this.h);
+	//}
 
-voyc.World.prototype.moveToCoord = function(co) {
-	this.co = co;
-	this.projection.center(this.co);
-	this.moved = true;
-}
-
-voyc.World.prototype.moveToPoint = function(pt) {
-	this.co = this.projection.invert(pt);
-	this.projection.center(this.co);
-	this.moved = true;
-	voyc.geosketch.render(0);
-}
-voyc.World.prototype.getCenterPoint = function() {
-	return ([Math.round(this.w/2), Math.round(this.h/2)]);
-}
-
-voyc.World.prototype.showHiRes = function(boo) {
-	if (boo) {
-		this.getLayer(voyc.layer.SLOWBACKA).canvas.classList.remove('hidden');
-//		this.getLayer(voyc.layer.FASTBACK).canvas.classList.add('hidden');
-//		this.getLayer(voyc.layer.FEATURES).canvas.classList.add('hidden');
-	}
-	else {
-		this.getLayer(voyc.layer.SLOWBACKA).canvas.classList.add('hidden');
-//		this.getLayer(voyc.layer.FASTBACK).canvas.classList.remove('hidden');
-//		this.getLayer(voyc.layer.FEATURES).canvas.classList.remove('hidden');
-	}
+        this.stitchctx.canvas.width = this.w * 2
+        this.stitchctx.canvas.height = this.h
 }
 
 voyc.World.prototype.drawOceansAndLand = function() {

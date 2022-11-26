@@ -60,11 +60,7 @@ voyc.DualProjection = function() {
 	// new stuff added for mercator
 	this.wd = 0;
 	this.ht = 0;
-	this.co = []; // center coordinate
-	//this.w  = 0;
-	//this.e  = 0;
-	//this.n  = 0;
-	//this.s  = 0;
+	this.co = [];    // center [lng,lat]  E and S are positive
 
 	// scale
 	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
@@ -87,11 +83,17 @@ voyc.DualProjection = function() {
 		spin adjusts by an increment
 		passes the zero-complement of the three values as ro
 */
+voyc.DualProjection.prototype.rotateIncr = function(ro) {
+	ro[0] -= this.co[0]
+	ro[1] += this.co[1]
+	this.rotate(ro)
+}
+
 voyc.DualProjection.prototype.rotate = function(ro) {
 	// for mercator, set the center coordinate
-	var lng = 0 - ro[0]
-	var lat = ro[1]
-	this.co = [lng,lat]
+	var lng = 0 - ro[0] 
+	var lat = ro[1]      // flip latitude
+	this.co = [lng,lat]  // in here, N is negative
 
 	// for orthographic, set three rotation amounts
 	this.δλ = ro[0] % 360 * voyc.Geo.to_radians;   // delta lambda (horizontal)
@@ -131,6 +133,10 @@ voyc.DualProjection.prototype.scale = function(k) {
 voyc.DualProjection.prototype.center = function(co) {
 	this.rotate([0-co[0], 0-co[1]]);
 	// legacy - replace with rotate
+	// rotate to a coordinate
+	// center starts at 0,0
+	// to move lng 50 to center
+	// rotate by 0-50
 }
 
 /**
@@ -319,9 +325,12 @@ voyc.DualProjection.prototype.invert = function(pt) {
 		λ = Math.atan2(yy * this.cosδγ + zz * this.sinδγ, xx * this.cosδφ + k * this.sinδφ); 
 		φ = this.asin(k * this.cosδφ - xx * this.sinδφ);
 	
+		var test1 = (λ > voyc.Geo.π)
+		var test2 = (λ < -voyc.Geo.π)
+		
 		λ -= this.δλ;  // δλ = -1.3962634015954636
 		λ = (λ > voyc.Geo.π) ? λ - voyc.Geo.τ : (λ < -voyc.Geo.π) ? λ + voyc.Geo.τ : λ;
-		
+
 		lngo = λ * voyc.Geo.to_degrees;
 		lato = φ * voyc.Geo.to_degrees;
 	}

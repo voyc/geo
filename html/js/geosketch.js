@@ -103,7 +103,6 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.hud.buttons = [1]  // middle
 	this.hud.setup(document.getElementById('hud'))
 	this.hud.attach()
-	this.hud.showCheat(true);
 	this.world.setScale() // to set the zoomer 
 
 	this.keyboard = new voyc.Keyboard();

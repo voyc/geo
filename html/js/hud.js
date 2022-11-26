@@ -16,10 +16,8 @@ voyc.Hud = function() {
 	this.mapzoomerIsHot = false;
 	this.timeslider = {};
 	this.timesliderIsHot = false;
-	this.dragging = false; this.dragOrigin = false;
-	this.dragCenter = false;
 	this.menuIsOpen = false;
-	this.scoreboxIsOpen = false;
+	this.dragPrev = false;
 
 	// touch gesture constants
 	this.periodtap = 500
@@ -43,7 +41,12 @@ voyc.Hud.prototype.setup = function(elem) {
 }
 
 voyc.Hud.prototype.attach = function() {
-	this.attachMouseTouchHandlers()
+	this.attachTouchHandlers()
+	this.attachMouseHandlers()
+
+	// ----- attach button handlers
+
+	//this.attachButtonHandlers()
 	var self = this;
 	//document.getElementById('menubtn').addEventListener('click', function(evt) {
 	//	//evt.stopPropagation();
@@ -80,8 +83,19 @@ voyc.Hud.prototype.attach = function() {
 		evt.stopPropagation();
 		self.closeAnnouncement();
 	}, false);
+
+	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
+	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
+	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
+	document.getElementById('line' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('line')}, false);
+	document.getElementById('poly' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('poly')}, false);
+	document.getElementById('finish').addEventListener('click', function() {voyc.geosketch.sketch.finish()}, false);
+	document.getElementById('erase').addEventListener('click', function() {voyc.geosketch.sketch.erase()}, false);
+	document.getElementById('save' ).addEventListener('click', function() {voyc.geosketch.sketch.save()}, false);
+	document.getElementById('clear' ).addEventListener('click', function() {voyc.geosketch.sketch.clear()}, false);
 	
-	// map zoomer
+	// -------- attach map zoomer handlers
+	
 	document.getElementById('mapzoom').addEventListener('click', function(evt) {
 		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 			evt.stopPropagation();
@@ -96,7 +110,15 @@ voyc.Hud.prototype.attach = function() {
 	this.mapzoomer.addEventListener('touchend', function(evt) {self.mapZoomerUp(evt)}, false);
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false);
 
-	// time slider
+	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.Spin.IN)	
+	}, false);
+	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.Spin.OUT)	
+	}, false);
+
+	// -------- time slider handlers
+	
 	document.getElementById('timeslide').addEventListener('click', function(evt) {
 		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 			evt.stopPropagation();
@@ -127,30 +149,7 @@ voyc.Hud.prototype.attach = function() {
 		}
 	}, false);
 
-	// track the mouse all over the screen no  matter what
-	//this.elem.addEventListener('mousemove', function(evt) {
-	//	self.showWhereami(evt)
-	//}, false)
-
-	// enable map drag
-	//this.elem.addEventListener('touchstart', voyc.Hud.dgrab, false);
-//	this.elem.addEventListener('touchstart', function(e) { 
-//		self.ongrab(e); 
-//	}, false);
-//	this.elem.addEventListener('mousedown', function(e) {
-//		self.ongrab(e); 
-//	}, false);
-
-	this.elem.addEventListener('wheel', function(e) {
-		self.mapZoomWheel(e)
-	}, false);
-
-	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.Spin.IN)	
-	}, false);
-	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.Spin.OUT)	
-	}, false);
+	// -------- keyboard handlers
 
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
@@ -202,17 +201,6 @@ voyc.Hud.prototype.attach = function() {
 			//voyc.geosketch.world.zoomStop();
 		}
 	}, false);
-
-	// button clicks
-	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
-	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
-	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
-	document.getElementById('line' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('line')}, false);
-	document.getElementById('poly' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('poly')}, false);
-	document.getElementById('finish').addEventListener('click', function() {voyc.geosketch.sketch.finish()}, false);
-	document.getElementById('erase').addEventListener('click', function() {voyc.geosketch.sketch.erase()}, false);
-	document.getElementById('save' ).addEventListener('click', function() {voyc.geosketch.sketch.save()}, false);
-	document.getElementById('clear' ).addEventListener('click', function() {voyc.geosketch.sketch.clear()}, false);
 }
 
 voyc.Hud.prototype.showWhereami = function (evt) {
@@ -224,7 +212,8 @@ voyc.Hud.prototype.showWhereami = function (evt) {
 	voyc.$('hudlatlng').innerHTML = lat + latd + lng + lngd
 }
 
-// mapzoomer
+// -------- mapzoomer handlers
+
 voyc.Hud.prototype.mapZoomerDown = function (evt) {
 	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
 		evt.stopPropagation();
@@ -250,25 +239,6 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 	}
 }
 
-// if keyboard is in use, set a destination coordinate
-voyc.Hud.prototype.checkKeyboard = function () {
-	var keybd = voyc.geosketch.keyboard;
-	var left  = (keybd.isDown(voyc.Key.LEFT)) ? -1 : 0;
-	var right = (keybd.isDown(voyc.Key.RIGHT)) ? 1 : 0;
-	var up    = (keybd.isDown(voyc.Key.UP)) ? -1 : 0;
-	var down  = (keybd.isDown(voyc.Key.DOWN)) ? 1 : 0;
-	var arbitrary = 20; // pixels
-	var keyed = (left + right) || (up + down);
-
-	if (keyed) {
-		var pt = [];
-		pt[0] = voyc.geosketch.hero.pt[0] + ((left + right) * arbitrary);
-		pt[1] = voyc.geosketch.hero.pt[1] + ((up + down) * arbitrary);
-		voyc.geosketch.hero.createDestination(pt, true);
-	}
-	return keyed;
-}
-	
 voyc.Hud.prototype.show = function(elem) {
 	elem.classList.remove('hidden');
 }
@@ -276,22 +246,6 @@ voyc.Hud.prototype.hide = function(elem) {
 	elem.classList.add('hidden');
 }
 
-voyc.Hud.prototype.showCheat = function(boo) {
-	return
-	if (boo) {
-		//voyc.geosketch.game.stop();
-		this.show(document.getElementById('mapzoom'));
-		this.show(document.getElementById('timeslide'));
-		//document.getElementById('hudscore').innerHTML = 'CHEAT';
-	}
-	else {
-		//voyc.geosketch.game.start();
-		this.hide(document.getElementById('mapzoom'));
-		this.hide(document.getElementById('timeslide'));
-		//document.getElementById('hudscore').innerHTML = voyc.geosketch.score;
-	}
-}
-	
 voyc.Hud.prototype.populateMenu = function() {
 	document.getElementById('menuhires').checked = voyc.geosketch.getOption(voyc.option.HIRES);
 	document.getElementById('menucheat').checked = voyc.geosketch.getOption(voyc.option.CHEAT);
@@ -325,32 +279,11 @@ voyc.Hud.prototype.setWhereami = function(location, geo, presentday) {
 	document.getElementById('hudpresentday').innerHTML = presentday;
 }
 
-voyc.Hud.prototype.setSpeed = function(speed) {
-	document.getElementById('hudspeed').innerHTML = speed + ' kmpd';
-}
-
 voyc.Hud.prototype.setTime = function(time) {
 	document.getElementById('time').innerHTML = Math.abs(time) + ' ' + ((time < 0) ? 'BCE' : 'CE');
 	if (!this.timesliderIsHot) {
 		this.timeslider.value = time;
 	}
-}
-
-voyc.Hud.prototype.setScore = function(score, name, msg) {
-	document.getElementById('hudscore').innerHTML = score;
-	document.getElementById('scorename').innerHTML = name;
-	document.getElementById('scoremsg').innerHTML = msg;
-	this.show(document.getElementById('scorebox'));
-	this.scoreboxIsOpen = true;
-	var scoreboxduration = 2000;
-	var self = this;
-	setTimeout(function() {
-		self.closeScoreBox();
-	}, scoreboxduration);
-}
-voyc.Hud.prototype.closeScoreBox = function() {
-	this.hide(document.getElementById('scorebox'));
-	this.scoreboxIsOpen = false;
 }
 
 voyc.Hud.prototype.setZoom = function(newvalue) {
@@ -359,130 +292,57 @@ voyc.Hud.prototype.setZoom = function(newvalue) {
 	}
 }
 
-/**
-	Mouse and Touch
-*/
-
-voyc.Hud.prototype.onMap = function(e) { 
-	return (!(
-		(e.target.id == 'mapzoomer')
-		|| (e.target.id == 'timeslider')
-		|| (e.target.id == 'menubtn')
-		|| (this.menuIsOpen && (
-			(e.target.id == 'menu')
-			|| (e.target.parentElement.id == 'menu')
-			|| (e.target.parentElement.parentElement.id == 'menu')
-			|| (e.target.parentElement.parentElement.parentElement.id == 'menu')
-		))
-	//	|| (e.target.id == 'scorebox')
-	//	|| (e.target.parentElement.id == 'scorebox')
-		|| (e.target.id == 'huduser')
-		|| (e.target.parentElement.id == 'huduser')
-	));
-}
+// -------- mouse handlers
 
 // Return point of mouse or touch
 voyc.Hud.prototype.getMousePos = function(e) { 
 	var p = false;
-	if (e.targetTouches) {
-		p = [e.targetTouches[0].pageX, e.targetTouches[0].pageY];
-	}
-	else if (e.pageX || e.pageY) {
+	if (e.pageX || e.pageY) {
 		p = [e.pageX, e.pageY];
 	}
 	return p;
 }
 	
-// Event Handler for mousedown, touchstart on a draggable element.
-voyc.Hud.prototype.ongrab = function(e) {
-	if (!this.mousebuttons.includes(e.button))
-		return	
-//	if (this.onMap(e)) {
-//		if (voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
-			console.log('grabbed');
-//			e.preventDefault();
-//			e.stopPropagation();
-
-			this.dragging = false;
-			this.dragOrigin = this.getMousePos(e);
-			this.dragCenter = voyc.geosketch.world.getCenterPoint();
-			
-			this.elem.addEventListener('touchmove', voyc.Hud.ddrag, false);
-			this.elem.addEventListener('mousemove', voyc.Hud.ddrag, false);
-			this.elem.addEventListener('touchend' , voyc.Hud.ddrop, false);
-			this.elem.addEventListener('mouseup'  , voyc.Hud.ddrop, false);
-//		}
-//		else {
-//			this.ontap(this.getMousePos(e));
-//		}
-//	}
-}
-
-// Event Handler for mousemove, touchmove while dragging
-voyc.Hud.prototype.ondrag = function(e) {
-	if (this.dragOrigin) {
-		//console.log('dragged');
-		e.preventDefault();
-		e.stopPropagation();
-		pos = this.getMousePos(e);
-		this.dragging = true;
-		var delta = [pos[0] - this.dragOrigin[0], pos[1] - this.dragOrigin[1]];
-		var newCenter = [this.dragCenter[0] - delta[0], this.dragCenter[1] - delta[1]];
-		voyc.geosketch.world.drag(newCenter);
-	}
-}
-
-// Event Handler for mouseup, touchend, and touchcancel on a dragging element.
-voyc.Hud.prototype.ondrop = function(e) {
-	//console.log('dropped');
+voyc.Hud.prototype.onmousedown = function(e) {
 	e.preventDefault();
 	e.stopPropagation();
-
-	voyc.geosketch.world.drag(false);
-	
-	if (!this.dragging) {
-		this.ontap(this.dragOrigin);
-	}
-	this.dragging = false;
-	this.dragOrigin = false;
-
-	this.elem.removeEventListener('touchmove', voyc.Hud.ddrag, false);
-	this.elem.removeEventListener('mousemove', voyc.Hud.ddrag, false);
-	this.elem.removeEventListener('touchend',  voyc.Hud.ddrop, false);
-	this.elem.removeEventListener('mouseup',   voyc.Hud.ddrop, false);
+	this.dragPrev = this.getMousePos(e)
 }
 
-// Event Handler for tap or click
-voyc.Hud.prototype.ontap = function(pos) {
-	//console.log('tapped');
-	if (event.target.id == 'menubtn') {
-		this.populateMenu();
-		this.hide(document.getElementById('menubtn'));
-		this.show(document.getElementById('menu'));
-	}
-	else {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			voyc.geosketch.world.moveToPoint(pos);
-			//voyc.geosketch.hero.setLocation(voyc.geosketch.world.co);
-		}
-		else {
-			voyc.geosketch.hero.createDestination(pos, false);
-		}
+voyc.Hud.prototype.onmousemove = function(evt) {
+	evt.preventDefault();
+	evt.stopPropagation();
+	this.showWhereami(evt)
+	if (this.dragPrev) {
+		var pos = this.getMousePos(evt);
+		voyc.geosketch.world.move(pos, this.dragPrev);
+		this.dragPrev = pos
 	}
 }
 
-// global functions.  (Methods cannot be used with removeEventListener.)
-voyc.Hud.dgrab = function(e) { (new voyc.Hud()).ongrab(e); }
-voyc.Hud.ddrag = function(e) { (new voyc.Hud()).ondrag(e); }
-voyc.Hud.ddrop = function(e) { (new voyc.Hud()).ondrop(e); }
+voyc.Hud.prototype.onmouseup = function(evt) {
+	evt.preventDefault();
+	evt.stopPropagation();
+	this.dragPrev = false;
+}
 
-// -------- click handlers
+voyc.Hud.prototype.onwheel = function(evt) {
+	evt.preventDefault();
+	evt.stopPropagation();
+	this.mapZoomWheel(evt)
+}
 
+voyc.Hud.prototype.attachMouseHandlers = function() {
+	var self = this
+	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
+	this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
+	this.elem.addEventListener('mouseup',   function(evt) {self.onmouseup(evt)  , false})
+	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
+}
 
+// -------- touch handlers
 
-// -------- mouse and touch handlers
-
-voyc.Hud.prototype.attachMouseTouchHandlers = function() {
+voyc.Hud.prototype.attachTouchHandlers = function() {
 	var self = this
 	//this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
 	//this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
@@ -495,31 +355,6 @@ voyc.Hud.prototype.attachMouseTouchHandlers = function() {
 	this.timetouchstart = new Date()
 	this.timetouchend = new Date()
 }
-
-voyc.Hud.prototype.onmousemove = function(evt) {
-	this.showWhereami(evt)
-	if (evt.button == 2)
-		voyc.geosketch.world.onmousemove()
-	else
-		voyc.geosketch.sketch.onmousemove()
-}
-
-voyc.Hud.prototype.onmousedown = function(evt) {
-	if (evt.button == 2)
-		voyc.geosketch.world.onmousedown()
-	else
-		voyc.geosketch.sketch.onmousedown()
-}
-
-voyc.Hud.prototype.onmouseup   = function(evt) {
-	if (evt.button == 2)
-		voyc.geosketch.world.onmouseup()
-	else
-		voyc.geosketch.sketch.onmouseup()
-}
-
-
-//------- touch
 
 voyc.Hud.prototype.gesture = function(evt) {
 	// return four values
@@ -633,8 +468,8 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	else if (name == 'onefingermove') 
 		voyc.geosketch.sketch.addPoint(pt)
 	else if (name == 'twofingermove') {
-		voyc.geosketch.world.rotate(x,y,twist)
-		voyc.geosketch.world.zoom(pinch)
+		//voyc.geosketch.world.drag(pt)
+		//voyc.geosketch.world.zoom(pinch)
 	}
 }
 
