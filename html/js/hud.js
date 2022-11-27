@@ -10,14 +10,12 @@ voyc.Hud = function() {
 	else voyc.Hud._instance = this;
 
 	this.elem = {};
-	this.mousebuttons = [0,1,2];  // left, middle, right
 	this.keyIsDown = false;
 	this.mapzoomer = {};
 	this.mapzoomerIsHot = false;
 	this.timeslider = {};
 	this.timesliderIsHot = false;
 	this.menuIsOpen = false;
-	this.dragPrev = false;
 
 	// touch gesture constants
 	this.periodtap = 500
@@ -294,29 +292,44 @@ voyc.Hud.prototype.setZoom = function(newvalue) {
 
 // -------- mouse handlers
 
-// Return point of mouse or touch
-voyc.Hud.prototype.getMousePos = function(e) { 
-	var p = false;
-	if (e.pageX || e.pageY) {
-		p = [e.pageX, e.pageY];
+voyc.Hud.prototype.attachMouseHandlers = function() {
+	var self = this
+	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
+	this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
+	this.elem.addEventListener('mouseup',   function(evt) {self.onmouseup(evt)  , false})
+	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
+	this.elem.addEventListener('click',     function(evt) {self.onclick(evt)    , false})
+	this.elem.addEventListener('dblclick',  function(evt) {self.ondblclick(evt) , false})
+	this.dragPrev = false;
+	this.mousebuttondown = false;
+}
+
+voyc.Hud.prototype.getMousePt = function(evt) { 
+	var pt = false;
+	if (evt.pageX || evt.pageY) {
+		pt = [evt.pageX, evt.pageY];
 	}
-	return p;
+	return pt;
 }
 	
-voyc.Hud.prototype.onmousedown = function(e) {
-	e.preventDefault();
-	e.stopPropagation();
-	this.dragPrev = this.getMousePos(e)
+voyc.Hud.prototype.onmousedown = function(evt) {
+	evt.preventDefault()
+	evt.stopPropagation()
+	this.dragPrev = this.getMousePt(evt)
+	this.mousebuttondown = evt.button
 }
 
 voyc.Hud.prototype.onmousemove = function(evt) {
-	evt.preventDefault();
-	evt.stopPropagation();
+	evt.preventDefault()
+	evt.stopPropagation()
 	this.showWhereami(evt)
 	if (this.dragPrev) {
-		var pos = this.getMousePos(evt);
-		voyc.geosketch.world.move(pos, this.dragPrev);
-		this.dragPrev = pos
+		var pt = this.getMousePt(evt)
+		if (this.mousebuttondown == voyc.mouse.middle)
+			voyc.geosketch.world.move(pt, this.dragPrev);
+		else
+			voyc.geosketch.sketch.addPoint(pt)
+		this.dragPrev = pt
 	}
 }
 
@@ -324,6 +337,20 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	evt.preventDefault();
 	evt.stopPropagation();
 	this.dragPrev = false;
+	this.mousebuttondown = false
+}
+
+voyc.Hud.prototype.onclick = function(evt) {
+	evt.preventDefault();
+	evt.stopPropagation();
+	var pt = this.getMousePt(evt)
+	voyc.geosketch.sketch.addPoint(pt)
+}
+
+voyc.Hud.prototype.ondblclick = function(evt) {
+	evt.preventDefault();
+	evt.stopPropagation();
+	voyc.geosketch.sketch.finish()
 }
 
 voyc.Hud.prototype.onwheel = function(evt) {
@@ -332,21 +359,10 @@ voyc.Hud.prototype.onwheel = function(evt) {
 	this.mapZoomWheel(evt)
 }
 
-voyc.Hud.prototype.attachMouseHandlers = function() {
-	var self = this
-	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
-	this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
-	this.elem.addEventListener('mouseup',   function(evt) {self.onmouseup(evt)  , false})
-	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
-}
-
 // -------- touch handlers
 
 voyc.Hud.prototype.attachTouchHandlers = function() {
 	var self = this
-	//this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
-	//this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
-	//this.elem.addEventListener('mouseup',   function(evt) {self.onmouseup(evt)  , false})
 	this.elem.addEventListener('touchmove', function(evt) {self.ontouchmove(evt), false})
 	this.elem.addEventListener('touchstart',function(evt) {self.ontouchstart(evt), false})
 	this.elem.addEventListener('touchend',  function(evt) {self.ontouchend(evt)  , false})
@@ -408,7 +424,6 @@ voyc.Hud.prototype.ptTouch = function(evt) {
 voyc.Hud.prototype.ontouchmove = function(evt) {
 	if (this.touchdown && evt.currentTarget == this.elem) ; else return
 	var time = new Date()
-	voyc.logger(['onmove', evt.touches.length])
 
 	if (evt.touches.length > 1) {
 		g = this.gesture(evt)
@@ -425,11 +440,11 @@ voyc.Hud.prototype.ontouchstart = function(evt) {
 	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
 	this.touchdown = true
 	var time = new Date()
-	voyc.logger(['onstart', evt.targetTouches.length])
 
 
 	this.timetouchstart = time
 	this.pttouchstart = this.ptTouch(evt)
+	this.ptPrev = this.pttouchstart
 }
 
 voyc.Hud.prototype.ontouchend  = function(evt) {
@@ -437,7 +452,6 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 	this.touchdown = false
 
 	var time = new Date()
-	voyc.logger(['onend', evt.touches.length])
 
 	// detect tap and doubletap
 	if (((time - this.timetouchstart) < this.periodtap) &&
@@ -453,14 +467,13 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 
 	this.hypo = false
 	this.angle = false
+	this.ptPrev = false
 	this.timetouchend = time
 }
 
 voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	// window events: touchstart, touchend, touchmove
 	// geosketch events: tap, doubletap, onefingermove, twofingermove
-	voyc.logger(name)
-
 	if (name == 'tap') 
 		voyc.geosketch.sketch.addPoint(pt)
 	else if (name == 'doubletap') 
@@ -468,8 +481,14 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	else if (name == 'onefingermove') 
 		voyc.geosketch.sketch.addPoint(pt)
 	else if (name == 'twofingermove') {
-		//voyc.geosketch.world.drag(pt)
+		voyc.geosketch.world.move(pt,this.ptPrev)
+		this.ptPrev = pt
 		//voyc.geosketch.world.zoom(pinch)
 	}
 }
 
+voyc.mouse = {
+	left: 0,
+	middle: 1,
+	right: 2,
+}

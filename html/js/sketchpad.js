@@ -42,7 +42,6 @@ voyc.SketchPad.prototype = {
 	// ---- public
 
 	drawWhat: function(w) {
-		voyc.logger(['drawWhat', w])
 		this.what = w
 		this.finish()
 	},
@@ -54,14 +53,12 @@ voyc.SketchPad.prototype = {
 
 	undo: function() {
 		// erase the current or most recent stroke
-		voyc.logger(['undo'])
 		if (this.strokes.length > 0)
 			this.strokes.pop()
 		this.draw()
 	},
 
 	finish: function() {
-		voyc.logger(['finish'])
 		this.newStroke()
 	},
 
@@ -113,7 +110,6 @@ voyc.SketchPad.prototype = {
 	closePoly: function() {
 		// close the polygon by duplicating the first point as the last point
 		// note: there is no need to close point or line objects
-		voyc.logger('closePoly')
 		var ndx = this.strokes.length-1
 		var firstPoint = this.strokes[ndx].points[0]
 		this.addPoint(firstPoint)
