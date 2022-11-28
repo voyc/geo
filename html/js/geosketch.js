@@ -232,6 +232,7 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 	if (this.world.moved) {
 		this.world.drawOceansAndLand();
 		this.world.drawGrid();
+		this.world.drawSketch();
 	}	
 	if (this.world.moved && !this.world.dragging && !this.world.zooming) {
 		this.world.drawFeatures();

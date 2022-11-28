@@ -1,5 +1,5 @@
 /** 
-	class GeoIterate
+	class GeoIterator
 	@constructor 
 	Inspired by d3.js version 3.5.17, 17 June 2016.
 	
@@ -53,10 +53,10 @@
 				
 				
 */
-voyc.GeoIterate = function() {
+voyc.GeoIterator = function() {
 }
 
-voyc.GeoIterate.prototype.iterateCollection = function(collection, iteratee) {
+voyc.GeoIterator.prototype.iterateCollection = function(collection, iteratee) {
 	iteratee.collectionStart(collection);
 	for (geometry in collection['geometries']) {
 		this.iterateGeometry(collection['geometries'][geometry], iteratee);
@@ -64,7 +64,7 @@ voyc.GeoIterate.prototype.iterateCollection = function(collection, iteratee) {
 	iteratee.collectionEnd(collection);
 }
 
-voyc.GeoIterate.prototype.iterateGeometry = function(geometry, iteratee) {
+voyc.GeoIterator.prototype.iterateGeometry = function(geometry, iteratee) {
 	var boo = iteratee.geometryStart(geometry);
 	if (!boo) {
 		return false;
@@ -98,7 +98,7 @@ voyc.GeoIterate.prototype.iterateGeometry = function(geometry, iteratee) {
 	iteratee.geometryEnd(geometry);
 }
 
-voyc.GeoIterate.prototype.iteratePolygon = function(polygon, iteratee) {
+voyc.GeoIterator.prototype.iteratePolygon = function(polygon, iteratee) {
 	var poly = polygon[0];
 	var boo = iteratee.polygonStart(poly);
 	if (boo) {
@@ -111,7 +111,7 @@ voyc.GeoIterate.prototype.iteratePolygon = function(polygon, iteratee) {
 	}
 }
 
-voyc.GeoIterate.prototype.iterateLine = function(line, iteratee) {
+voyc.GeoIterator.prototype.iterateLine = function(line, iteratee) {
 	var boo = iteratee.lineStart(line);
 	if (boo) {
 		var n = line.length;
@@ -135,7 +135,7 @@ voyc.GeoIterate.prototype.iterateLine = function(line, iteratee) {
 	There can be multiple gaps in any ring.
 	@constructor
 */
-voyc.GeoIterate.iterateePolygonClipping = function() {
+voyc.GeoIterator.iterateePolygonClipping = function() {
 	this.projection = /** @type voyc.OrthographicProjection*/({});
 	this.ctx = /**@type CanvasRenderingContext2D */({});
 	this.pointCount = 0;
@@ -149,7 +149,7 @@ voyc.GeoIterate.iterateePolygonClipping = function() {
 	this.previousPt =false;
 }
 
-voyc.GeoIterate.iterateePolygonClipping.prototype = {
+voyc.GeoIterator.iterateePolygonClipping.prototype = {
 	point: function(co) {
 		var pt = this.projection.project(co);
 		if (pt) { // if visible
@@ -257,10 +257,10 @@ voyc.GeoIterate.iterateePolygonClipping.prototype = {
 	init
 	@constructor
 */
-voyc.GeoIterate.iterateeInit = function() {
+voyc.GeoIterator.iterateeInit = function() {
 	this.bbox = {};
 }
-voyc.GeoIterate.iterateeInit.prototype = {
+voyc.GeoIterator.iterateeInit.prototype = {
 	point: function(pt) {
 		if (pt[0] < this.bbox.w) { this.bbox.w = pt[0]}; 
 		if (pt[0] > this.bbox.e) { this.bbox.e = pt[0]}; 
@@ -284,11 +284,11 @@ voyc.GeoIterate.iterateeInit.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateeDrawPerGeometry = function() {
+voyc.GeoIterator.iterateeDrawPerGeometry = function() {
 	this.colorstack = [];
 	this.ctx = /**@type CanvasRenderingContext2D */({});
 }
-voyc.GeoIterate.iterateeDrawPerGeometry.prototype = {
+voyc.GeoIterator.iterateeDrawPerGeometry.prototype = {
 	geometryStart: function(geometry) {
 		if (geometry['q']) {
 			this.ctx.beginPath();
@@ -308,12 +308,12 @@ voyc.GeoIterate.iterateeDrawPerGeometry.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateeLine = function() {
+voyc.GeoIterator.iterateeLine = function() {
 	this.projection = /**@type voyc.OrthographicProjection*/({});
 	this.ctx = /**@type CanvasRenderingContext2D */({});
 	this.pointCount = 0;
 }
-voyc.GeoIterate.iterateeLine.prototype = {
+voyc.GeoIterator.iterateeLine.prototype = {
 	point: function(pt) {
 		var p = this.projection.project(pt);
 		if (p) {
@@ -348,12 +348,12 @@ voyc.GeoIterate.iterateeLine.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateeLineSvg = function() {
+voyc.GeoIterator.iterateeLineSvg = function() {
 	this.projection = /**@type voyc.OrthographicProjection*/({});
 	this.pointCount = 0;
 	this.d = '';
 }
-voyc.GeoIterate.iterateeLineSvg.prototype = {
+voyc.GeoIterator.iterateeLineSvg.prototype = {
 	point: function(pt) {
 		var p = this.projection.project(pt);
 		if (p) {
@@ -387,7 +387,7 @@ voyc.GeoIterate.iterateeLineSvg.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateePoint = function() {
+voyc.GeoIterator.iterateePoint = function() {
 	this.projection = /**@type voyc.OrthographicProjection*/({});
 	this.ctx = /**@type CanvasRenderingContext2D */({});
 	this.draw = {
@@ -397,7 +397,7 @@ voyc.GeoIterate.iterateePoint = function() {
 	};
 	this.pt = [];
 }
-voyc.GeoIterate.iterateePoint.prototype = {
+voyc.GeoIterator.iterateePoint.prototype = {
 	point: function(co) {
 		var pt = this.projection.project(co);
 		if (pt && (pt[0] > 0) && (pt[0]<this.ctx.canvas.width) && (pt[1] > 0) && (pt[1]<this.ctx.canvas.height)) {
@@ -438,7 +438,7 @@ voyc.GeoIterate.iterateePoint.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateeCounter = function() {
+voyc.GeoIterator.iterateeCounter = function() {
 	this.points = 0;
 	this.lines = 0;
 	this.rings = 0;
@@ -446,7 +446,7 @@ voyc.GeoIterate.iterateeCounter = function() {
 	this.geometries = 0;
 	this.collections = 0;
 }
-voyc.GeoIterate.iterateeCounter.prototype = {
+voyc.GeoIterator.iterateeCounter.prototype = {
 	point: function(pt) {
 		this.points++;
 	},
@@ -489,14 +489,14 @@ voyc.GeoIterate.iterateeCounter.prototype = {
 }
 
 /** @constructor */
-voyc.GeoIterate.iterateeHitTest = function() {
+voyc.GeoIterator.iterateeHitTest = function() {
 	this.projection = /**@type voyc.OrthographicProjection*/({});
 	this.targetCoord = [];
 	this.suffix = '';
 	this.hit = false;
 	this.numTests = 0;
 }	
-voyc.GeoIterate.iterateeHitTest.prototype = {
+voyc.GeoIterator.iterateeHitTest.prototype = {
 	point: function(pt) {},
 	lineStart: function(pt,geometry) {},
 	lineEnd: function(pt,geometry) {},
@@ -553,12 +553,12 @@ voyc.GeoIterate.iterateeHitTest.prototype = {
 
 
 /** @constructor */
-voyc.GeoIterate.iterateeHitTestPoint = function() {
+voyc.GeoIterator.iterateeHitTestPoint = function() {
 	this.targetRect = {l:0,t:0,r:0,b:0};
 	this.hit = false;
 	this.numTests = 0;
 }	
-voyc.GeoIterate.iterateeHitTestPoint.prototype = {
+voyc.GeoIterator.iterateeHitTestPoint.prototype = {
 	point: function(co) {
 		var pt = this.projection.project(co);
 		if (this.targetRect.l < pt[0] && pt[0] < this.targetRect.r
@@ -590,10 +590,10 @@ voyc.GeoIterate.iterateeHitTestPoint.prototype = {
 	Pointilist can be used for line or polygon.
 	@constructor
 */
-voyc.GeoIterate.ctxPointilist = function() {
+voyc.GeoIterator.ctxPointilist = function() {
 	this.ctx = /**@type CanvasRenderingContext2D */({});
 }
-voyc.GeoIterate.ctxPointilist.prototype = {
+voyc.GeoIterator.ctxPointilist.prototype = {
 	moveTo: function(x,y) {
 		this.drawPoint(x,y);
 	},

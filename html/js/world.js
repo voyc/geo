@@ -7,7 +7,7 @@
 voyc.World = function() {
 	this.elem = {};
 	this.co = [];    // center [lng,lat]  E and N are positive
-	this.gamma = 0;
+	this.gamma = 0;  // degrees rotation around the z-axis
 	this.w = 0;
 	this.h = 0;
 
@@ -110,6 +110,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
 	this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
 	//this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+	this.layer[voyc.layer.SKETCH] = this.createLayer('sketch');
 
         var canvas = document.createElement('canvas')
         canvas.width = this.w * 2
@@ -117,18 +118,25 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
         this.stitchctx = canvas.getContext('2d');
 
 	// setup interator objects
-	this.iterator = new voyc.GeoIterate();
+	this.iterator = new voyc.GeoIterator();
 	
-	this.iterateeLand = new voyc.GeoIterate.iterateePolygonClipping();
+	this.iterateeLand = new voyc.GeoIterator.iterateePolygonClipping();
 	this.iterateeLand.projection = this.projection
 	this.iterateeLand.ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
 
-	this.iterateeCountries = new voyc.GeoIterate.iterateePolygonClipping();
+	this.iterateeCountries = new voyc.GeoIterator.iterateePolygonClipping();
 	this.iterateeCountries.projection = this.projection;
 	this.iterateeCountries.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
 
-	//this.iterateeEmpire = new voyc.GeoIterate.iterateePolygonClipping();
-	//voyc.merge(this.iterateeEmpire, new voyc.GeoIterate.iterateeDrawPerGeometry);
+	this.iterateeSketch = new voyc.GeoIterator.iterateePolygonClipping();
+	//voyc.merge(this.iterateeSketch, new voyc.GeoIterator.iterateeDrawPerGeometry);
+	this.iterateeSketch.projection = this.projection
+	this.iterateeSketch.ctx = this.getLayer(voyc.layer.SKETCH).ctx
+	this.iterateeSketch.colorstack = voyc.sketchColors;
+
+
+	//this.iterateeEmpire = new voyc.GeoIterator.iterateePolygonClipping();
+	//voyc.merge(this.iterateeEmpire, new voyc.GeoIterator.iterateeDrawPerGeometry);
 	//this.iterateeEmpire.projection = this.projection;
 	//this.iterateeEmpire.ctx = this.getLayer(voyc.layer.EMPIRE).ctx;
 	//this.iterateeEmpire.colorstack = voyc.empireColors;
@@ -143,30 +151,30 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	//	this.ctx.clearRect(0,0,this.ctx.canvas.width,this.ctx.canvas.height);
 	//};
 
-	//this.iterateeTreasure = new voyc.GeoIterate.iterateePoint();
+	//this.iterateeTreasure = new voyc.GeoIterator.iterateePoint();
 	//this.iterateeTreasure.projection = this.projection;
 	//this.iterateeTreasure.ctx = this.getLayer(voyc.layer.FOREGROUND).ctx;
 
-	this.iterateeGrid = new voyc.GeoIterate.iterateeLine();
+	this.iterateeGrid = new voyc.GeoIterator.iterateeLine();
 	this.iterateeGrid.projection = this.projection;
 	this.iterateeGrid.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
 	this.iterateeGrid.ctx.strokeStyle = '#888';
 	this.iterateeGrid.ctx.lineWidth = .5;
 	this.iterateeGrid.ctx.strokeOpacity = .5;
 
-	this.iterateeFeature = new voyc.GeoIterate.iterateePolygonClipping();
+	this.iterateeFeature = new voyc.GeoIterator.iterateePolygonClipping();
 	this.iterateeFeature.projection = this.projection;
 	this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 
-	//this.iterateeHitTest = new voyc.GeoIterate.iterateeHitTest();
+	//this.iterateeHitTest = new voyc.GeoIterator.iterateeHitTest();
 	//this.iterateeHitTest.projection = this.projection;
 
-	//this.iterateeHitTestTreasure = new voyc.GeoIterate.iterateeHitTestPoint();
+	//this.iterateeHitTestTreasure = new voyc.GeoIterator.iterateeHitTestPoint();
 	//this.iterateeHitTestTreasure.projection = this.projection;
 
-	//this.iterateeInit = new voyc.GeoIterate.iterateeInit();
+	//this.iterateeInit = new voyc.GeoIterator.iterateeInit();
 
-	//this.iterateeRiver = new voyc.GeoIterate.iterateeLine();
+	//this.iterateeRiver = new voyc.GeoIterator.iterateeLine();
 	//this.iterateeRiver.projection = this.projection;
 	//this.iterateeRiver.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 	//this.iterateeRiver.point = function(pt) {
@@ -194,7 +202,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	//	geometry.pt = this.pt;
 	//}
 
-	//this.iterateeRiverAnim = new voyc.GeoIterate.iterateeLine();
+	//this.iterateeRiverAnim = new voyc.GeoIterator.iterateeLine();
 	//this.iterateeRiverAnim.projection = this.projection;
 	//this.iterateeRiverAnim.nth = 5;
 	//this.iterateeRiverAnim.start = 0;
@@ -354,7 +362,7 @@ voyc.World.prototype.getCenterPoint = function() {
 	return ([Math.round(this.w/2), Math.round(this.h/2)]);
 }
 
-// --------  data
+// --------  data, iterators, and layers
 
 voyc.World.prototype.setupData = function() {
 	this.data = [];
@@ -372,6 +380,10 @@ voyc.World.prototype.setupData = function() {
 			}
 		]
 	}
+	//window['voyc']['data']['sketch'] = {
+	//	'type': 'GeometryCollection',
+	//	'geometries': []
+	//}
 	
 	//this.iterator.iterateCollection(window['voyc']['data']['deserts'], this.iterateeInit);
 	//this.iterator.iterateCollection(window['voyc']['data']['highmountains'], this.iterateeInit);
@@ -520,6 +532,21 @@ voyc.World.prototype.drawOceansAndLand = function() {
 	this.iterator.iterateCollection(this.data.land, this.iterateeLand);
 	ctx.fill();
 	this.doubleStitch(ctx, 1500)
+}
+
+/* to create a new layer:
+ * x add name to structure
+ * x createLayer during setup
+ * x load data during setup
+ * x create iterator during setup
+ * x write draw method
+ * call draw method during render
+*/
+voyc.World.prototype.drawSketch = function() {
+	var ctx = this.getLayer(voyc.layer.SKETCH).ctx;
+	ctx.clearRect(0, 0, this.w, this.h);
+	this.iterator.iterateCollection(window['voyc']['data']['sketch'], this.iterateeSketch);
+	// iterator.iterate() asks for data and iteratee, iteratee has projection and ctx
 }
 
 voyc.World.prototype.drawGrid = function() {
@@ -677,6 +704,7 @@ voyc.layer = {
 	FOREGROUND:9,
 	HERO:10,
 	HUD:11,
+	SKETCH:12,
 }
 
 /** @struct */
@@ -688,6 +716,9 @@ voyc.color = {
 }
 /** @const */
 voyc.empireColors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f'];
+
+/** @const */
+voyc.sketchColors = ['#000', '#fff', '#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f'];
 
 /** @enum */
 voyc.Spin = {
