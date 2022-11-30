@@ -28,6 +28,7 @@ voyc.World = function() {
 	this.layer = [];  // array of layer objects, layer is a canvas
 
 	this.moved = true;
+	this.dragging = false;
 	
 	this.option = {
 		scaleStep: .14,  // percentage of scale
@@ -35,15 +36,16 @@ voyc.World = function() {
 		margin:30,  // pixels
 	};
 
-	this.iterator = {};
-	this.iterateeLand = {};
-	this.iterateeCountries = {};
-	this.iterateeEmpire = {};
-	this.iterateeTreasure = {};
-	this.iterateeGrid = {};
-	this.iterateeFeature = {};
-	this.iterateeHitTest = {};
-	this.iterateeInit = {};
+
+	//this.iterator = {};
+	//this.iterateeLand = {};
+	//this.iterateeCountries = {};
+	//this.iterateeEmpire = {};
+	//this.iterateeTreasure = {};
+	//this.iterateeGrid = {};
+	//this.iterateeFeature = {};
+	//this.iterateeHitTest = {};
+	//this.iterateeInit = {};
 	
 	this.riverpass = 0;
 
@@ -59,6 +61,8 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.w = w;
 	this.h = h;
 	
+	this.setupDataIteratorCanvas()
+
 	this.marginRect = {
 		l:0 + this.option.margin,
 		t:0 + this.option.margin,
@@ -97,42 +101,20 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	hittest works by iterating collection, not canvas 
 	write layer logic to use separate or shared canvas
 */
-	// create map layers and append in bottom-to-top order
-	this.layer[voyc.layer.BACKGROUND] = this.createLayerDiv('background');  // solid black div style
-	this.layer[voyc.layer.FASTBACK] = this.createLayer(false, 'fastback');  // land and water
-	this.layer[voyc.layer.FEATURES] = this.createLayer(false, 'features');  // mountains, deserts
-	this.layer[voyc.layer.SLOWBACKA] = this.createLayer(true, 'slowbacka'); // hi-res tiles
-	this.layer[voyc.layer.RIVER0] = this.createLayer(true, 'river0');
-	this.layer[voyc.layer.RIVER1] = this.createLayer(true, 'river1');
-	this.layer[voyc.layer.RIVER2] = this.createLayer(true, 'river2');
-	this.layer[voyc.layer.REFERENCE] = this.createLayer(false, 'reference');   // graticule
-	this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');         // political polygons
-	this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
-	this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
-	//this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
-	this.layer[voyc.layer.SKETCH] = this.createLayer('sketch');
-
-        var canvas = document.createElement('canvas')
-        canvas.width = this.w * 2
-        canvas.height = this.h
-        this.stitchctx = canvas.getContext('2d');
-
-	// setup interator objects
-	this.iterator = new voyc.GeoIterator();
 	
-	this.iterateeLand = new voyc.GeoIterator.iterateePolygonClipping();
-	this.iterateeLand.projection = this.projection
-	this.iterateeLand.ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
-
-	this.iterateeCountries = new voyc.GeoIterator.iterateePolygonClipping();
-	this.iterateeCountries.projection = this.projection;
-	this.iterateeCountries.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
-
-	this.iterateeSketch = new voyc.GeoIterator.iterateePolygonClipping();
-	//voyc.merge(this.iterateeSketch, new voyc.GeoIterator.iterateeDrawPerGeometry);
-	this.iterateeSketch.projection = this.projection
-	this.iterateeSketch.ctx = this.getLayer(voyc.layer.SKETCH).ctx
-	this.iterateeSketch.colorstack = voyc.sketchColors;
+	//this.layer[voyc.layer.BACKGROUND] = this.createLayerDiv('background');  // solid black div style
+	//this.layer[voyc.layer.FASTBACK] = this.createLayer(false, 'fastback');  // land and water
+	//this.layer[voyc.layer.FEATURES] = this.createLayer(false, 'features');  // mountains, deserts
+	//this.layer[voyc.layer.SLOWBACKA] = this.createLayer(true, 'slowbacka'); // hi-res tiles
+	//this.layer[voyc.layer.RIVER0] = this.createLayer(true, 'river0');
+	//this.layer[voyc.layer.RIVER1] = this.createLayer(true, 'river1');
+	//this.layer[voyc.layer.RIVER2] = this.createLayer(true, 'river2');
+	//this.layer[voyc.layer.REFERENCE] = this.createLayer(false, 'reference');   // graticule
+	//this.layer[voyc.layer.EMPIRE] = this.createLayer(false, 'empire');         // political polygons
+	//this.layer[voyc.layer.FOREGROUND] = this.createLayer(false, 'foreground'); // treasure
+	//this.layer[voyc.layer.HERO] = this.createLayer(false, 'hero');
+	////this.layer[voyc.layer.HUD] = this.createLayerDiv('hud');
+	//this.layer[voyc.layer.SKETCH] = this.createLayer('sketch');
 
 
 	//this.iterateeEmpire = new voyc.GeoIterator.iterateePolygonClipping();
@@ -155,16 +137,16 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	//this.iterateeTreasure.projection = this.projection;
 	//this.iterateeTreasure.ctx = this.getLayer(voyc.layer.FOREGROUND).ctx;
 
-	this.iterateeGrid = new voyc.GeoIterator.iterateeLine();
-	this.iterateeGrid.projection = this.projection;
-	this.iterateeGrid.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
-	this.iterateeGrid.ctx.strokeStyle = '#888';
-	this.iterateeGrid.ctx.lineWidth = .5;
-	this.iterateeGrid.ctx.strokeOpacity = .5;
-
-	this.iterateeFeature = new voyc.GeoIterator.iterateePolygonClipping();
-	this.iterateeFeature.projection = this.projection;
-	this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
+//	this.iterateeGrid = new voyc.GeoIterator.iterateeLine();
+//	this.iterateeGrid.projection = this.projection;
+//	this.iterateeGrid.ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
+//	this.iterateeGrid.ctx.strokeStyle = '#888';
+//	this.iterateeGrid.ctx.lineWidth = .5;
+//	this.iterateeGrid.ctx.strokeOpacity = .5;
+//
+//	this.iterateeFeature = new voyc.GeoIterator.iterateePolygonClipping();
+//	this.iterateeFeature.projection = this.projection;
+//	this.iterateeFeature.ctx = this.getLayer(voyc.layer.FEATURES).ctx;
 
 	//this.iterateeHitTest = new voyc.GeoIterator.iterateeHitTest();
 	//this.iterateeHitTest.projection = this.projection;
@@ -327,14 +309,25 @@ voyc.World.prototype.spin = function(dir) {
 	voyc.geosketch.render(0);
 }
 
-voyc.World.prototype.move = function(pt,prev) {
+voyc.World.prototype.grab = function(pt,prev) {
+	this.dragging = true
+	//this.clearLayers()
+	this.clearLayer('empire')
+}
+voyc.World.prototype.drag = function(pt,prev) {
 	var coNew = this.projection.invert(pt);
 	var coOld = this.projection.invert(prev);
 	var rotation = voyc.subtractArray(coNew,coOld)
 	this.projection.rotateIncr(rotation)
-	this.moved = true;
+	this.moved = true
+	this.dragging = true
 	voyc.geosketch.render(0);
 	this.co = this.flipLat(this.projection.co)
+}
+voyc.World.prototype.drop = function() {
+	this.dragging = false
+	this.moved = true
+	voyc.geosketch.render(0)  // more detailed drawing
 }
 
 voyc.World.prototype.flipLat = function(co) {
@@ -364,14 +357,16 @@ voyc.World.prototype.getCenterPoint = function() {
 
 // --------  data, iterators, and layers
 
-voyc.World.prototype.setupData = function() {
-	this.data = [];
+voyc.World.prototype.setupDataIteratorCanvas = function() {
+	this.data = window['voyc']['data']
 	this.data.countries = topojson.object(worldtopo, worldtopo['objects']['countries']);
 	this.data.land = {
+		'name':'land',
 		'type':'GeometryCollection',
 		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
-	};
-	window['voyc']['data']['grid'] = {
+	}
+	this.data.grid = {
+		'name': 'grid',
 		'type': 'GeometryCollection',
 		'geometries': [
 			{
@@ -380,6 +375,21 @@ voyc.World.prototype.setupData = function() {
 			}
 		]
 	}
+
+	this.iterator = new voyc.GeoIterator()
+	this.iteratorCount = new voyc.GeoIteratorCount()
+	this.iteratorDraw = new voyc.GeoIteratorDraw()
+	//this.iteratorClip = new voyc.GeoIteratorClip()
+
+	this.layer = {}
+	this.layer.bkgrd  = this.createLayerDiv('background');  // solid black div style
+//	this.layer.bkgrd  = this.createLayer('bkgrd'  ,false ,null             ,null             )
+	this.layer.water  = this.createLayer('water'  ,false ,null             ,null             )
+	this.layer.land   = this.createLayer('land'   ,false ,this.data.land   ,this.iteratorDraw)
+	this.layer.grid   = this.createLayer('grid'   ,false ,this.data.grid   ,this.iteratorDraw)
+	this.layer.empire = this.createLayer('empire' ,false ,this.data.empire ,this.iteratorDraw)
+	this.layer.sketch = this.createLayer('sketch' ,false ,this.data.sketch ,this.iteratorDraw)
+	
 	//window['voyc']['data']['sketch'] = {
 	//	'type': 'GeometryCollection',
 	//	'geometries': []
@@ -392,24 +402,30 @@ voyc.World.prototype.setupData = function() {
 	//this.iterator.iterateCollection(window['voyc']['data']['empire'], this.iterateeInit);
 }
 
-voyc.World.prototype.createLayer = function(useImageData, id) {
-	var a = {};
-	a.type = 'canvas';
-	a.canvas = document.createElement('canvas');
-	a.canvas.id = id;
-	a.canvas.classList.add('layer');
-	a.canvas.classList.add('visible');
-	//a.canvas.classList.add('hidden');
-	a.canvas.width  = this.w;
-	a.canvas.height = this.h;
-	a.canvas.style.width =  this.w + 'px';
-	a.canvas.style.height = this.h + 'px';
-	this.elem.appendChild(a.canvas);
-	a.ctx = a.canvas.getContext("2d");
-	if (useImageData) {
-		a.imageData = a.ctx.createImageData(this.w, this.h);
-	}
-	return a;
+voyc.World.prototype.clearLayer = function(id) {
+	this.layer[id].ctx.clearRect(0,0,this.w,this.h)
+}
+voyc.World.prototype.clearLayers = function() {
+	for (var lay in this.layer) 
+		this.layer[lay].ctx.clearRect(0,0,this.w,this.h)
+}
+
+voyc.World.prototype.createLayer = function(id, useImageData, data, iterator) {
+	var layer = {}
+	layer.data = data
+	layer.iterator = iterator
+	layer.canvas = document.createElement('canvas')
+	layer.canvas.id = id
+	layer.canvas.classList.add('layer')
+	layer.canvas.classList.add('visible')
+	layer.canvas.width  = this.w
+	layer.canvas.height = this.h
+	layer.canvas.style.width =  this.w + 'px'
+	layer.canvas.style.height = this.h + 'px'
+	this.elem.appendChild(layer.canvas)
+	layer.ctx = layer.canvas.getContext("2d")
+	if (useImageData) ctx.createImageData(this.w, this.h)
+	return layer
 }
 
 voyc.World.prototype.createLayerSVG = function() {
@@ -506,15 +522,41 @@ voyc.World.prototype.resize = function(w, h) {
         this.stitchctx.canvas.height = this.h
 }
 
-voyc.World.prototype.drawOceansAndLand = function() {
-	var ctx = this.getLayer(voyc.layer.FEATURES).ctx;
-	ctx.clearRect(0, 0, this.w, this.h);
-	
-	ctx = this.getLayer(voyc.layer.FASTBACK).ctx;
-	ctx.clearRect(0, 0, this.w, this.h);
-	
-	// oceans
-	ctx.fillStyle = voyc.color.water;
+voyc.World.prototype.draw = function() {
+	if (this.moved) {
+		//this.drawBkgrnd();
+		this.drawWater();
+		this.drawLand();
+		this.drawGrid();
+		this.drawSketch();
+	}	
+
+	if (this.moved && !this.dragging && !this.zooming) {
+		this.drawEmpire();
+		//this.drawFeatures();
+		//this.drawRivers();
+	}
+}
+
+voyc.World.prototype.drawBkgrnd = function() {
+	var id = 'bkgrd'
+	var layer = this.layer[id]
+	var ctx = layer.ctx
+	var palette = voyc.worldPalette[id]
+	ctx.fillStyle = voyc.rgba(palette.fill, palette.opac)
+	ctx.strokeStyle = voyc.rgba(palette.stroke)
+	ctx.linewidth = palette.pen
+	ctx.rect(0, 0, this.w, this.h);
+	if (palette.isFill) ctx.fill()
+	if (palette.isStroke) ctx.stroke()
+}
+
+voyc.World.prototype.drawWater = function() {
+	var id = 'water'
+	var layer = this.layer[id]
+	var ctx = layer.ctx
+	var palette = voyc.worldPalette[id]
+	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
 	if (this.projection.mix == voyc.Projection.orthographic)
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
@@ -523,15 +565,18 @@ voyc.World.prototype.drawOceansAndLand = function() {
 		se = this.projection.project([180,-85])
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
 	}
-	ctx.fill();
+	ctx.fillStyle = voyc.rgba(palette.fill, palette.opac)
+	ctx.fill()
+}
 
-	// land
-	var land = this.data.land;
-	ctx.fillStyle = voyc.color.land;
-	ctx.beginPath();
-	this.iterator.iterateCollection(this.data.land, this.iterateeLand);
-	ctx.fill();
-	this.doubleStitch(ctx, 1500)
+voyc.World.prototype.drawLand = function() {
+	var id = 'land'
+	var layer = this.layer[id]
+	var ctx = layer.ctx
+	var palette = voyc.worldPalette[id]
+	var data = layer.data
+	var iterator = layer.iterator
+	layer.iterator.iterateCollection(data, this.projection, ctx, palette);
 }
 
 /* to create a new layer:
@@ -543,19 +588,59 @@ voyc.World.prototype.drawOceansAndLand = function() {
  * call draw method during render
 */
 voyc.World.prototype.drawSketch = function() {
-	var ctx = this.getLayer(voyc.layer.SKETCH).ctx;
-	ctx.clearRect(0, 0, this.w, this.h);
-	this.iterator.iterateCollection(window['voyc']['data']['sketch'], this.iterateeSketch);
-	// iterator.iterate() asks for data and iteratee, iteratee has projection and ctx
+	var id = 'sketch'
+	var layer = this.layer['sketch']
+	var ctx = layer.ctx
+	var data = layer.data
+	var iterator = layer.iterator
+	var palette = voyc.worldPalette['sketch']
+
+	//ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+	//ctx.beginPath();
+
+	iterator.iterateCollection(data,this.projection,ctx,palette);
+
+	//ctx.fillStyle = voyc.rgba(palette.fill, palette.opac)
+	//ctx.strokeStyle = voyc.rgba(palette.stroke)
+	//ctx.linewidth = palette.pen
+	//if (palette.isFill) ctx.fill()
+	//if (palette.isStroke) ctx.stroke()
 }
 
 voyc.World.prototype.drawGrid = function() {
-	var ctx = this.getLayer(voyc.layer.REFERENCE).ctx;
-	ctx.clearRect(0, 0, this.w, this.h);
-	//if (voyc.geosketch.getOption(voyc.option.GRATICULE)) {
-	if (true) {
-		this.iterator.iterateCollection(window['voyc']['data']['grid'], this.iterateeGrid);
-	}
+	var layer = this.layer.grid
+	var ctx = layer.ctx
+	var data = layer.data
+	var iterator = layer.iterator
+
+	var palette = voyc.worldPalette.grid
+	//ctx.fillStyle = voyc.rgba(palette.fill, palette.opac)
+	//ctx.strokeStyle = voyc.rgba(palette.stroke)
+	//ctx.linewidth = palette.pen
+	//ctx.clearRect(0, 0, this.w, this.h);
+	//ctx.beginPath();
+	iterator.iterateCollection(data, this.projection, ctx, palette);
+	//if (palette.isFill) ctx.fill()
+	//if (palette.isStroke) ctx.stroke()
+}
+
+voyc.World.prototype.drawEmpire = function() {
+	var id = 'empire'
+	var layer = this.layer['empire']
+	var ctx = layer.ctx
+	var data = layer.data
+	var iterator = layer.iterator
+
+	var palette = voyc.worldPalette['empire']
+	//ctx.fillStyle = voyc.rgba(palette.fill, palette.opac)
+	//ctx.strokeStyle = voyc.rgba(palette.stroke)
+	//ctx.linewidth = palette.pen
+	//ctx.clearRect(0, 0, this.w, this.h);
+	//ctx.beginPath();
+	iterator.iterateCollection(data, this.projection, ctx, palette);
+	//ctx.closePath()
+	//if (palette.isFill) ctx.fill()
+	//if (palette.isStroke) ctx.stroke()
 }
 
 voyc.World.prototype.drawRivers = function() {
@@ -709,10 +794,12 @@ voyc.layer = {
 
 /** @struct */
 voyc.color = {
-	land: 'rgb(216,218,178)',
-	water: 'rgb(111,166,207)',
-	desert: 'rgb(235,220,198)',
-	highmountain: 'rgb(123,139,125)',
+	water:    'rgb(111,166,207)',
+	land:     'rgb(216,218,178)',
+	desert:   'rgb(235,220,198)',
+	highmntn: 'rgb(123,139,125)',
+	grid:     'rgb(  0,  0,  0)',
+	sketch:   'rgb(  0,  0,  0)',
 }
 /** @const */
 voyc.empireColors = ['#f00', '#0f0', '#00f', '#ff0', '#0ff', '#f0f'];
@@ -732,3 +819,19 @@ voyc.Spin = {
 	UP:7,
 	DOWN:8,
 }		
+
+voyc.worldPalette = {
+bkgrd: {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0], opac:1},
+water: {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207], opac:1},
+land:  {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178], opac:1},
+grid:  {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0], opac:1},
+sketch:{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0], opac:1},
+empire:{isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0], opac:1},
+}
+
+voyc.rgba = function(rgb,a) {
+	var a = a || 1
+	rgb[3] = a
+	return 'rgba(' + rgb.toString() + ')'
+}
+

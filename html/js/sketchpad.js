@@ -1,10 +1,3 @@
-voyc.getPointerPosition = function(e) {
-	// am i touch or mouse ?
-	// do i have page or nota?
-	// what about current vs target ?
-	// while we're here... what about double touch ?
-},
-
 /**
 	class SketchPad
 	@constructor
@@ -24,7 +17,7 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 	// options
 	this.options = {}
 	this.options.supportedButtons = [0]  // 0,1,2:  left, middle, right
-	this.options.penColor = getComputedStyle(this.canvas).color;
+	//this.options.penColor = getComputedStyle(this.canvas).color;
 	this.options.brushSize = 5;
 	this.options.hasGrid = false;
 	if (options)
@@ -38,7 +31,7 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 }
 
 
-voyc.data.sketch = {"type": "GeometryCollection","geometries":[
+voyc.data.sketch = {"name":"sketch", "type": "GeometryCollection","geometries":[
 {"type":"Polygon", id:1,"name":"Mesopotamia","b":-4000,"e":-1950,"fb":0,"c":5,
 "coordinates":[[[41.904411,27.702338],[41.805987,29.078789],[43.001109,29.761618],[44.359202,29.393941],[45.174058,28.606062],[44.956763,27.555557],[44.087583,26.820204],[42.512195,26.662628],[41.904411,27.702338]]], },
 
@@ -149,8 +142,8 @@ voyc.SketchPad.prototype = {
 	// ---- drawing
 
 	resize: function(w,h) {
-		this.canvas.width = parseInt(getComputedStyle(this.canvas).width,10);
-		this.canvas.height = parseInt(getComputedStyle(this.canvas).height,10);
+		//this.canvas.width = parseInt(getComputedStyle(this.canvas).width,10);
+		//this.canvas.height = parseInt(getComputedStyle(this.canvas).height,10);
 	},
 
 	clearCanvas: function (ctx) {
@@ -158,6 +151,7 @@ voyc.SketchPad.prototype = {
 	},
 
 	draw: function () {
+		return
 		var ctx = this.canvas.getContext('2d');
 		this.clearCanvas(ctx);
 

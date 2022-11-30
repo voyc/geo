@@ -94,7 +94,7 @@ voyc.GeoSketch.prototype.setup = function () {
 		.5	// starting scale factor
 	 )
 
-	this.world.setupData()
+	//this.world.setupData()
 
 	this.observer.publish('setup-complete', 'geosketch', {});
 	//(new voyc.3).nav('home');
@@ -103,7 +103,6 @@ voyc.GeoSketch.prototype.setup = function () {
 	this.hud.buttons = [1]  // middle
 	this.hud.setup(document.getElementById('hud'))
 	this.hud.attach()
-	this.world.setScale() // to set the zoomer 
 
 	this.keyboard = new voyc.Keyboard();
 	this.keyboard.listenForEvents([
@@ -114,7 +113,8 @@ voyc.GeoSketch.prototype.setup = function () {
 	]);
 
 	this.world.moved = true
-	this.render()
+	this.world.setScale() // to set the zoomer, forces a render
+	//this.render()
 }
 
 voyc.option = {
@@ -223,21 +223,24 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 	//}
 
 	// draw world		
-	if (this.world.moved || this.time.moved) {
-		var ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
-		ctx.clearRect(0, 0, this.world.w, this.world.h);
-		var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
-		ctx.clearRect(0, 0, this.world.w, this.world.h);
-	}
-	if (this.world.moved) {
-		this.world.drawOceansAndLand();
-		this.world.drawGrid();
-		this.world.drawSketch();
-	}	
-	if (this.world.moved && !this.world.dragging && !this.world.zooming) {
-		this.world.drawFeatures();
-	//	this.world.drawRivers();
-	}
+	//if (this.world.moved || this.time.moved) {
+	//	var ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
+	//	ctx.clearRect(0, 0, this.world.w, this.world.h);
+	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
+	//	ctx.clearRect(0, 0, this.world.w, this.world.h);
+	//}
+	this.world.draw()
+
+//	if (this.world.moved) {
+//		this.world.drawOceansAndLand();
+//		this.world.drawGrid();
+//		this.world.drawSketch();
+//	}	
+//	if (this.world.moved && !this.world.dragging && !this.world.zooming) {
+//		this.world.drawFeatures();
+
+//	//	this.world.drawRivers();
+//	}
 	//if ((this.world.moved || this.time.moved) && !this.world.dragging && !this.world.zooming) {
 	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
 	//	this.drawEmpire(ctx);

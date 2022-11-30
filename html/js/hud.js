@@ -317,6 +317,8 @@ voyc.Hud.prototype.onmousedown = function(evt) {
 	evt.stopPropagation()
 	this.dragPrev = this.getMousePt(evt)
 	this.mousebuttondown = evt.button
+	if (evt.button == voyc.mouse.middle)
+		voyc.geosketch.world.grab()
 }
 
 voyc.Hud.prototype.onmousemove = function(evt) {
@@ -326,7 +328,7 @@ voyc.Hud.prototype.onmousemove = function(evt) {
 	if (this.dragPrev) {
 		var pt = this.getMousePt(evt)
 		if (this.mousebuttondown == voyc.mouse.middle)
-			voyc.geosketch.world.move(pt, this.dragPrev);
+			voyc.geosketch.world.drag(pt, this.dragPrev);
 		else
 			voyc.geosketch.sketch.addPoint(pt)
 		this.dragPrev = pt
@@ -338,6 +340,7 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	evt.stopPropagation();
 	this.dragPrev = false;
 	this.mousebuttondown = false
+	voyc.geosketch.world.drop()
 }
 
 voyc.Hud.prototype.onclick = function(evt) {
@@ -481,7 +484,7 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	else if (name == 'onefingermove') 
 		voyc.geosketch.sketch.addPoint(pt)
 	else if (name == 'twofingermove') {
-		voyc.geosketch.world.move(pt,this.ptPrev)
+		voyc.geosketch.world.drag(pt,this.ptPrev)
 		this.ptPrev = pt
 		//voyc.geosketch.world.zoom(pinch)
 	}
