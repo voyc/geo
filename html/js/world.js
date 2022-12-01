@@ -226,6 +226,7 @@ voyc.World.prototype.doubleStitch = function(ctx, leftedge) {
 // --------  public options
 
 voyc.World.prototype.showHiRes = function(boo) {
+	return
 	if (boo) {
 		this.getLayer(voyc.layer.SLOWBACKA).canvas.classList.remove('hidden');
 //		this.getLayer(voyc.layer.FASTBACK).canvas.classList.add('hidden');
@@ -412,6 +413,7 @@ voyc.World.prototype.clearLayers = function() {
 
 voyc.World.prototype.createLayer = function(id, useImageData, data, iterator) {
 	var layer = {}
+	layer.type = 'canvas';
 	layer.data = data
 	layer.iterator = iterator
 	layer.canvas = document.createElement('canvas')
@@ -430,7 +432,6 @@ voyc.World.prototype.createLayer = function(id, useImageData, data, iterator) {
 
 voyc.World.prototype.createLayerSVG = function() {
 	var a = {};
-	a.type = 'svg';
 	//a.svg = document.createElement('svg');
 	a.svg = document.createElementNS("http://www.w3.org/2000/svg", 'svg');
 	a.svg.classList.add('layer');
@@ -464,6 +465,7 @@ voyc.World.prototype.getLayer = function(layer) {
 
 // this is only called once during setup
 voyc.World.prototype.show = function() {
+	return
 	this.getLayer(voyc.layer.BACKGROUND).div.classList.remove('hidden');
 	this.getLayer(voyc.layer.FASTBACK).canvas.classList.remove('hidden');
 	this.getLayer(voyc.layer.FEATURES).canvas.classList.remove('hidden');
@@ -494,8 +496,8 @@ voyc.World.prototype.resize = function(w, h) {
 	};
 
 	var a = {};
-	for (var i in voyc.layer) {
-		a = this.getLayer(voyc.layer[i]);
+	for (var i in this.layer) {
+		a = this.getLayer(i);
 		if (a.type == 'canvas') {
 			a.canvas.width  = this.w;
 			a.canvas.height = this.h;
@@ -517,9 +519,6 @@ voyc.World.prototype.resize = function(w, h) {
 	//if (useImageData) {
 	//	a.imageData = a.ctx.createImageData(this.w, this.h);
 	//}
-
-        this.stitchctx.canvas.width = this.w * 2
-        this.stitchctx.canvas.height = this.h
 }
 
 voyc.World.prototype.draw = function() {
@@ -775,22 +774,22 @@ voyc.World.prototype.drawFeatures = function() {
 */
 }
 
-/** @enum */
-voyc.layer = {
-	BACKGROUND:0,
-	SLOWBACKA:1,
-	FASTBACK:2,
-	FEATURES:3,
-	RIVER0:4,
-	RIVER1:5,
-	RIVER2:6,
-	REFERENCE:7,
-	EMPIRE:8,
-	FOREGROUND:9,
-	HERO:10,
-	HUD:11,
-	SKETCH:12,
-}
+///** @enum */
+//voyc.layer = {
+//	BACKGROUND:0,
+//	SLOWBACKA:1,
+//	FASTBACK:2,
+//	FEATURES:3,
+//	RIVER0:4,
+//	RIVER1:5,
+//	RIVER2:6,
+//	REFERENCE:7,
+//	EMPIRE:8,
+//	FOREGROUND:9,
+//	HERO:10,
+//	HUD:11,
+//	SKETCH:12,
+//}
 
 /** @struct */
 voyc.color = {

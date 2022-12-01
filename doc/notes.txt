@@ -1,5 +1,128 @@
+todo:
+rivers
+features
+cleanup
+
+https://sketch.io/sketchpad/?
+
+https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+
+bug:
+when globe is upside down, 
+	up/down mouse dragging movement is opposite of globe spin
+
+note:
+in our data, E and N are positive
+in our projection code, E and S are positive
+we need to flip Latitude sign, where do we do that?
+
+
+GeoIterator
+4 looping methods, hierarchical
+	iterateCollection
+		iterateGeometry
+			iteratePolygon
+				iterateLineInPoly
+					doPointInPoly
+			iterateLine
+					doPointInLine
+			doPoint
+
+before and after loop methods
+prototype iteratee methods
+	collectionStart()
+	collectionEnd()
+	geometryStart()
+	geometryEnd()
+	polygonStart()
+	polygonEnd()
+	lineStart()
+	lineEnd()
+	point()
+
+layerCustomPoly
+layerCustomLine
+layerCustomPoint
+
+		
+7 sub classes, ie 7 prototype objects
+iterateePolygonClipping
+iterateeInit
+iterateeDrawPerGeometry
+iterateeLineSVG
+iterateeCounter
+iterateeHitTest
+iterateeHitTestPoint
+
+land, countries, sketch: polygonclipping
+empire: polygonclipping + drawpergeometry
+treasure: iteratepoint
+grid: iterateline
+feature: polygonclipping
+river: line
+deserts, mountains, empire: init
+
+when mouse moves off the board, blank out the whereami
+bug in spin after drag
+
+
+land: iterateCollection, passing iterateeLand which is derived from polygonclipping
+rivers: iterateCollection, passing iterateeRiver, derived from Line
+riversanim: iterateCollection, passing iterateeRiverAnim, derived from ?
+
+all layers start with iterateCollection()
+
+
+pencil
+point
+line
+polygon
+finish/name
+multi
+gg
+after resize, recalc the point overlap threshold as percentage of diagonal distance of container div
+	width by height, a2 + b2 = c2, root of sum of the squares
+	gives length of diagonal
+	one point is identical to another
+	when points are overlaid, is it the same point or a different one?
+	1% of the diagonal
+	100 x 100, diagonal=130, 1%=1.3
+	1000 x 1000, diagonal=1300, 1%=13
+	!! dont bother with this now
+
+
+x block all mouse/touch attach except new hud stuff
+	x reorg attachments with single point on/off
+
+attach/connect hud/publish to world and sketch
+	x sketch touch
+	sketch mouse
+	sketch buttons
+	world touch
+	world mouse
+	world buttons
+
+replace sketch addPoint(pt) with addCoord(co), call invert() from Hud (or sketch?)
+in sketch draw(), call project() for each point
+
+
+
+
+
+rename geosketch:geo, sketchpad:sketch
+	rename repository
+	recreate subdomain
+	keep two files named sketch: one in jslib, one in geo, or rename one of them to draw or pad
+	what about letting the future of voyc dovetail into geo, global
+	geo.voyc.com
+	global.voyc.com - to be folded into geo
+	let geosketch be the authoring tool for global and plunder
+	rename geo to GeoMath or GeoLib
+element pad has no purpose. remove id, or rename to "container"
+
 save layers in these categories:
 Choke point
+funnel
 Threshold
 Pressure point
 Nexus, Knot
