@@ -94,11 +94,11 @@ voyc.Hud.prototype.attach = function() {
 	
 	// -------- attach map zoomer handlers
 	
-	document.getElementById('mapzoom').addEventListener('click', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			evt.stopPropagation();
-		}
-	}, false);
+	//document.getElementById('mapzoom').addEventListener('click', function(evt) {
+	//	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
+	//		evt.stopPropagation();
+	//	}
+	//}, false);
 	this.mapzoomer = document.getElementById('mapzoomer');
 	this.mapzoomer.min = voyc.geosketch.world.scale.min;
 	this.mapzoomer.max = voyc.geosketch.world.scale.max;
@@ -236,6 +236,8 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 		this.mapzoomerIsHot = false;
 	}
 }
+
+// -------- ?
 
 voyc.Hud.prototype.show = function(elem) {
 	elem.classList.remove('hidden');

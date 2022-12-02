@@ -1,7 +1,75 @@
+
+
+	// plateaux  #ff9
+	// swamps    #0f0
+	// foothills #3c3
+	// valleys   #0f0
+	// plains    #0f0
+	// tundras   #ffe6ff
+
+cities   two dozen historical city names and some notes
+countrynames  name and id only
+foothills  three items, "featureCollection"
+plateaux  features
+rivers  feature collection
+seas  lists and notes, no data
+swamps  three records, features
+tundras  4 features
+valleys  6 features
+
+deserts   done
+highmountains  done
+lowmountains   done
+mediummountains  done
+plains   done
+canvas visible
+treasure  done
+empire    done
+worldtopo  done: 2 objects, land and countries
+
+	treasure
+	hero
+	hittest
+
+svg tips
+
+canvas tips
+	rgba is slow, use only when necessary
+	keep layers separate
+		for independent show/hide
+		setup ctx ahead of time, not at draw time
+		while it is tempting to put multiple datatypes on one layer 
+		this may change for scaling
+
+	/* todo: Mercator stitch
+		during iteratee project for polygon object
+		objects going across the antimeridian project normally
+		objects going across the left (or right) edge must be duplicated
+			project one onto the right edge
+			project the other onto the left edge 
+		project() is called by the iterator
+		the iterator does the ctx fill() and stroke() commands
+		thererfore, the data need not be modified, it can all be handled during drawing
+			project() must return null when a point is off screen
+			drawer must split the object on all gaps of null points
+			or
+			drawer must note when a line crosses the boundary
+	*/
+
+
+	// medium mountains ctx.fillStyle = '#963'; ctx.beginPath(), path.ctx(ctx)(voyc.data.mediummountains), ctx.fill();
+	// low mountains ctx.fillStyle = '#060'; ctx.beginPath(), path.ctx(ctx)(voyc.data.lowmountains), ctx.fill();
+	// plateaux ctx.fillStyle = '#ff9'; ctx.beginPath(), path.ctx(ctx)(voyc.data.plateaux), ctx.fill();
+	// swamps ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.swamps), ctx.fill();
+	// foothills ctx.fillStyle = '#3c3'; ctx.beginPath(), path.ctx(ctx)(voyc.data.foothills), ctx.fill();
+	// valleys ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.valleys), ctx.fill();
+	// plains ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.valleys), ctx.fill();
+	// tundras ctx.fillStyle = '#ffe6ff'; ctx.beginPath(), path.ctx(ctx)(window['voyc']['data']['tundras']), ctx.fill();
 todo:
 rivers
 features
 cleanup
+palette layers on/off
 
 https://sketch.io/sketchpad/?
 

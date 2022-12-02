@@ -1,4 +1,4 @@
-voyc.data.treasure = {"type": "GeometryCollection","geometries":[
+window["voyc"]["data"]["treasure"]={"name":"treasure","type":"GeometryCollection","geometries":[
 {type:"Point",coordinates:[72.868,30.631],b:-2600,e:-1900,score:1000,cap:0,id:1447774,name:"Harappa",msg:""},
 {type:"Point",coordinates:[68.136,27.324],b:-2500,e:-1900,score:1000,cap:0,id:1447773,name:"Mohenjo Daro",msg:""},
 {type:"Point",coordinates:[31.222,25.886],b:-3250,e:-3250,score:1000,cap:0,id:3,name:"Egypt",msg:""},
@@ -66,4 +66,5 @@ voyc.data.treasure = {"type": "GeometryCollection","geometries":[
 {type:"Point",coordinates:[35.618,38.936],b:1359,e:1920,score:1000,cap:0,id:14145,name:"Ottoman Empire",msg:""},
 {type:"Point",coordinates:[-105.358,27.452],b:1600,e:1850,score:1000,cap:0,id:10389,name:"New Spain",msg:""},
 {type:"Point",coordinates:[31.222,25.886],b:1798,e:1798,score:1000,cap:0,id:14744,name:"Napoleon lands in Egypt",msg:""},
-]};window["voyc"]["onScriptLoaded"]("treasure.js");
+]}
+window["voyc"]["onDataLoaded"]("treasure")

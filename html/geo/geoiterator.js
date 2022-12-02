@@ -186,8 +186,8 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	this.ctx.beginPath();
 }
 voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
-	this.ctx.fillStyle = voyc.rgba(this.palette.fill, this.palette.opac)
-	this.ctx.strokeStyle = voyc.rgba(this.palette.stroke)
+	this.ctx.fillStyle = this.palette.fill
+	this.ctx.strokeStyle = this.palette.stroke
 	this.ctx.linewidth = this.palette.pen
 	if (this.palette.isFill) this.ctx.fill()
 	if (this.palette.isStroke) this.ctx.stroke()
@@ -302,4 +302,49 @@ voyc.GeoIteratorDraw.prototype.arcGap = function(a,d,ctr,r) {
 	var e = this.findTangent(ob, oc,ctr,r);
 	this.ctx.lineTo(ob.pt[0],ob.pt[1]);
 	this.ctx.arcTo(e[0],e[1],oc.pt[0],oc.pt[1],r);
+}
+
+// -------- subclass GeoIteratorAnimate, draw rivers with offset points
+
+voyc.GeoIteratorAnimate = function() {
+	voyc.GeoIterator.call(this) // super
+}
+voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
+
+// entrypoint: iterateCollection(collection, projection, ctx, palette, offset)
+
+voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
+	this.projection = add[0]
+	this.ctx = add[1]
+	this.palette = add[2]
+	this.offset = add[3] || 1
+	this.skip   = add[4] || 3
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
+	this.n = 0
+}
+voyc.GeoIteratorAnimate.prototype.collectionEnd = function(collection) {
+	this.ctx.fillStyle = this.palette.fill
+	this.ctx.strokeStyle = this.palette.stroke
+	this.ctx.linewidth = this.palette.pen
+	if (this.palette.isFill) this.ctx.fill()
+	if (this.palette.isStroke) this.ctx.stroke()
+}
+
+voyc.GeoIteratorAnimate.prototype.doPoint = function(co, within) {
+	var pt = this.projection.project(co);
+	if (pt) {
+		this.n++
+		if ((this.n+this.offset) % this.skip == 0) {
+			var x = parseInt(pt[0])
+			var y = parseInt(pt[1])
+			var sz = 1
+			this.ctx.moveTo(x-sz,y-sz)
+			this.ctx.lineTo(x+sz,y-sz)
+			this.ctx.lineTo(x+sz,y+sz)
+			this.ctx.lineTo(x-sz,y+sz)
+			this.ctx.lineTo(x-sz,y-sz)
+			this.ctx.closePath()
+		}
+	}
 }

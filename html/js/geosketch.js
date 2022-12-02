@@ -37,27 +37,11 @@ voyc.GeoSketch.prototype.setup = function () {
 	// server communications
 	var url = '/svc/';
 	if (window.location.origin == 'file://') {
-		url = 'http://geosketch.hagstrand.com/svc';  // for local testing
+		url = 'http://geosketch.voyc.com/svc';  // for local testing
 	}
 	this.comm = new voyc.Comm(url, 'acomm', 2, true);
 
-	// attach app events
-	var self = this;
-	this.observer.subscribe('profile-requested'   ,'geosketch' ,function(note) { self.onProfileRequested    (note); });
-	this.observer.subscribe('profile-submitted'   ,'geosketch' ,function(note) { self.onProfileSubmitted    (note); });
-	this.observer.subscribe('setprofile-posted'   ,'geosketch' ,function(note) { self.onSetProfilePosted    (note); });
-	this.observer.subscribe('setprofile-received' ,'geosketch' ,function(note) { self.onSetProfileReceived  (note); });
-	this.observer.subscribe('getprofile-received' ,'geosketch' ,function(note) { self.onGetProfileReceived  (note); });
-
-	// setup sketch layer
-	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));
-	//document.getElementById('clearmenu').addEventListener('click', function() {self.sketch.clear()}, false);
-	//document.addEventListener('keydown', function(event) {
-	//	if (event.key == "Escape") {
-	//		self.sketch.clear();
-	//	}
-	//})
-
+	// images assets
 	var path = 'assets/';
 	var list = [
 		//{key:'hero'    ,path:path+'sprites/survivor-walk-16.png'},
@@ -68,21 +52,21 @@ voyc.GeoSketch.prototype.setup = function () {
 		{key:'redxbox' ,path:path+'images/red-xbox.png'},
 		{key:'bluebox' ,path:path+'images/blue-xbox.png'},
 		{key:'treasure',path:path+'images/chest32.png'},
-		{key:'mtnhi'   ,path:path+'images/mtnhi.png'},
-		{key:'mtnmed'  ,path:path+'images/mtnmed.png'},
-		{key:'mtnlo'   ,path:path+'images/mtnlo.png'},
-		{key:'desert'  ,path:path+'images/desert.png'},
+		{key:'highmountains'   ,path:path+'images/highmountains.png'},
+		{key:'mediummountains' ,path:path+'images/mediummountains.png'},
+		{key:'lowmountains'    ,path:path+'images/lowmountains.png'},
+		{key:'deserts'         ,path:path+'images/deserts.png'},
 		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];
-
 	this.asset = new voyc.Asset();
 	var self = this;
 	this.asset.load(list, function(success, key) {
-		//if (!key) {
-		//	self.sync('visual', success);	
-		//}
-	});
+		if (!key)
+			self.setupContinue();	
+	})
+}
 
+voyc.GeoSketch.prototype.setupContinue = function () {
 	// setup world layer
 	this.world = new voyc.World();
 	var divworld = document.getElementById('world') 
@@ -111,6 +95,9 @@ voyc.GeoSketch.prototype.setup = function () {
 		voyc.Key.UP, 
 		voyc.Key.DOWN,
 	]);
+
+	// setup sketch layer
+	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));
 
 	this.world.moved = true
 	this.world.setScale() // to set the zoomer, forces a render
@@ -291,5 +278,8 @@ voyc.GeoSketch.prototype.resize = function (evt) {
 }
 
 window['voyc']['onScriptLoaded'] = function(filename) {
+	console.log(filename + ' loaded')
+}
+window['voyc']['onDataLoaded'] = function(filename) {
 	console.log(filename + ' loaded')
 }
