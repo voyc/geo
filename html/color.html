@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>html5 input</title>
+		<style>
+		input.vertical {
+			-webkit-appearance: slider-vertical;
+			writing-mode: bt-lr;
+		}
+		</style>
+		<script>
+			const rangeInput = document.getElementById('year');
+			const output = document.querySelector('yearout');
+			
+			rangeInput.addEventListener('change', function() {
+			  output.value = this.value;
+			});
+		</script>
+	</head>
+	<body>
+		<br/>
+		<input type='color'/>
+		<br/>
+		<input id='year' type='range' name='year' orient='vertical' class='vertical'/>
+		<output id='yearout' for='year'></output>
+	</body>
+</html>

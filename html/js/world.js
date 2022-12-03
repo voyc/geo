@@ -29,6 +29,7 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
+	this.zooming = false;
 	
 	this.option = {
 		scaleStep: .14,  // percentage of scale
@@ -157,7 +158,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','rivers','anima'].values())
+	for (var id of ['empire','rivers','anima','feature'].values())
 		this.show(this.layer[id].e, false)
 	this.animate(false)
 }
@@ -174,7 +175,7 @@ voyc.World.prototype.drag = function(pt,prev) {
 voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
-	for (var id of ['empire','rivers','anima'].values())
+	for (var id of ['empire','rivers','anima','feature'].values())
 		this.show(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
 	this.animate(true)
@@ -349,27 +350,6 @@ voyc.World.prototype.setupAnimation = function() {
 	this.fps = 8
 }
 
-
-//voyc.World.prototype.animate = function(boo) {
-//	this.flowing = (boo)
-//	this.offset--
-//	if (this.offset <= 0)
-//		this.offset = this.skip
-//	var e = false
-//	for (var n=this.skip; n>0; n--) { 
-//		e = document.getElementById('anim'+n)
-//		if (n == this.offset) 
-//			this.show(e,true)
-//		else 	
-//			this.show(e,false)
-//	}
-//	if (this.flowing) {
-//		var self = this
-//		setTimeout(function() {
-//			self.animate(true)
-//		}, (1000/this.fps))
-//	}
-//}
 voyc.World.prototype.frameShift = function() {
 	this.offset--
 	if (this.offset <= 0)
@@ -456,9 +436,9 @@ voyc.World.prototype.resize = function(w, h) {
 voyc.World.prototype.draw = function() {
 	if (this.moved) {
 		this.drawWater();
-		this.drawLand();
-		this.drawGrid();
-		this.drawSketch();
+		this.drawLayer('land')
+		this.drawLayer('grid')
+		this.drawLayer('sketch')
 		if (!this.dragging && !this.zooming) {
 			//this.drawEmpire();
 			this.drawFeatures();
@@ -466,6 +446,15 @@ voyc.World.prototype.draw = function() {
 			this.animate(true)
 		}
 	}
+}
+
+voyc.World.prototype.drawLayer = function(id) {
+	var layer = this.layer[id]
+	layer.iterator.iterateCollection(
+		layer.data, 
+		this.projection, 
+		layer.ctx, 
+		layer.palette)
 }
 
 voyc.World.prototype.drawWater = function() {
@@ -485,51 +474,12 @@ voyc.World.prototype.drawWater = function() {
 	ctx.fill()
 }
 
-voyc.World.prototype.drawLand = function() {
-	var id = 'land'
-	var layer = this.layer[id]
-	var ctx = layer.ctx
-	var palette = voyc.worldPalette[id]
-	var data = layer.data
-	var iterator = layer.iterator
-	layer.iterator.iterateCollection(data, this.projection, ctx, palette);
-}
-
-voyc.World.prototype.drawSketch = function() {
-	var layer = this.layer['sketch']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['sketch']
-	iterator.iterateCollection(data,this.projection,ctx,palette);
-}
-
-voyc.World.prototype.drawGrid = function() {
-	var layer = this.layer.grid
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette.grid
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-}
-
-voyc.World.prototype.drawEmpire = function() {
-	var layer = this.layer['empire']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['empire']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-}
-
 voyc.World.prototype.drawRiver = function() {
-	var layer = this.layer['rivers']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['rivers']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
+	this.drawLayer('rivers')
 
+	var data = this.layer['rivers'].data
+	var ctx  = this.layer['rivers'].ctx
+	var palette = voyc.worldPalette['animation']
 	iterator = this.animationlayer[0].iterator
 	ctx = this.animationlayer[0].ctx
 	iterator.iterateCollection(data, this.projection, ctx, palette, 1, 3);
@@ -540,47 +490,9 @@ voyc.World.prototype.drawRiver = function() {
 	// rivers scale 0-6
 }
 
-voyc.World.prototype.drawLayer = function(layerid) {
-	var layer = this.layer[layerid]
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette[layerid]
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-}
-
 voyc.World.prototype.drawFeatures = function() {
 	for (var id of ['deserts','highmountains','mediummountains','lowmountains'].values())
 		this.drawLayer(id)
-
-	return
-	var layer = this.layer['deserts']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['deserts']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-
-	var layer = this.layer['highmountains']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['highmountains']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-
-	var layer = this.layer['mediummountains']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['mediummountains']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
-
-	var layer = this.layer['lowmountains']
-	var ctx = layer.ctx
-	var data = layer.data
-	var iterator = layer.iterator
-	var palette = voyc.worldPalette['lowmountains']
-	iterator.iterateCollection(data, this.projection, ctx, palette);
 }
 
 voyc.World.prototype.setupPalette = function() {
@@ -630,6 +542,7 @@ grid:            {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,
 sketch:          {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 empire:          {isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 rivers:          {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+animation:       {isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 deserts:         {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 highmountains:   {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 mediummountains: {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},

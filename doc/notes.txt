@@ -1,39 +1,107 @@
 
+todo:
+	x bug: zoomer thumb is frozen
+	x treat zooming like dragging
+	x fix draw... functions
+	. scale mountains by zoom level
+		. see ctx.scale()
+	. rivers, do animation with color instead of size
+	. adaptive resampling for river animation.  add points to make distances constant. OR skip close points
+		. fix up rivers.js original
+		. find ids of rivers that are going the wrong direction
+		. build iterator that reverses point direction by id, and outputs a new geometryCollection
+		. build iterator that measures distance between points
+		. document zoom level, scale meanings
+		. determine best pixel distances between points at each zoom level, and best offset
+		. build iterator that inserts points between distant points and outputs a new geometryCollection
+		. build iterator that simplifies too close points
+			. see https://bost.ocks.org/mike/simplify/
+		. revise Animate iterator to skip points depending on scale (as well as offset)
+	. design drawing palettes
+		. hud UI, see https://sketch.io/sketchpad/?
+		. custom layers vs sketch
+		. ruler, measure distance of line between two points
+		. palette layers on/off
+	. setup ctx ahead of time, not at draw time, after layer creation, "fixup layer palettes"
+	. db update for editing base layers
+	. db update for custom layers
+	. mercator stitch, in GeoIteratorDraw
+	. bug: when globe is upside down, up/down mouse dragging movement is opposite of globe spin
+	. bug: when mouse moves off the board, blank out the whereami
+	. bug: in spin after drag ?
+	. equirectangular projection
+	. animate projection switch
+	. when empire layer is on, time slider shows up
+	. wheel zoom to cursor, or current edit sketch point
+		. after each zoom step
+			. invert the point under the cursor, subtract from previous to get vector
+			. translate (spin) by that vector, ie moveToCoord()
+	. Fill, Mask land, mask water
+		. see ctx.clip()
+	. cities and treasure layers with point medalions
 
-	// plateaux  #ff9
-	// swamps    #0f0
-	// foothills #3c3
-	// valleys   #0f0
-	// plains    #0f0
-	// tundras   #ffe6ff
+custom layers for storytelling
+	Choke point
+	funnel
+	Threshold
+	Pressure point
+	Nexus, Knot
+	Single lifespan empire
+	CEO
+	Geographic, chronological, cultural
+	Continents, canals, passages
 
-cities   two dozen historical city names and some notes
-countrynames  name and id only
-foothills  three items, "featureCollection"
-plateaux  features
-rivers  feature collection
-seas  lists and notes, no data
-swamps  three records, features
-tundras  4 features
-valleys  6 features
+isms
+	cracy and archy
+	categorical thinking
+	government, economics, religious, technology, cultural?
 
-deserts   done
-highmountains  done
-lowmountains   done
-mediummountains  done
-plains   done
-canvas visible
-treasure  done
-empire    done
-worldtopo  done: 2 objects, land and countries
+beliefs
+	the chosen people vs original sin
 
+flash
+	greek alphabet
+	uses in mathematics, pi, epsilon, etc
+	cgi, electronics, calculus, physics 
+	chart of big vs little
+	order: pi, alpha, omega,
+ 
+base layers
+	deserts   
+	highmountains  
+	lowmountains   
+	mediummountains  
+	empire    
+	worldtopo  : 2 objects, land and countries
+
+rivers
+	some need reversal
+	some need editing
+	find lakes to fill gaps
+	identify scales, use single dataset, qualified by scale
+
+more terrain
+	plateaux  #ff9
+	swamps    #0f0, 3 records
+	foothills #3c3, 3 features
+	valleys   #0f0, 6 features
+	plains    #0f0
+	tundras   #ffe6ff, 4 features
+	seas,  lists and notes, no data
+	cities   two dozen historical city names and some notes
+	countrynames  name and id only
 	treasure
+
+plunder features not implemented
 	hero
 	hittest
 
 svg tips
+	too slow
+	use to scale image, save a bitmap for runtime use
 
 canvas tips
+	https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
 	rgba is slow, use only when necessary
 	keep layers separate
 		for independent show/hide
@@ -41,63 +109,36 @@ canvas tips
 		while it is tempting to put multiple datatypes on one layer 
 		this may change for scaling
 
-	/* todo: Mercator stitch
-		during iteratee project for polygon object
-		objects going across the antimeridian project normally
-		objects going across the left (or right) edge must be duplicated
-			project one onto the right edge
-			project the other onto the left edge 
-		project() is called by the iterator
-		the iterator does the ctx fill() and stroke() commands
-		thererfore, the data need not be modified, it can all be handled during drawing
-			project() must return null when a point is off screen
-			drawer must split the object on all gaps of null points
-			or
-			drawer must note when a line crosses the boundary
-	*/
+Mercator stitch
+	during iteratee project for polygon object
+	objects going across the antimeridian project normally
+	objects going across the left (or right) edge must be duplicated
+		project one onto the right edge
+		project the other onto the left edge 
+	project() is called by the iterator
+	the iterator does the ctx fill() and stroke() commands
+	thererfore, the data need not be modified, it can all be handled during drawing
+		project() must return null when a point is off screen
+		drawer must split the object on all gaps of null points
+		or
+		drawer must note when a line crosses the boundary
 
-
-	// medium mountains ctx.fillStyle = '#963'; ctx.beginPath(), path.ctx(ctx)(voyc.data.mediummountains), ctx.fill();
-	// low mountains ctx.fillStyle = '#060'; ctx.beginPath(), path.ctx(ctx)(voyc.data.lowmountains), ctx.fill();
-	// plateaux ctx.fillStyle = '#ff9'; ctx.beginPath(), path.ctx(ctx)(voyc.data.plateaux), ctx.fill();
-	// swamps ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.swamps), ctx.fill();
-	// foothills ctx.fillStyle = '#3c3'; ctx.beginPath(), path.ctx(ctx)(voyc.data.foothills), ctx.fill();
-	// valleys ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.valleys), ctx.fill();
-	// plains ctx.fillStyle = '#0f0'; ctx.beginPath(), path.ctx(ctx)(voyc.data.valleys), ctx.fill();
-	// tundras ctx.fillStyle = '#ffe6ff'; ctx.beginPath(), path.ctx(ctx)(window['voyc']['data']['tundras']), ctx.fill();
-todo:
-rivers
-features
-cleanup
-palette layers on/off
-
-https://sketch.io/sketchpad/?
-
-https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
-
-bug:
-when globe is upside down, 
-	up/down mouse dragging movement is opposite of globe spin
-
-note:
-in our data, E and N are positive
-in our projection code, E and S are positive
-we need to flip Latitude sign, where do we do that?
-
+Latitude Flip
+	in our data, E and N are positive
+	in our projection code, E and S are positive
 
 GeoIterator
+
 4 looping methods, hierarchical
 	iterateCollection
 		iterateGeometry
 			iteratePolygon
-				iterateLineInPoly
-					doPointInPoly
+				doPolyPoint
 			iterateLine
-					doPointInLine
+				doLinePoint
 			doPoint
 
-before and after loop methods
-prototype iteratee methods
+before and after overrideables
 	collectionStart()
 	collectionEnd()
 	geometryStart()
@@ -108,38 +149,16 @@ prototype iteratee methods
 	lineEnd()
 	point()
 
-layerCustomPoly
-layerCustomLine
-layerCustomPoint
+Plunder iteratee system has 7 sub classes, ie 7 prototype objects
+	iterateePolygonClipping
+	iterateeInit
+	iterateeDrawPerGeometry
+	iterateeLineSVG
+	iterateeCounter
+	iterateeHitTest
+	iterateeHitTestPoint
 
-		
-7 sub classes, ie 7 prototype objects
-iterateePolygonClipping
-iterateeInit
-iterateeDrawPerGeometry
-iterateeLineSVG
-iterateeCounter
-iterateeHitTest
-iterateeHitTestPoint
-
-land, countries, sketch: polygonclipping
-empire: polygonclipping + drawpergeometry
-treasure: iteratepoint
-grid: iterateline
-feature: polygonclipping
-river: line
-deserts, mountains, empire: init
-
-when mouse moves off the board, blank out the whereami
-bug in spin after drag
-
-
-land: iterateCollection, passing iterateeLand which is derived from polygonclipping
-rivers: iterateCollection, passing iterateeRiver, derived from Line
-riversanim: iterateCollection, passing iterateeRiverAnim, derived from ?
-
-all layers start with iterateCollection()
-
+palette of drawing tools
 
 pencil
 point
@@ -147,7 +166,7 @@ line
 polygon
 finish/name
 multi
-gg
+
 after resize, recalc the point overlap threshold as percentage of diagonal distance of container div
 	width by height, a2 + b2 = c2, root of sum of the squares
 	gives length of diagonal
@@ -158,24 +177,9 @@ after resize, recalc the point overlap threshold as percentage of diagonal dista
 	1000 x 1000, diagonal=1300, 1%=13
 	!! dont bother with this now
 
-
-x block all mouse/touch attach except new hud stuff
-	x reorg attachments with single point on/off
-
-attach/connect hud/publish to world and sketch
-	x sketch touch
-	sketch mouse
-	sketch buttons
-	world touch
-	world mouse
-	world buttons
-
-replace sketch addPoint(pt) with addCoord(co), call invert() from Hud (or sketch?)
-in sketch draw(), call project() for each point
-
-
-
-
+save sketch to layer
+	replace sketch addPoint(pt) with addCoord(co), call invert() from Hud (or sketch?)
+	in sketch draw(), call project() for each point
 
 rename geosketch:geo, sketchpad:sketch
 	rename repository
@@ -186,29 +190,10 @@ rename geosketch:geo, sketchpad:sketch
 	global.voyc.com - to be folded into geo
 	let geosketch be the authoring tool for global and plunder
 	rename geo to GeoMath or GeoLib
-element pad has no purpose. remove id, or rename to "container"
-
-save layers in these categories:
-Choke point
-funnel
-Threshold
-Pressure point
-Nexus, Knot
-Single lifespan empire
-CEO
-Geographic, chronological, cultural
-Continents, canals, passages
-
-isms
-cracy and archy
-categorical thinking
-government, economics, religious, technology, cultural?
-
-the chosen people, the one, 
 
 UI: world vs sketch vs plunder
-plunder: you move the character, directions are relative to him
-world: you drag the land, directions are relative to him
+	plunder: you move the character, directions are relative to him
+	world: you drag the land, directions are relative to him
 
 sketch
 	mouse (left btn)
@@ -230,88 +215,77 @@ time
 
 
 
-x Drawing vs spinning 
-animate Globe vs Mercator 
-Drawing upgrades
-wheel zoom to cursor
-zoom buttons and sketch drawing do not work on android
-time buttons from +/- to right/left.
-
-globe icon
-palette icon, pen
-
-- sketch upgrade
-	- each object must be a discrete event, with points, size, color, name, begin, end
-	- multipolygon?
-	 -after drawing, object must become part of map and move along with it
-	 - save objects
-	 - create layers
-	 - make a layer the currently edited one, save objects into chosen layer
-
-- Drawing upgrades
-	- Palettes
-	- Line drawing by palette or alt key
-	- Line is one side of a polygon
-	- Fill
-	- Mask land
-	- mask water
-
-- edit map layers
-- create new custom layers
 
 
-draw | drag
 
-menu:
-        user mgmt
-	sketch
-        projectio
-        map palette
-        sketch palette
-        settings
 
-points
-line
-polygon
-end line
-close polygon
-cancel line/polygon
-save object
-select layer
 
-mode: points, line, polygon
-actions: keep, erase, save
-layer: choose from menu, create new layer
-size:
-color:
 
-point medalions
 
-   <!--
-                        Point
-                        Line
-                        Shortest line
-                        Polygon
-                        Oval, circle, rectangle
-                        Fill
-                        Fill mask - interact with world layers
-                        Save, name
-                        Name each object, each layer
-                        Enter date range for each object
-                        Choose layer to draw in, w new layer
-                        
-                        
-                        Pallette
-                        Color
-                        Pen, brush size
-                        
-                        Save into custom layers
-                        
-                        World palette
-                        Layers checkbox on off, color Swatch 
-                        Multicolor option
-                        HUD element checkboxes
-                        
-                        Globe, Mercator radiobox
-                        -->
+
+
+
+
+
+
+main menu
+	about, help
+	user:  menu
+	settings: form
+	projection: globe, cyclindrical, mercatur
+	ruler tool
+	search
+
+palette per layer
+	tool: points, line, polygon
+	outline: size, dotted arrow, color
+	fill: color(s), custom, multiselect, customs replace primaries
+	fill pattern for terrain
+	dot medallion for points
+	(palettes saved per user)
+
+layer menu
+	show/hide
+	edit
+	show/hide labels
+	edit palette
+
+palette for coordinates editing
+	finish: Fill, Mask (land only)
+	Properties: name, begin, end, scale, population
+	Save, cancel, delete (keep, erase, save
+
+select object for editing from map
+select object for editing from columnar display of names and properties
+save palette for each object, giant populations
+
+undo
+redo
+text
+clipart
+
+save palette in collection properties
+or
+save palette in geometry
+
+
+
+adaptive resampling for river animation
+	make a GeoIteratorResample
+		add a return value to iterateCollection 
+		build a collection object
+		return it
+	remove points that are too close
+	insert points where there is too long a distance
+	normalize distance between points
+	keep original for maximum accuracy
+	how does simplification work?  keeping the more extreme points
+	what is the optimal distance?
+	what is the optimal number of offsets?
+
+
+.  add points to make distances constant. OR skip close points
+
+
+
 

@@ -21,6 +21,18 @@ icon {
 	margin-left:.5rem;
 	margin-top:.5rem;
 }
+#layerbtn {
+	position:absolute;
+	left:0;
+	bottom:3rem;
+	margin-left:.5rem;
+}
+#projectbtn {
+	position:absolute;
+	bottom:0rem;
+	right:4rem;
+	margin-bottom:.5rem;
+}
 #announce {
 	left:50%;
 	top:50%;

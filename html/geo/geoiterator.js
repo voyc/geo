@@ -338,7 +338,7 @@ voyc.GeoIteratorAnimate.prototype.doPoint = function(co, within) {
 		if ((this.n+this.offset) % this.skip == 0) {
 			var x = parseInt(pt[0])
 			var y = parseInt(pt[1])
-			var sz = 1
+			var sz = this.palette.pen
 			this.ctx.moveTo(x-sz,y-sz)
 			this.ctx.lineTo(x+sz,y-sz)
 			this.ctx.lineTo(x+sz,y+sz)
