@@ -36,7 +36,36 @@ voyc.Hud = function() {
 voyc.Hud.prototype.setup = function(elem) {
 	this.elem = elem;
 	this.menuIsOpen = false;
+	this.populateLayerMenu()
 }
+
+voyc.Hud.prototype.populateLayerMenu = function() {
+	var s = ''
+	for (var id in voyc.layers) {
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+	}
+
+	{
+		s += "<div><span><b>Custom</b></span></div>"
+		var id = 'sketch'
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+		s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
+	}
+	var layermenu = voyc.$('layermenu')
+	layermenu.innerHTML = s
+
+	var list = layermenu.querySelectorAll('.layermenucheckbox')
+	list.forEach((e) => {
+		e.addEventListener('click', function(evt) {
+			evt.stopPropagation()
+			voyc.geosketch.world.enableLayer(evt.target.getAttribute('layerid'), evt.target.checked)
+		}, false)
+	})
+}
+
+
 
 voyc.Hud.prototype.attach = function() {
 	this.attachTouchHandlers()

@@ -33,6 +33,21 @@ icon {
 	right:4rem;
 	margin-bottom:.5rem;
 }
+#layermenu {
+	display:table;
+}
+#layermenu div {
+	display:table-row;
+}
+#layermenu div span {
+	display:table-cell;
+	padding:.5rem;
+	vertical-align:middle;
+}
+.layerpalettebtn {
+	display:table-cell;
+	margin-right:.3rem;
+}
 #announce {
 	left:50%;
 	top:50%;

@@ -36,21 +36,6 @@ voyc.World = function() {
 		spinStep: 6,  // degrees
 		margin:30,  // pixels
 	};
-
-
-	//this.iterator = {};
-	//this.iterateeLand = {};
-	//this.iterateeCountries = {};
-	//this.iterateeEmpire = {};
-	//this.iterateeTreasure = {};
-	//this.iterateeGrid = {};
-	//this.iterateeFeature = {};
-	//this.iterateeHitTest = {};
-	//this.iterateeInit = {};
-	
-	this.riverpass = 0;
-
-	this.stitchctx = {}
 }
 
 /** @const */
@@ -286,8 +271,10 @@ voyc.World.prototype.setupLayers = function() {
 		cont.appendChild(e)
 
 		var a = {}
-		a.type = 'canvas';
+		a.isOn = true
+		a.type = 'canvas'
 		a.e = e
+		a.enabled = true
 		a.iterator = self.iterator[iterator]
 		a.data = voyc.data[dataid]
 		a.palette = voyc.worldPalette[dataid]
@@ -306,8 +293,9 @@ voyc.World.prototype.setupLayers = function() {
 		cont.appendChild(e);
 	
 		var a = {};
-		a.type = 'div';
+		a.type = 'div'
 		a.e = e
+		a.enabled = true
 		self.layer[id] = a
 	}
 
@@ -334,6 +322,15 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('empire'          ,'empire'          ,false ,'draw')
 	createLayerCanvas('sketch'          ,'sketch'          ,false ,'draw')
 	createLayerCanvas('grid'            ,'grid'            ,false ,'draw')
+}
+
+
+voyc.World.prototype.enableLayer = function(layerid, boo) {
+	var layer = this.layer[layerid]
+	layer.enabled = boo
+	voyc.show(layer.e, boo)
+	this.moved = true
+	voyc.geosketch.render(0)
 }
 
 // --------  animation
@@ -450,6 +447,7 @@ voyc.World.prototype.draw = function() {
 
 voyc.World.prototype.drawLayer = function(id) {
 	var layer = this.layer[id]
+	if (!layer.enabled) return
 	layer.iterator.iterateCollection(
 		layer.data, 
 		this.projection, 
@@ -459,6 +457,7 @@ voyc.World.prototype.drawLayer = function(id) {
 
 voyc.World.prototype.drawWater = function() {
 	var layer = this.layer['water']
+	if (!layer.enabled) return
 	var ctx = layer.ctx
 	var palette = voyc.worldPalette['water']
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
@@ -547,4 +546,16 @@ deserts:         {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,
 highmountains:   {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 mediummountains: {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 lowmountains:    {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
+}
+
+voyc.layers = {
+	water:           'Oceans',
+	land:            'Land',
+	grid:            'Graticule',
+	sketch:          'Sketch',
+	empire:          'Historical',
+	rivers:          'Rivers',
+	animation:       'Animation',
+	deserts:         'Deserts',
+	highmountains:   'Mountains',
 }
