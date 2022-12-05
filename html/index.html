@@ -50,12 +50,7 @@
 		<script src="data/highmountains.js"></script>
 		<script src="data/lowmountains.js"></script>
 		<script src="data/mediummountains.js"></script>
-		<script src="data/river1.js"></script>
-		<script src="data/river2.js"></script>
-		<script src="data/river3.js"></script>
-		<script src="data/river4.js"></script>
-		<script src="data/river5.js"></script>
-		<script src="data/river6.js"></script>
+		<script src="data/rivers.js"></script>
 	</head>
 
 	<body>
@@ -67,13 +62,14 @@
 		<div id='pad' class='full'>
 			<div id='world' class='full'></div>
 			<div id='hud' class='full'>
-				<button g id='menubtn' open='sketch-palette'><img src='i/menu_black_24dp.png' alt='menu'/></button>
+				<button g id='menubtn' open='sketch-palette'><img src='i/menu_black_24dp.png' title='menu'/></button>
 
 				<div class='hud visible hidden' id='announce'>
 					<div id='announcemsg'>announcements</div>
 					<button id='announcedone'>OK</button>
 				</div>
 
+				<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
 				<div class='hud visible' id='whereami'>
 					<div id='hudlatlng'>&nbsp; </div>
 					<div hidden id='hudgeo'></div>
@@ -89,10 +85,14 @@
 
 
 				<div class='hud visible' id='mapzoom'>
-					<input hidden id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br hidden/>
 					<button g id='zoomplusbtn'><img src='i/plus_black.png' alt='zoom in'/></button><br/>
+					<input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br/>
 					<button g id='zoomminusbtn'><img src='i/minus_black.png' alt='zoom out'/></button>
 				</div>
+				<button g id='projectbtn'>
+					<img id='globeimg' class='hidden' src='i/globe_black_24.png' title='globe'/>
+					<img id='mercimg'                 src='i/mercator_black_24.png' title='mercator'/>
+				</button>
 			</div>
 		</div>
 		
@@ -117,9 +117,6 @@
 				<button id='userbtn' open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
 				<button id='settingsbtn' open='settings-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			</p>
-			<p><input type='radio' id='globe'    name='projection' checked/><label for='globe'   > Globe</label><p/> 
-			<p><input type='radio' id='mercator' name='projection'        /><label for='mercator'> Mercator</label><p/> 
-			<p><hr/></p>
 			<p><button close class='anchor' nav='profile'  >Color</button></p>
 			<p><button close class='anchor' id='brushsizebtn' >Brush Size</button></p>
 			<p><button close class='anchor' id='clear' >Clear   Esc</button></p>
@@ -130,6 +127,31 @@
 			<p><button class='anchor' id='finish'>Finish</button></p>
 			<p><button class='anchor' id='erase' >Erase</button></p>
 			<p><button class='anchor' id='save'  >Save</button></p>
+		</nav>
+		<nav initially hidden class='panel popup leftnav blu' id='layermenu'>
+			<div><span><input type='checkbox' checked id='layerwater'     name='baselayers' /><label for='layerwater'     > Oceans    </label></span>
+				<button g id='waterpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox' checked id='layerland'      name='baselayers' /><label for='layerland'      > Land      </label></span>
+				<button g id='landpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox' checked id='layerrivers'    name='baselayers' /><label for='layerrivers'    > Rivers    </label>
+				<input type='checkbox' checked id='layeranimate'\></span>
+				<button g id='riverspalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox' checked id='layerdeserts'   name='baselayers' /><label for='layerdeserts'   > Deserts   </label></span>
+				<button g id='desertspalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox' checked id='layermountains' name='baselayers' /><label for='layermountains' > Mountains </label></span>
+				<button g id='mountainspalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox' checked id='layergrid'      name='baselayers' /><label for='layergrid'      > Grid      </label></span>
+				<button g id='gridpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox'         id='layercountries' name='baselayers' /><label for='layercountries' > Countries </label></span>
+				<button g id='countriespalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox'         id='layercities'    name='baselayers' /><label for='layercities'    > Cities    </label></span>
+				<button g id='citiespalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><input type='checkbox'         id='layerempire'    name='baselayers' /><label for='layerempire'    > Historical</label></span>
+				<button g id='empirepalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><b>Custom</b></span></div>
+			<div><span><input type='checkbox'         id='layerempire'    name='baselayers' /><label for='layersketch'    > Sketch    </label></span>
+				<button g id='sketchpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
+			<div><span><button class='anchor' id='newlayer'>New...</a></span></div>
 		</nav>
 
 		<!---- modal dialog container and forms ----------------------------->

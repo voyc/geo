@@ -21,6 +21,33 @@ icon {
 	margin-left:.5rem;
 	margin-top:.5rem;
 }
+#layerbtn {
+	position:absolute;
+	left:0;
+	bottom:3rem;
+	margin-left:.5rem;
+}
+#projectbtn {
+	position:absolute;
+	bottom:0rem;
+	right:4rem;
+	margin-bottom:.5rem;
+}
+#layermenu {
+	display:table;
+}
+#layermenu div {
+	display:table-row;
+}
+#layermenu div span {
+	display:table-cell;
+	padding:.5rem;
+	vertical-align:middle;
+}
+.layerpalettebtn {
+	display:table-cell;
+	margin-right:.3rem;
+}
 #announce {
 	left:50%;
 	top:50%;

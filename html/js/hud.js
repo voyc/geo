@@ -36,7 +36,36 @@ voyc.Hud = function() {
 voyc.Hud.prototype.setup = function(elem) {
 	this.elem = elem;
 	this.menuIsOpen = false;
+	this.populateLayerMenu()
 }
+
+voyc.Hud.prototype.populateLayerMenu = function() {
+	var s = ''
+	for (var id in voyc.layers) {
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+	}
+
+	{
+		s += "<div><span><b>Custom</b></span></div>"
+		var id = 'sketch'
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+		s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
+	}
+	var layermenu = voyc.$('layermenu')
+	layermenu.innerHTML = s
+
+	var list = layermenu.querySelectorAll('.layermenucheckbox')
+	list.forEach((e) => {
+		e.addEventListener('click', function(evt) {
+			evt.stopPropagation()
+			voyc.geosketch.world.enableLayer(evt.target.getAttribute('layerid'), evt.target.checked)
+		}, false)
+	})
+}
+
+
 
 voyc.Hud.prototype.attach = function() {
 	this.attachTouchHandlers()
@@ -82,8 +111,7 @@ voyc.Hud.prototype.attach = function() {
 		self.closeAnnouncement();
 	}, false);
 
-	document.getElementById('mercator').addEventListener('click', function() {voyc.geosketch.world.mercator()}, false);
-	document.getElementById('globe').addEventListener('click', function() {voyc.geosketch.world.orthographic()}, false);
+	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
 	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
 	document.getElementById('line' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('line')}, false);
 	document.getElementById('poly' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('poly')}, false);
@@ -94,17 +122,18 @@ voyc.Hud.prototype.attach = function() {
 	
 	// -------- attach map zoomer handlers
 	
-	document.getElementById('mapzoom').addEventListener('click', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			evt.stopPropagation();
-		}
-	}, false);
+	//document.getElementById('mapzoom').addEventListener('click', function(evt) {
+	//	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
+	//		evt.stopPropagation();
+	//	}
+	//}, false);
 	this.mapzoomer = document.getElementById('mapzoomer');
 	this.mapzoomer.min = voyc.geosketch.world.scale.min;
 	this.mapzoomer.max = voyc.geosketch.world.scale.max;
 	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false);
 	this.mapzoomer.addEventListener('touchstart', function(evt) {self.mapZoomerDown(evt)}, false);
 	this.mapzoomer.addEventListener('input', function(evt) {self.mapZoomerMove(evt)}, false);
+	this.mapzoomer.addEventListener('mousemove', function(evt) {self.mapZoomerMove(evt)}, false);
 	this.mapzoomer.addEventListener('touchend', function(evt) {self.mapZoomerUp(evt)}, false);
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false);
 
@@ -201,6 +230,19 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 }
 
+voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
+	if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
+		voyc.show(voyc.$('mercimg'),false)
+		voyc.show(voyc.$('globeimg'),true)
+		voyc.geosketch.world.mercator()
+	}
+	else {
+		voyc.show( voyc.$('mercimg'),true)
+		voyc.show( voyc.$('globeimg'),false)
+		voyc.geosketch.world.orthographic()
+	}
+}
+
 voyc.Hud.prototype.showWhereami = function (evt) {
 	var co = voyc.geosketch.world.projection.invert([evt.clientX, evt.clientY])
 	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
@@ -213,16 +255,20 @@ voyc.Hud.prototype.showWhereami = function (evt) {
 // -------- mapzoomer handlers
 
 voyc.Hud.prototype.mapZoomerDown = function (evt) {
-	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-		evt.stopPropagation();
-		this.mapzoomerIsHot = true;
-	}
+	evt.stopPropagation();
+	this.mapzoomerIsHot = true;
+	voyc.geosketch.world.grab()
 }
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
-	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-		evt.stopPropagation();
+	evt.stopPropagation();
+	if (this.mapzoomerIsHot)
 		voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
-	}
+}
+
+voyc.Hud.prototype.mapZoomerUp = function (evt) {
+	evt.stopPropagation();
+	this.mapzoomerIsHot = false
+	voyc.geosketch.world.drop()
 }
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
@@ -230,12 +276,7 @@ voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	voyc.geosketch.world.zoom(spin)	
 }
 
-voyc.Hud.prototype.mapZoomerUp = function (evt) {
-	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-		evt.stopPropagation();
-		this.mapzoomerIsHot = false;
-	}
-}
+// -------- ?
 
 voyc.Hud.prototype.show = function(elem) {
 	elem.classList.remove('hidden');
