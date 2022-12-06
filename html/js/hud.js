@@ -37,6 +37,7 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.elem = elem;
 	this.menuIsOpen = false;
 	this.populateLayerMenu()
+	this.setupProjectBtn()
 }
 
 voyc.Hud.prototype.populateLayerMenu = function() {
@@ -228,6 +229,11 @@ voyc.Hud.prototype.attach = function() {
 			//voyc.geosketch.world.zoomStop();
 		}
 	}, false);
+}
+
+voyc.Hud.prototype.setupProjectBtn = function() {
+	var id = (voyc.geosketch.world.projection.mix == voyc.Projection.orthographic) ? 'globeimg' : 'mercimg'
+	voyc.show(voyc.$(id),false)
 }
 
 voyc.Hud.prototype.onProjectBtn = function(evt,btn) {

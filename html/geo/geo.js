@@ -15,6 +15,7 @@ voyc.Geo.τε = voyc.Geo.τ - voyc.Geo.ε;      // tau minus epsilon
 voyc.Geo.halfπ = voyc.Geo.π / 2;   // half pi
 voyc.Geo.to_radians = voyc.Geo.π / 180;
 voyc.Geo.to_degrees = 180 / voyc.Geo.π;
+voyc.Geo.radiusKm = 6371;  // radius of planet earth in km
 
 voyc.Geo.distance = function(a, b) {
 	var Δλ = (b[0] - a[0]) * voyc.Geo.to_radians, φ0 = a[1] * voyc.Geo.to_radians, φ1 = b[1] * voyc.Geo.to_radians, sinΔλ = Math.sin(Δλ), cosΔλ = Math.cos(Δλ), sinφ0 = Math.sin(φ0), cosφ0 = Math.cos(φ0), sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1), t;

@@ -1,45 +1,3 @@
-
-todo:
-	x bug: zoomer thumb is frozen
-	x treat zooming like dragging
-	x fix draw... functions
-	. scale mountains by zoom level
-		. see ctx.scale()
-	. rivers, do animation with color instead of size
-	. adaptive resampling for river animation.  add points to make distances constant. OR skip close points
-		. fix up rivers.js original
-		. find ids of rivers that are going the wrong direction
-		. build iterator that reverses point direction by id, and outputs a new geometryCollection
-		. build iterator that measures distance between points
-		. document zoom level, scale meanings
-		. determine best pixel distances between points at each zoom level, and best offset
-		. build iterator that inserts points between distant points and outputs a new geometryCollection
-		. build iterator that simplifies too close points
-			. see https://bost.ocks.org/mike/simplify/
-		. revise Animate iterator to skip points depending on scale (as well as offset)
-	. design drawing palettes
-		. hud UI, see https://sketch.io/sketchpad/?
-		. custom layers vs sketch
-		. ruler, measure distance of line between two points
-		. palette layers on/off
-	. setup ctx ahead of time, not at draw time, after layer creation, "fixup layer palettes"
-	. db update for editing base layers
-	. db update for custom layers
-	. mercator stitch, in GeoIteratorDraw
-	. bug: when globe is upside down, up/down mouse dragging movement is opposite of globe spin
-	. bug: when mouse moves off the board, blank out the whereami
-	. bug: in spin after drag ?
-	. equirectangular projection
-	. animate projection switch
-	. when empire layer is on, time slider shows up
-	. wheel zoom to cursor, or current edit sketch point
-		. after each zoom step
-			. invert the point under the cursor, subtract from previous to get vector
-			. translate (spin) by that vector, ie moveToCoord()
-	. Fill, Mask land, mask water
-		. see ctx.clip()
-	. cities and treasure layers with point medalions
-
 custom layers for storytelling
 	Choke point
 	funnel
@@ -285,7 +243,4 @@ adaptive resampling for river animation
 
 
 .  add points to make distances constant. OR skip close points
-
-
-
 

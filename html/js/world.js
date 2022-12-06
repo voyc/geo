@@ -1,4 +1,5 @@
 /** 
+	this.co = JSON.parse(localStorage.getItem('options')) || {};
 	class World
 	singleton
 	represents the output canvas
@@ -11,18 +12,6 @@ voyc.World = function() {
 	this.w = 0;
 	this.h = 0;
 
-	this.marginRect = {l:0,t:0,r:0,b:0};
-
-	this.scale = {
-		now:0,
-		min:0,
-		max:0,
-		step:0,
-		game:0
-	}
-	this.diameter = 0;
-	this.radius = 0;
-	this.radiusKm = 6371;
 	this.projection = {};
 	this.globe = {};
 	this.layer = [];  // array of layer objects, layer is a canvas
@@ -31,41 +20,31 @@ voyc.World = function() {
 	this.dragging = false;
 	
 	this.option = {
+		minScaleFactor: .5,
+		maxScaleFactor: 6,
 		scaleStepPct: .14,  // percentage of scale
 		spinStep: 6,  // degrees
-		margin:30,  // pixels
 	};
 }
 
-/** @const */
-voyc.World.radiusKm = 6371; // earth radius in kilometers
-
 voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.elem = elem;
-	this.co = [0,0] //co;
 	this.w = w;
 	this.h = h;
-	
+	this.co = JSON.parse(localStorage.getItem('co')) || co
+	this.gamma = localStorage.getItem('gamma') || 0
+	var scalefactor = localStorage.getItem('scalefactor') || scalefactor 
+
+	this.setupScale(w,h,scalefactor)
 	this.setupData()
 	this.setupIterators()
 	this.setupPalette()
 	this.setupLayers()
 	this.fixupPalette()
 	this.setupAnimation()
-
-	this.marginRect = {
-		l:0 + this.option.margin,
-		t:0 + this.option.margin,
-		r:this.w - this.option.margin,
-		b:this.h - this.option.margin
-	};
-
-	this.setupScale(scalefactor)
 	
-	//this.projection = new voyc.OrthographicProjection();
-	//this.projection = new voyc.MercatorProjection();
 	this.projection = new voyc.DualProjection();
-	this.projection.mix = voyc.Projection.orthographic;
+	this.projection.mix = localStorage.getItem('pro') || voyc.Projection.orthographic;
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
@@ -82,25 +61,39 @@ voyc.World.prototype.mercator = function() {
 	this.projection.mix = voyc.Projection.mercator
 	this.moved = true
 	voyc.geosketch.render(0);
+	this.stoPro()
 }
 
 voyc.World.prototype.orthographic = function() {
 	this.projection.mix = voyc.Projection.orthographic
 	this.moved = true
 	voyc.geosketch.render(0);
+	this.stoPro()
 }
 
 // --------  scale
 
 // called at startup
-voyc.World.prototype.setupScale = function(scalefactor) {
+voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 	// scale = number of pixels to display the radius of the globe
-	var diameter = Math.min(this.w, this.h);
-	var radius = Math.round(diameter / 2);
-	this.scale.min = radius * .5;  // small number, zoomed out so the globe fills half the screen
-	this.scale.max = radius * 6;   // large number, zoomed in
-	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct);
-	this.scale.now = radius * scalefactor
+	var halfwid = Math.round(Math.min(w, h) / 2)
+	this.scale = {}
+	this.scale.min = halfwid * this.option.minScaleFactor   // .5, small number, zoomed out
+	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
+	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
+	this.scale.now = halfwid * scalefactor
+}
+
+voyc.World.prototype.stoPro = function() {
+	localStorage.setItem('pro',this.projection.mix)
+}
+voyc.World.prototype.stoCo = function() {
+	localStorage.setItem('co', JSON.stringify(this.co))
+	localStorage.setItem('gamma',this.gamma)
+}
+voyc.World.prototype.stoScale = function() {
+	var scalefactor = this.scale.now / (Math.min(this.w,this.h) /2)
+	localStorage.setItem('scalefactor',scalefactor)
 }
 
 // public zoom by increment, as with key arrow or mouse wheel
@@ -123,6 +116,7 @@ voyc.World.prototype.setScale = function(newscale) {
 	this.moved = true;
 	voyc.geosketch.render(0);
 	voyc.geosketch.hud.setZoom(this.scale.now);
+	this.stoScale()
 }
 
 // --------  public move
@@ -139,11 +133,12 @@ voyc.World.prototype.spin = function(dir) {
 	this.moved = true;
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	voyc.geosketch.render(0);
+	this.stoCo()
 }
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','rivers','anima','feature'].values())
+	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','feature'].values())
 		this.show(this.layer[id].e, false)
 	this.animate(false)
 }
@@ -156,14 +151,16 @@ voyc.World.prototype.drag = function(pt,prev) {
 	this.dragging = true
 	voyc.geosketch.render(0);
 	this.co = this.flipLat(this.projection.co)
+	this.stoCo()
 }
 voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
-	for (var id of ['empire','rivers','anima','feature'].values())
+	//for (var id of ['empire','rivers','anima','feature'].values())
+	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','feature'].values())
 		this.show(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
-	this.animate(true)
+	//this.animate(true)
 }
 
 voyc.World.prototype.flipLat = function(co) {
@@ -176,49 +173,7 @@ voyc.World.prototype.moveToCoord = function(co) {
 	this.projection.rotate([0-co[0], 0-co[1]])
 	this.moved = true;
 	voyc.geosketch.render(0);
-}
-
-voyc.World.prototype.test = function() {
-	var e = document.getElementById('land')
-	var num = 100000
-
-	function testrep(func, reps, name) {
-		var start = new Date()
-		for (var n=0; n<reps; n++) {
-			e.style.display = 'none'
-			e.style.display = 'block'
-		}
-		var end = new Date()
-		console.log([name, (end - start)])
-	}
-
-	testrep(function(e) {
-		e.style.display = 'none'
-		e.style.display = 'block'
-	}, num, 'display')
-
-	testrep(function(e) {
-		e.style.visibility = 'hidden'
-		e.style.visibility = 'visible'
-	}, num, 'visibility')
-
-	testrep(function(e) {
-		e.classList.add('hidden')
-		e.classList.remove('hidden')
-	}, num, 'classname')
-
-	testrep(function(e) {
-		e.setAttribute('hidden', '');
-		e.removeAttribute('hidden')
-	}, num, 'attribute')
-	return
-
-	var india = [+80, +20] // 80E, 20N
-	var rio =   [-43, -23] // 40W, 20S
-	this.moveToCoord(india)
-	console.log(['moved india', this.co[0], this.co[1], this.projection.co[0], this.projection.co[1]])
-	this.moveToCoord(rio)
-	console.log(['moved rio', this.co[0], this.co[1], this.projection.co[0], this.projection.co[1]])
+	this.stoCo()
 }
 
 voyc.World.prototype.getCenterPoint = function() {
@@ -281,6 +236,8 @@ voyc.World.prototype.setupLayers = function() {
 		a.ctx = a.e.getContext("2d")
 		if (useImageData) a.ctx.createImageData(self.w, self.h)
 		self.layer[id] = a
+
+		a.scalerank = parseInt(e.id.substr(6,1)) || 'x'
 	}
 
 	createLayerDiv = function(id, container) {
@@ -313,11 +270,18 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('lowmountains'    ,'lowmountains'    ,false ,'draw', 'feature')
 	createLayerCanvas('mediummountains' ,'mediummountains' ,false ,'draw', 'feature')
 
-	createLayerCanvas('rivers'          ,'rivers'          ,false ,'draw')
-	createLayerDiv('anima')
-	createLayerCanvas('anim1'           ,'rivers'          ,false ,'animate', 'anima')
-	createLayerCanvas('anim2'           ,'rivers'          ,false ,'animate', 'anima')
-	createLayerCanvas('anim3'           ,'rivers'          ,false ,'animate', 'anima')
+	//createLayerCanvas('rivers'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers1'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers2'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers3'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers4'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers5'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers6'          ,'rivers'          ,false ,'draw')
+
+	//createLayerDiv('anima')
+	//createLayerCanvas('anim1'           ,'rivers'          ,false ,'animate', 'anima')
+	//createLayerCanvas('anim2'           ,'rivers'          ,false ,'animate', 'anima')
+	//createLayerCanvas('anim3'           ,'rivers'          ,false ,'animate', 'anima')
 
 	createLayerCanvas('empire'          ,'empire'          ,false ,'draw')
 	createLayerCanvas('sketch'          ,'sketch'          ,false ,'draw')
@@ -327,6 +291,8 @@ voyc.World.prototype.setupLayers = function() {
 
 voyc.World.prototype.enableLayer = function(layerid, boo) {
 	var layer = this.layer[layerid]
+	if (!layer)
+		var x = 'debug me'
 	layer.enabled = boo
 	voyc.show(layer.e, boo)
 	this.moved = true
@@ -361,6 +327,7 @@ voyc.World.prototype.frameShift = function() {
 	}
 }
 voyc.World.prototype.animate = function(boo) {
+	return
 	if (boo) {
 		if (this.timer) {
 			console.log(['attempting reanimate'])
@@ -401,7 +368,6 @@ voyc.World.prototype.clearLayers = function() {
 voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
-	this.diameter = Math.min(this.w, this.h);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
 
 	this.marginRect = {
@@ -452,7 +418,8 @@ voyc.World.prototype.drawLayer = function(id) {
 		layer.data, 
 		this.projection, 
 		layer.ctx, 
-		layer.palette)
+		layer.palette,
+		layer.scalerank)
 }
 
 voyc.World.prototype.drawWater = function() {
@@ -474,6 +441,14 @@ voyc.World.prototype.drawWater = function() {
 }
 
 voyc.World.prototype.drawRiver = function() {
+	this.drawLayer('rivers1')
+	this.drawLayer('rivers2')
+	this.drawLayer('rivers3')
+	this.drawLayer('rivers4')
+	this.drawLayer('rivers5')
+	this.drawLayer('rivers6')
+	return
+
 	this.drawLayer('rivers')
 
 	var data = this.layer['rivers'].data
@@ -554,7 +529,12 @@ voyc.layers = {
 	grid:            'Graticule',
 	sketch:          'Sketch',
 	empire:          'Historical',
-	rivers:          'Rivers',
+	rivers1:          'Rivers1',
+	rivers2:          'Rivers2',
+	rivers3:          'Rivers3',
+	rivers4:          'Rivers4',
+	rivers5:          'Rivers5',
+	rivers6:          'Rivers6',
 	animation:       'Animation',
 	deserts:         'Deserts',
 	highmountains:   'Mountains',

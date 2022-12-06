@@ -17,7 +17,8 @@ voyc.GeoSketch = function () {
 		speed: 10 // years per second	
 	}
 	
-	this.options = {};
+	this.options = JSON.parse(localStorage.getItem('options')) || {};
+	localStorage.setItem( 'options', JSON.stringify(this.options));
 }
 
 voyc.GeoSketch.prototype.setup = function () {
@@ -72,16 +73,11 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	var divworld = document.getElementById('world') 
 	this.world.setup( 
 		divworld,
-		[140,20,0],  // start position: india 80E 20N
+		[140,20],  // start position: india 80E 20N
 		divworld.clientWidth,
 		divworld.clientHeight,
 		1	// starting scale factor
-	 )
-
-	//this.world.setupData()
-
-	this.observer.publish('setup-complete', 'geosketch', {});
-	//(new voyc.3).nav('home');
+	)
 
 	this.hud = new voyc.Hud();
 	this.hud.buttons = [1]  // middle
@@ -101,7 +97,8 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 
 	this.world.moved = true
 	this.world.setScale() // to set the zoomer, forces a render
-	//this.render()
+
+	this.observer.publish('setup-complete', 'geosketch', {});
 }
 
 voyc.option = {

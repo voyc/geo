@@ -78,7 +78,7 @@ voyc.GeoIterator.prototype.iterateCollection = function(collection, ...add) {
 }
 
 voyc.GeoIterator.prototype.iterateGeometry = function(geometry) {
-	this.geometryStart(geometry);
+	if (!this.geometryStart(geometry)) return
 	switch(geometry['type']) {
 		case 'MultiPolygon':
 			for (var poly in geometry['coordinates']) {
@@ -135,7 +135,7 @@ voyc.GeoIterator.prototype.doPoint = function(point, within) {}
 */
 voyc.GeoIterator.prototype.collectionStart = function(collection, ...add) {}
 voyc.GeoIterator.prototype.collectionEnd=function(collection) {}
-voyc.GeoIterator.prototype.geometryStart = function(geometry) {}
+voyc.GeoIterator.prototype.geometryStart = function(geometry) { return true}
 voyc.GeoIterator.prototype.geometryEnd = function(geometry) {}
 voyc.GeoIterator.prototype.polygonStart = function(polygon) {}
 voyc.GeoIterator.prototype.polygonEnd = function(polygon) {}
@@ -169,7 +169,7 @@ voyc.GeoIteratorCount.prototype.collectionEnd = function(collection) {
 voyc.GeoIteratorCount.prototype.doPoint = function(point, within) { this.points++ }
 voyc.GeoIteratorCount.prototype.lineStart = function(line) { this.lines++ }
 voyc.GeoIteratorCount.prototype.polygonStart = function(polygon) { this.polygons++ }
-voyc.GeoIteratorCount.prototype.geometryStart = function(geometry) { this.geometries++ }
+voyc.GeoIteratorCount.prototype.geometryStart = function(geometry) { this.geometries++; return true}
 
 // -------- subclass GeoIteratorDraw, with clipping
 
@@ -182,9 +182,15 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
+	this.scalerank = add[3]
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
 	this.ctx.beginPath();
 }
+
+voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
+	return ((this.scalerank == 'x') || (this.scalerank == geometry.scalerank))
+}
+
 voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
 	this.ctx.fillStyle = this.palette.fill
 	this.ctx.strokeStyle = this.palette.stroke
