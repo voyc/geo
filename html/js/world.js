@@ -29,10 +29,9 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.zooming = false;
 	
 	this.option = {
-		scaleStep: .14,  // percentage of scale
+		scaleStepPct: .14,  // percentage of scale
 		spinStep: 6,  // degrees
 		margin:30,  // pixels
 	};
@@ -61,13 +60,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 		b:this.h - this.option.margin
 	};
 
-	// scale in pixels
-	this.diameter = Math.min(this.w, this.h);
-	this.radius = Math.round(this.diameter / 2);
-	this.scale.min = this.radius * .5;  // small number, zoomed out
-	this.scale.max = this.radius * 6;   // large number, zoomed in
-	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStep);
-	this.scale.now = this.radius * scalefactor
+	this.setupScale(scalefactor)
 	
 	//this.projection = new voyc.OrthographicProjection();
 	//this.projection = new voyc.MercatorProjection();
@@ -97,32 +90,39 @@ voyc.World.prototype.orthographic = function() {
 	voyc.geosketch.render(0);
 }
 
-// --------  public zoom
+// --------  scale
 
-// zoom by value: slider, setup
-voyc.World.prototype.zoomValue = function(value) {
-	this.setScale(value);
+// called at startup
+voyc.World.prototype.setupScale = function(scalefactor) {
+	// scale = number of pixels to display the radius of the globe
+	var diameter = Math.min(this.w, this.h);
+	var radius = Math.round(diameter / 2);
+	this.scale.min = radius * .5;  // small number, zoomed out so the globe fills half the screen
+	this.scale.max = radius * 6;   // large number, zoomed in
+	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct);
+	this.scale.now = radius * scalefactor
 }
 
-// zoom by increment: keystroke, wheel
+// public zoom by increment, as with key arrow or mouse wheel
 voyc.World.prototype.zoom = function(dir) {
 	var x = 0;
 	switch(dir) {
 		case voyc.Spin.IN: x = 1; break;
 		case voyc.Spin.OUT: x = -1; break;
 	}
-	var newscale = this.scale.now + (this.scale.now * x * this.option.scaleStep);
+	//var newscale = this.scale.now + (x * this.scale.step); // constant step amount, no good
+	var newscale = this.scale.now + (this.scale.now * x * this.option.scaleStepPct);
 	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
 	this.setScale(newscale);
 }
 
-// up = zoom in, like g-earth: up wheel, up slider, up shift-arrow
+// public zoom to a specific scale, as with slider or setup
 voyc.World.prototype.setScale = function(newscale) {
 	this.scale.now = newscale || this.scale.now
 	this.projection.scale(this.scale.now);
-	voyc.geosketch.hud.setZoom(this.scale.now);
 	this.moved = true;
 	voyc.geosketch.render(0);
+	voyc.geosketch.hud.setZoom(this.scale.now);
 }
 
 // --------  public move
@@ -414,14 +414,14 @@ voyc.World.prototype.resize = function(w, h) {
 	for (var id in this.layer) {
 		a = this.layer[id];
 		if (a.type == 'canvas') {
-			a.canvas.width  = this.w;
-			a.canvas.height = this.h;
-			a.canvas.style.width =  this.w + 'px';
-			a.canvas.style.height = this.h + 'px';
+			a.ctx.canvas.width  = this.w;
+			a.ctx.canvas.height = this.h;
+			a.ctx.canvas.style.width =  this.w + 'px';
+			a.ctx.canvas.style.height = this.h + 'px';
 		}
 		else if (a.type == 'div') {
-			a.div.style.width =  this.w + 'px';
-			a.div.style.height = this.h + 'px';
+			a.e.style.width =  this.w + 'px';
+			a.e.style.height = this.h + 'px';
 		}
 	}
 	
@@ -436,7 +436,7 @@ voyc.World.prototype.draw = function() {
 		this.drawLayer('land')
 		this.drawLayer('grid')
 		this.drawLayer('sketch')
-		if (!this.dragging && !this.zooming) {
+		if (!this.dragging) {
 			//this.drawEmpire();
 			this.drawFeatures();
 			this.drawRiver();

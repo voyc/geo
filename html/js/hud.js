@@ -254,6 +254,16 @@ voyc.Hud.prototype.showWhereami = function (evt) {
 
 // -------- mapzoomer handlers
 
+// five ways to zoom, to call world.setScale()
+//   1. mouse wheel
+//   2. click plus or minus
+//   3. drag zoom slider
+//   4. keyboard shift up or down arrow
+//   5. touch two-finger pinch
+
+// zoom UI, like google earth: up is zoom in, down is zoom out
+// up = zoom in: up wheel, up slider, up shift-arrow, up plus
+
 voyc.Hud.prototype.mapZoomerDown = function (evt) {
 	evt.stopPropagation();
 	this.mapzoomerIsHot = true;
@@ -262,7 +272,7 @@ voyc.Hud.prototype.mapZoomerDown = function (evt) {
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
 	evt.stopPropagation();
 	if (this.mapzoomerIsHot)
-		voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
+		voyc.geosketch.world.setScale(parseInt(evt.target.value,10));
 }
 
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
@@ -329,6 +339,7 @@ voyc.Hud.prototype.setZoom = function(newvalue) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = newvalue;
 	}
+	voyc.$('zoomscale').innerHTML = newvalue;
 }
 
 // -------- mouse handlers

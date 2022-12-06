@@ -75,7 +75,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 		[140,20,0],  // start position: india 80E 20N
 		divworld.clientWidth,
 		divworld.clientHeight,
-		.5	// starting scale factor
+		1	// starting scale factor
 	 )
 
 	//this.world.setupData()
