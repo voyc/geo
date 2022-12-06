@@ -71,18 +71,7 @@ voyc.World.prototype.orthographic = function() {
 	this.stoPro()
 }
 
-// --------  scale
-
-// called at startup
-voyc.World.prototype.setupScale = function(w,h,scalefactor) {
-	// scale = number of pixels to display the radius of the globe
-	var halfwid = Math.round(Math.min(w, h) / 2)
-	this.scale = {}
-	this.scale.min = halfwid * this.option.minScaleFactor   // .5, small number, zoomed out
-	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
-	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
-	this.scale.now = halfwid * scalefactor
-}
+// --------  localStorage
 
 voyc.World.prototype.stoPro = function() {
 	localStorage.setItem('pro',this.projection.mix)
@@ -96,8 +85,23 @@ voyc.World.prototype.stoScale = function() {
 	localStorage.setItem('scalefactor',scalefactor)
 }
 
+// --------  scale
+
+// called at startup
+voyc.World.prototype.setupScale = function(w,h,scalefactor) {
+	// scale = number of pixels to display the radius of the globe
+	var halfwid = Math.round(Math.min(w, h) / 2)
+	this.scale = {}
+	this.scale.min = halfwid * this.option.minScaleFactor   // .5, small number, zoomed out
+	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
+	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
+	this.scale.now = halfwid * scalefactor
+}
+
 // public zoom by increment, as with key arrow or mouse wheel
-voyc.World.prototype.zoom = function(dir) {
+voyc.World.prototype.zoom = function(dir,pt) {
+	pt = pt || false
+	var coOld = (pt) ? this.projection.invert(pt) : false
 	var x = 0;
 	switch(dir) {
 		case voyc.Spin.IN: x = 1; break;
@@ -107,6 +111,11 @@ voyc.World.prototype.zoom = function(dir) {
 	var newscale = this.scale.now + (this.scale.now * x * this.option.scaleStepPct);
 	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
 	this.setScale(newscale);
+	if (pt) {
+		var coNew = this.projection.invert(pt)
+		var vector = voyc.subtractArray(coNew, coOld)
+		this.moveByVector(vector)
+	}
 }
 
 // public zoom to a specific scale, as with slider or setup
@@ -168,11 +177,22 @@ voyc.World.prototype.flipLat = function(co) {
 	return [co[0], 0-co[1]]
 }
 
+voyc.World.prototype.moveToPoint = function(pt) {
+	var co = this.projection.invert(pt)
+	this.moveToCoord(co)
+}
 voyc.World.prototype.moveToCoord = function(co) {
 	this.co = co
 	this.projection.rotate([0-co[0], 0-co[1]])
 	this.moved = true;
 	voyc.geosketch.render(0);
+	this.stoCo()
+}
+voyc.World.prototype.moveByVector = function(rotation) {
+	this.projection.rotateIncr(rotation)
+	this.moved = true
+	voyc.geosketch.render(0);
+	this.co = this.flipLat(this.projection.co)
 	this.stoCo()
 }
 

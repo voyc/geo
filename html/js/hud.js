@@ -289,7 +289,8 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	var spin = (evt.deltaY > 0) ? voyc.Spin.OUT : voyc.Spin.IN
-	voyc.geosketch.world.zoom(spin)	
+	pt = this.getMousePt(evt)
+	voyc.geosketch.world.zoom(spin,pt)	
 }
 
 // -------- ?
