@@ -231,6 +231,7 @@ voyc.World.prototype.setupIterators = function() {
 	this.iterator['count']   = new voyc.GeoIteratorCount()
 	this.iterator['draw']    = new voyc.GeoIteratorDraw()
 	this.iterator['animate'] = new voyc.GeoIteratorAnimate()
+	this.iterator['hittest'] = new voyc.GeoIteratorHitTest()
 }
 
 voyc.World.prototype.setupLayers = function() {
@@ -381,6 +382,10 @@ voyc.World.prototype.clearLayer = function(id) {
 voyc.World.prototype.clearLayers = function() {
 	for (var lay in this.layer) 
 		this.layer[lay].ctx.clearRect(0,0,this.w,this.h)
+}
+
+voyc.World.prototype.hit = function(pt) {
+	return this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
 }
 
 // --------  drawing

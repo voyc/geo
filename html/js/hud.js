@@ -249,13 +249,17 @@ voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
 	}
 }
 
-voyc.Hud.prototype.showWhereami = function (evt) {
-	var co = voyc.geosketch.world.projection.invert([evt.clientX, evt.clientY])
-	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
-	latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
-	lng = Math.abs(Math.round(co[0]))
-	lat = Math.abs(Math.round(co[1]))
-	voyc.$('hudlatlng').innerHTML = lat + latd + lng + lngd
+voyc.Hud.prototype.showWhereami = function (pt,s) {
+	var s = s || ''
+	if (!s) {
+		var co = voyc.geosketch.world.projection.invert(pt)
+		lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
+		latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
+		lng = Math.abs(Math.round(co[0]))
+		lat = Math.abs(Math.round(co[1]))
+		s = lat + latd + lng + lngd
+	}
+	voyc.$('whereami').innerHTML = s
 }
 
 // -------- mapzoomer handlers
@@ -324,17 +328,6 @@ voyc.Hud.prototype.closeAnnouncement = function() {
 	this.hide(document.getElementById('announce'));
 }
 
-voyc.Hud.prototype.setWhereami = function(location, geo, presentday) {
-	var lng = location[0];
-	var lat = location[1];
-	var loc = Math.abs(lat).toFixed(0) + '&#x00B0; ' + ((lng<0) ? 'S' : 'N') + ', ';
-	loc += Math.abs(lng).toFixed(0) + '&#x00B0; ' + ((lng<0) ? 'W' : 'E');
-	
-	document.getElementById('hudlatlng').innerHTML = loc;
-	document.getElementById('hudgeo').innerHTML = geo;
-	document.getElementById('hudpresentday').innerHTML = presentday;
-}
-
 voyc.Hud.prototype.setTime = function(time) {
 	document.getElementById('time').innerHTML = Math.abs(time) + ' ' + ((time < 0) ? 'BCE' : 'CE');
 	if (!this.timesliderIsHot) {
@@ -383,9 +376,9 @@ voyc.Hud.prototype.onmousedown = function(evt) {
 voyc.Hud.prototype.onmousemove = function(evt) {
 	evt.preventDefault()
 	evt.stopPropagation()
-	this.showWhereami(evt)
+	var pt = this.getMousePt(evt)
+	this.showWhereami(pt)
 	if (this.dragPrev) {
-		var pt = this.getMousePt(evt)
 		if (this.mousebuttondown == voyc.mouse.middle)
 			voyc.geosketch.world.drag(pt, this.dragPrev);
 		else
@@ -406,7 +399,12 @@ voyc.Hud.prototype.onclick = function(evt) {
 	evt.preventDefault();
 	evt.stopPropagation();
 	var pt = this.getMousePt(evt)
-	voyc.geosketch.sketch.addPoint(pt)
+	if (evt.shiftKey) {
+		var s = voyc.geosketch.world.hit(pt)
+		this.showWhereami(pt,s)
+	}
+	else
+		voyc.geosketch.sketch.addPoint(pt)
 }
 
 voyc.Hud.prototype.ondblclick = function(evt) {

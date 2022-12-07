@@ -62,6 +62,7 @@
 	Instantiate one of the subclasses below.
 */
 voyc.GeoIterator = function() {
+	this.ret = false
 }
 
 /* 	method: iterateGeometry()
@@ -70,11 +71,13 @@ voyc.GeoIterator = function() {
 	override collectionStart to read additional parameters
 */
 voyc.GeoIterator.prototype.iterateCollection = function(collection, ...add) {
+	this.ret = false
 	this.collectionStart(collection, add);
 	for (geometry in collection['geometries']) {
 		this.iterateGeometry(collection['geometries'][geometry]);
 	}
 	this.collectionEnd(collection);
+	return this.ret
 }
 
 voyc.GeoIterator.prototype.iterateGeometry = function(geometry) {
@@ -188,6 +191,10 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 }
 
 voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
+	//if (geometry.type == 'MultiLineString') 
+	//	if (geometry.name != 'Bratul Sulina') 
+	//		return false
+		
 	return ((this.scalerank == 'x') || (this.scalerank == geometry.scalerank))
 }
 
@@ -353,4 +360,68 @@ voyc.GeoIteratorAnimate.prototype.doPoint = function(co, within) {
 			this.ctx.closePath()
 		}
 	}
+}
+
+// -------- subclass GeoIteratorHitTest, return a geometry intersecing a point
+
+voyc.GeoIteratorHitTest = function() {
+	voyc.GeoIterator.call(this) // super
+}
+voyc.GeoIteratorHitTest.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
+
+// geometry = iterateCollection(collection, proj, pt) // input pt, output geometry
+
+voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
+	this.ret = false
+	this.projection = add[0]
+	this.pt = add[1]
+	var size = 150
+	this.rect = {
+		w:this.pt[0]-size,
+		e:this.pt[0]+size,
+		n:this.pt[1]-size,
+		s:this.pt[1]+size,
+	}
+}
+
+voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
+	console.log(geometry.name)
+	return !this.ret  // kill the loop when hit already found
+}
+voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
+	if (this.ret)
+		this.ret = geometry.name  // return from interateCollection()
+}
+
+voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
+	pointInPolygon= function(pt,poly) {
+		var x = pt[0];
+		var y = pt[1];
+		var inside = false
+		for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+			if (((poly[i][1] > y) != (poly[j][1] > y)) && (x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])) {
+				inside = !inside;
+			}
+		}
+		return inside;
+	},
+	pointInRect= function(pt,rect) {
+		return(    (pt[0] > rect.w)
+			&& (pt[0] < rect.e)
+			&& (pt[1] > rect.n)
+			&& (pt[1] < rect.s))
+	}
+	var pt = this.projection.project(co)
+	//console.log(['co',co[0],co[1],'pt',pt[0],pt[1]])
+	var boo = false
+	if (pt) {
+		if (within == 'point') 
+			boo = pointInRect(pt,this.rect)
+		if (within == 'poly')
+			boo = pointInPoly(pt,poly)
+	
+		if (within == 'line')
+			boo = pointInRect(pt,this.rect)
+	}
+	this.ret = boo // on true, signal geometryEnd when we have a match
 }
