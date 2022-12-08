@@ -147,7 +147,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','feature'].values())
+	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','lakes','feature'].values())
 		this.show(this.layer[id].e, false)
 	this.animate(false)
 }
@@ -166,7 +166,7 @@ voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
 	//for (var id of ['empire','rivers','anima','feature'].values())
-	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','feature'].values())
+	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','lakes','feature'].values())
 		this.show(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
 	//this.animate(true)
@@ -298,6 +298,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('rivers4'          ,'rivers'          ,false ,'draw')
 	createLayerCanvas('rivers5'          ,'rivers'          ,false ,'draw')
 	createLayerCanvas('rivers6'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('lakes'            ,'lakes'           ,false ,'draw')
 
 	//createLayerDiv('anima')
 	//createLayerCanvas('anim1'           ,'rivers'          ,false ,'animate', 'anima')
@@ -472,6 +473,7 @@ voyc.World.prototype.drawRiver = function() {
 	this.drawLayer('rivers4')
 	this.drawLayer('rivers5')
 	this.drawLayer('rivers6')
+	this.drawLayer('lakes')
 	return
 
 	this.drawLayer('rivers')
@@ -541,6 +543,7 @@ grid:            {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,
 sketch:          {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 empire:          {isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 rivers:          {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+lakes:           {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},
 animation:       {isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 deserts:         {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 highmountains:   {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
@@ -560,6 +563,7 @@ voyc.layers = {
 	rivers4:          'Rivers4',
 	rivers5:          'Rivers5',
 	rivers6:          'Rivers6',
+	lakes:           'Lakes', 
 	animation:       'Animation',
 	deserts:         'Deserts',
 	highmountains:   'Mountains',
