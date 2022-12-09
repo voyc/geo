@@ -8,19 +8,50 @@ voyc.Geo = function() {
 
 // static variables
 voyc.Geo.ε = 1e-6;    // epsilon
-voyc.Geo.ε2 = voyc.Geo.ε * voyc.Geo.ε;   // epsilon2
+voyc.Geo.ε2 = voyc.Geo.ε * voyc.Geo.ε;   // epsilon squared
 voyc.Geo.π = Math.PI;    // pi
 voyc.Geo.τ = 2 * voyc.Geo.π;           // tau = 2 * pi
 voyc.Geo.τε = voyc.Geo.τ - voyc.Geo.ε;      // tau minus epsilon
 voyc.Geo.halfπ = voyc.Geo.π / 2;   // half pi
 voyc.Geo.to_radians = voyc.Geo.π / 180;
 voyc.Geo.to_degrees = 180 / voyc.Geo.π;
-voyc.Geo.radiusKm = 6371;  // radius of planet earth in km
+voyc.Geo.radiusKm = 6371             // radius of planet earth in km
+voyc.Geo.circumferenceKm = 40000     // circumference of planet earth in km
 
-voyc.Geo.distance = function(a, b) {
+voyc.Geo.distanced3 = function(a, b) { // original d3 function
 	var Δλ = (b[0] - a[0]) * voyc.Geo.to_radians, φ0 = a[1] * voyc.Geo.to_radians, φ1 = b[1] * voyc.Geo.to_radians, sinΔλ = Math.sin(Δλ), cosΔλ = Math.cos(Δλ), sinφ0 = Math.sin(φ0), cosφ0 = Math.cos(φ0), sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1), t;
 	return Math.atan2(Math.sqrt((t = cosφ1 * sinΔλ) * t + (t = cosφ0 * sinφ1 - sinφ0 * cosφ1 * cosΔλ) * t), sinφ0 * sinφ1 + cosφ0 * cosφ1 * cosΔλ);
 }
+
+// great circle = plane intersecting the centerpoint of a sphere
+// small circle = plane intersecting a sphere, but not the centerpoint
+// rhumb line = arc of sperical helix, https://www.youtube.com/watch?v=3BF_ZKfJiso, 3:35
+voyc.Geo.distanceKm = function(coA, coB) {
+	return this.calcθ(coA, coB) * voyc.Geo.radiusKm
+}
+voyc.Geo.distancePixels = function(coA, coB, scale) {
+	return this.calcθ(coA, coB) * scale
+}
+voyc.Geo.calcθ = function(coA, coB) {
+	// calc distance between two coordinates using the haversine formula
+	// create a great circle through the two points and the center of the sphere
+	// source: https://stackoverflow.com/questions/365826/calculate-distance-between-2-gps-coordinates
+
+	var λA = voyc.Geo.to_radians * coA[0]  // (lowercase lambda) = longitude
+	var φA = voyc.Geo.to_radians * coA[1]  // (lowercase phi) = latitude
+	var λB = voyc.Geo.to_radians * coB[0]
+	var φB = voyc.Geo.to_radians * coB[1]
+
+	var Δλ = λB-λA  // delta lambda = change in longitude
+	var Δφ = φB-φA
+
+	var hav = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+		  Math.sin(Δλ/2) * Math.sin(Δλ/2) * Math.cos(φA) * Math.cos(φB); 
+
+	var θ = 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1-hav))  // (lowercase theta) = central angle
+	return θ
+}
+
 
 voyc.Geo.interpolate = function(source, target, t) {
 	var x0 = source[0] * voyc.Geo.to_radians;

@@ -375,7 +375,7 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 	this.ret = false
 	this.projection = add[0]
 	this.pt = add[1]
-	var size = 150
+	var size = 15
 	this.rect = {
 		w:this.pt[0]-size,
 		e:this.pt[0]+size,
