@@ -385,7 +385,8 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 }
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
-	console.log(geometry.name)
+	//console.log(geometry.name)
+	this.geom = geometry
 	return !this.ret  // kill the loop when hit already found
 }
 voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
@@ -421,7 +422,8 @@ voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
 			boo = pointInPoly(pt,poly)
 	
 		if (within == 'line')
-			boo = pointInRect(pt,this.rect)
+			//boo = pointInRect(pt,this.rect)
+			boo = pointInRect(this.pt,this.geom.rect)
 	}
 	this.ret = boo // on true, signal geometryEnd when we have a match
 }
