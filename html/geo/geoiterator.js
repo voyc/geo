@@ -374,20 +374,26 @@ voyc.GeoIteratorHitTest.prototype = Object.create(voyc.GeoIterator.prototype) //
 voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 	this.ret = false
 	this.projection = add[0]
-	this.pt = add[1]
+	this.mousept = add[1]
 	var size = 15
-	this.rect = {
-		w:this.pt[0]-size,
-		e:this.pt[0]+size,
-		n:this.pt[1]-size,
-		s:this.pt[1]+size,
+	this.mouserect = {
+		w:this.mousept[0]-size,
+		e:this.mousept[0]+size,
+		n:this.mousept[1]-size,
+		s:this.mousept[1]+size,
 	}
+	this.mouseco = this.projection.invert(this.mousept)
 }
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
 	//console.log(geometry.name)
 	this.geom = geometry
-	return !this.ret  // kill the loop when hit already found
+	boo = this.pointInRect(this.mouseco,this.geom.rect)
+	if (boo) {
+		this.ret = this.geom.name
+		console.log(['hit', this.ret])
+	}
+	return false; !this.ret  // kill the loop when hit already found
 }
 voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
 	if (this.ret)
@@ -395,35 +401,35 @@ voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
 }
 
 voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
-	pointInPolygon= function(pt,poly) {
-		var x = pt[0];
-		var y = pt[1];
-		var inside = false
-		for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-			if (((poly[i][1] > y) != (poly[j][1] > y)) && (x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])) {
-				inside = !inside;
-			}
-		}
-		return inside;
-	},
-	pointInRect= function(pt,rect) {
-		return(    (pt[0] > rect.w)
-			&& (pt[0] < rect.e)
-			&& (pt[1] > rect.n)
-			&& (pt[1] < rect.s))
-	}
 	var pt = this.projection.project(co)
 	//console.log(['co',co[0],co[1],'pt',pt[0],pt[1]])
 	var boo = false
 	if (pt) {
 		if (within == 'point') 
-			boo = pointInRect(pt,this.rect)
+			boo = this.pointInRect(pt,this.rect)
 		if (within == 'poly')
-			boo = pointInPoly(pt,poly)
+			boo = this.pointInPoly(pt,poly)
 	
 		if (within == 'line')
 			//boo = pointInRect(pt,this.rect)
-			boo = pointInRect(this.pt,this.geom.rect)
+			boo = this.pointInRect(this.mouseco,this.geom.rect)
 	}
 	this.ret = boo // on true, signal geometryEnd when we have a match
+}
+voyc.GeoIteratorHitTest.prototype.pointInPolygon= function(pt,poly) {
+	var x = pt[0];
+	var y = pt[1];
+	var inside = false
+	for (var i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+		if (((poly[i][1] > y) != (poly[j][1] > y)) && (x < (poly[j][0] - poly[i][0]) * (y - poly[i][1]) / (poly[j][1] - poly[i][1]) + poly[i][0])) {
+			inside = !inside;
+		}
+	}
+	return inside;
+},
+voyc.GeoIteratorHitTest.prototype.pointInRect= function(pt,rect) {
+	return(    (pt[0] > rect.w)
+		&& (pt[0] < rect.e)
+		&& (pt[1] > rect.n)
+		&& (pt[1] < rect.s))
 }
