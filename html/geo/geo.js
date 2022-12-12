@@ -2,6 +2,7 @@
 	Geo
 	a static class, not instantiated
 	containing static variables and methods
+	for geography and navigation trigonometry
 */
 voyc.Geo = function() {
 }
@@ -51,7 +52,6 @@ voyc.Geo.calcθ = function(coA, coB) {
 	var θ = 2 * Math.atan2(Math.sqrt(hav), Math.sqrt(1-hav))  // (lowercase theta) = central angle
 	return θ
 }
-
 
 voyc.Geo.interpolate = function(source, target, t) {
 	var x0 = source[0] * voyc.Geo.to_radians;

@@ -383,21 +383,30 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 		s:this.mousept[1]+size,
 	}
 	this.mouseco = this.projection.invert(this.mousept)
+	this.ptPrev = false
+	this.hits = []
 }
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
 	//console.log(geometry.name)
 	this.geom = geometry
-	boo = this.pointInRect(this.mouseco,this.geom.rect)
-	if (boo) {
-		this.ret = this.geom.name
-		console.log(['hit', this.ret])
-	}
-	return false; !this.ret  // kill the loop when hit already found
+	//boo = this.pointInRect(this.mouseco,this.geom.rect)
+	//if (boo) {
+	//	this.ret = this.geom.name
+	//	console.log(['hit', this.ret])
+	//}
+	//return false; 
+	return !this.ret  // kill the loop when hit already found
 }
 voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
-	if (this.ret)
-		this.ret = geometry.name  // return from interateCollection()
+	if (this.ret) {
+		this.hits.push(geometry.name)
+		this.ret = false
+	}
+}
+voyc.GeoIteratorHitTest.prototype.collectionEnd = function() {
+	this.ret = this.hits
+	console.log(this.ret)
 }
 
 voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
@@ -412,7 +421,15 @@ voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
 	
 		if (within == 'line')
 			//boo = pointInRect(pt,this.rect)
-			boo = this.pointInRect(this.mouseco,this.geom.rect)
+			//boo = this.pointInRect(this.mouseco,this.geom.rect)
+			if (this.ptPrev) {
+				var d = voyc.distancePointToLineSeg(this.mousept,this.ptPrev,pt)
+				if (d < 10) { 
+					boo = true
+					var dx = voyc.distancePointToLineSeg(this.mousept,this.ptPrev,pt)
+				}
+			}
+			this.ptPrev = pt	
 	}
 	this.ret = boo // on true, signal geometryEnd when we have a match
 }
