@@ -214,27 +214,37 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	this.ctx = add[1]
 	this.palette = add[2]
 	this.scalerank = add[3]
-	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height);
-	this.ctx.beginPath();
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
 	return true
 }
 
-voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
-	//if (geometry.type == 'MultiLineString') 
-	//	if (geometry.name != 'Bratul Sulina') 
-	//		return false
-	//  ??? this needs to be >=	
-	if (this.collection.name == 'rivers') 
-		var x = 3
-	return ((this.scalerank == 'x') || (geometry.scalerank == this.scalerank))
+voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
+	// most layers have one palette, so we draw the whole layer in one go at the end
+	if (this.palette.length == 1)
+		this.draw(0)
+}
+voyc.GeoIteratorDraw.prototype.geometryEnd = function(geometry) {
+	// some layers have multiple palettes, one per scalerank
+	if (this.palette.length > 1)
+		this.draw(4)
+// sort the rivers by scalerank
+// iterate rivers only once
+// draw here whenever the scalerank changes
+// add qualification by scalerank
+}
+voyc.GeoIteratorDraw.prototype.draw = function(ndx) {
+	var palette = this.palette[ndx]
+	this.ctx.fillStyle = palette.fill
+	this.ctx.strokeStyle = palette.stroke
+	this.ctx.linewidth = palette.pen
+	if (palette.isFill) this.ctx.fill()
+	if (palette.isStroke) this.ctx.stroke()
 }
 
-voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
-	this.ctx.fillStyle = this.palette.fill
-	this.ctx.strokeStyle = this.palette.stroke
-	this.ctx.linewidth = this.palette.pen
-	if (this.palette.isFill) this.ctx.fill()
-	if (this.palette.isStroke) this.ctx.stroke()
+voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
+	// qualification by scalerank
+	return ((this.scalerank == 'x') || (geometry.scalerank >= this.scalerank))
 }
 
 voyc.GeoIteratorDraw.prototype.lineStart = function(line) {

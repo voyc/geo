@@ -1,8 +1,7 @@
 /** 
-	this.co = JSON.parse(localStorage.getItem('options')) || {};
 	class World
 	singleton
-	represents the output canvas
+	represents the output display, multiple layered canvas elements
 	@constructor 
 */
 voyc.World = function() {
@@ -81,8 +80,7 @@ voyc.World.prototype.stoCo = function() {
 	localStorage.setItem('gamma',this.gamma)
 }
 voyc.World.prototype.stoScale = function() {
-	var scalefactor = this.scale.now / (Math.min(this.w,this.h) /2)
-	localStorage.setItem('scalefactor',scalefactor)
+	localStorage.setItem('scalefactor',this.scale.factor)
 }
 
 // --------  scale
@@ -95,6 +93,7 @@ voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 	this.scale.min = halfwid * this.option.minScaleFactor   // .5, small number, zoomed out
 	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
 	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
+	this.scale.factor = scalefactor
 	this.scale.now = halfwid * scalefactor
 }
 
@@ -125,6 +124,7 @@ voyc.World.prototype.setScale = function(newscale) {
 	this.moved = true;
 	voyc.geosketch.render(0);
 	voyc.geosketch.hud.setZoom(this.scale.now);
+	this.scale.factor = this.scale.now / (Math.min(this.w,this.h) /2)
 	this.stoScale()
 }
 
@@ -253,9 +253,7 @@ voyc.World.prototype.setupLayers = function() {
 		a.enabled = true
 		a.iterator = self.iterator[iterator]
 		a.data = voyc.data[dataid]
-		a.palette = voyc.worldPalette[dataid]
-		if (dataid == 'rivers')
-			a.palette = voyc.worldPalette[id]
+		a.palette = self.palette[dataid]  //[0]
 		a.ctx = a.e.getContext("2d")
 		if (useImageData) a.ctx.createImageData(self.w, self.h)
 		self.layer[id] = a
@@ -293,13 +291,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('lowmountains'    ,'lowmountains'    ,false ,'draw', 'feature')
 	createLayerCanvas('mediummountains' ,'mediummountains' ,false ,'draw', 'feature')
 
-	//createLayerCanvas('rivers'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers1'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers2'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers3'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers4'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers5'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('rivers6'          ,'rivers'          ,false ,'draw')
+	createLayerCanvas('rivers'          ,'rivers'          ,false ,'draw')
 	createLayerCanvas('lakes'            ,'lakes'           ,false ,'draw')
 
 	//createLayerDiv('anima')
@@ -397,13 +389,8 @@ voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
-
-	this.marginRect = {
-		l:0 + this.option.margin,
-		t:0 + this.option.margin,
-		r:this.w - this.option.margin,
-		b:this.h - this.option.margin
-	};
+	var newscale = Math.round(this.scale.factor * (Math.min(this.w,this.h) /2))
+	this.setScale(newscale)
 
 	for (var id in this.layer) {
 		a = this.layer[id];
@@ -412,6 +399,8 @@ voyc.World.prototype.resize = function(w, h) {
 			a.ctx.canvas.height = this.h;
 			a.ctx.canvas.style.width =  this.w + 'px';
 			a.ctx.canvas.style.height = this.h + 'px';
+			//if (useImageData)
+			//	a.imageData = a.ctx.createImageData(this.w, this.h);
 		}
 		else if (a.type == 'div') {
 			a.e.style.width =  this.w + 'px';
@@ -419,9 +408,6 @@ voyc.World.prototype.resize = function(w, h) {
 		}
 	}
 	
-	//if (useImageData) {
-	//	a.imageData = a.ctx.createImageData(this.w, this.h);
-	//}
 }
 
 voyc.World.prototype.draw = function() {
@@ -454,7 +440,7 @@ voyc.World.prototype.drawWater = function() {
 	var layer = this.layer['water']
 	if (!layer.enabled) return
 	var ctx = layer.ctx
-	var palette = voyc.worldPalette['water']
+	var palette = this.palette['water'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
 	if (this.projection.mix == voyc.Projection.orthographic) // sphere
@@ -469,20 +455,14 @@ voyc.World.prototype.drawWater = function() {
 }
 
 voyc.World.prototype.drawRiver = function() {
-	this.drawLayer('rivers1')
-	this.drawLayer('rivers2')
-	this.drawLayer('rivers3')
-	this.drawLayer('rivers4')
-	this.drawLayer('rivers5')
-	this.drawLayer('rivers6')
+
+	this.drawLayer('rivers')
 	this.drawLayer('lakes')
 	return
 
-	this.drawLayer('rivers')
-
 	var data = this.layer['rivers'].data
 	var ctx  = this.layer['rivers'].ctx
-	var palette = voyc.worldPalette['animation']
+	var palette = this.palette['animation'][0]
 	iterator = this.animationlayer[0].iterator
 	ctx = this.animationlayer[0].ctx
 	iterator.iterateCollection(data, this.projection, ctx, palette, 1, 3);
@@ -499,14 +479,17 @@ voyc.World.prototype.drawFeatures = function() {
 }
 
 voyc.World.prototype.setupPalette = function() {
-	for (var id in voyc.worldPalette) {
-		voyc.worldPalette[id].fill = voyc.prepString('rgb($1,$2,$3)', voyc.worldPalette[id].fill)
-		voyc.worldPalette[id].stroke = voyc.prepString('rgb($1,$2,$3)', voyc.worldPalette[id].stroke)
+	this.palette = voyc.palette
+	for (var id in this.palette) {
+		for (var palette of this.palette[id]) {
+			palette.fill = voyc.prepString('rgb($1,$2,$3)', palette.fill)
+			palette.stroke = voyc.prepString('rgb($1,$2,$3)', palette.stroke)
+		}
 	}
 }
 voyc.World.prototype.fixupPalette = function() {
 	for (var id of ['deserts', 'highmountains', 'mediummountains', 'lowmountains'].values())
-		voyc.worldPalette[id].fill = this.layer[id].ctx.createPattern(voyc.geosketch.asset.get(id), 'repeat');
+		this.palette[id][0].fill = this.layer[id].ctx.createPattern(voyc.geosketch.asset.get(id), 'repeat');
 }
 
 /** @struct */
@@ -575,4 +558,28 @@ voyc.layers = {
 	animation:       'Animation',
 	deserts:         'Deserts',
 	highmountains:   'Mountains',
+}
+
+voyc.palette = {
+	bkgrd: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},],
+	water: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},],
+	land:  [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},],
+	grid:  [{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	sketch:[{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	empire:[{isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	rivers: [
+		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[255,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+	],
+	lakes:           [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
+	animation:       [{isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	deserts:         [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	highmountains:   [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	mediummountains: [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	lowmountains:    [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
 }
