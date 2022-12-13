@@ -56,47 +56,45 @@
 	</head>
 
 	<body>
-		<!-- 
-		Four overlaid fullscreen divs.
-		Mouse/touch events target hud, bubble up to pad and window.
-		Keyboard events target window.
+		<!-- ===== overlaid fullscreen divs =========================
+		window - target of keyboard events
+		world - contains multiple fullscreen canvas elements for display
+		hud - contains fixed position controls, target of mouse and touch events
 		-->
-		<div id='pad' class='full'>
-			<div id='world' class='full'></div>
-			<div id='hud' class='full'>
-				<button g id='menubtn' open='sketch-palette'><img src='i/menu_black_24dp.png' title='menu'/></button>
+		<div id='world' class='full'></div>
+		<div id='hud' class='full'>
+			<button g id='menubtn' open='sketch-palette'><img src='i/menu_black_24dp.png' title='menu'/></button>
 
-				<div class='hud visible hidden' id='announce'>
-					<div id='announcemsg'>announcements</div>
-					<button id='announcedone'>OK</button>
-				</div>
-
-				<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
-				<div class='hud visible' id='whereami'>
-				</div>
-
-				<div class='hud visible' id='chronometer'>
-					<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
-					<button g id='timeminusbtn'><img src='i/minus_black.png' alt='time back'/></button>
-					<span id='time'>1300 BCE</span>	
-					<button g id='timeplusbtn'><img src='i/plus_black.png' alt='forward'/></button>
-				</div>
-
-
-				<div class='hud visible' id='mapzoom'>
-					<div class='visible' id='zoomscale'>2401</div>
-					<button g id='zoomplusbtn'><img src='i/plus_black.png' alt='zoom in'/></button><br/>
-					<input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br/>
-					<button g id='zoomminusbtn'><img src='i/minus_black.png' alt='zoom out'/></button>
-				</div>
-				<button g id='projectbtn'>
-					<img id='globeimg' src='i/globe_black_24.png' title='globe'/>
-					<img id='mercimg'  src='i/mercator_black_24.png' title='mercator'/>
-				</button>
+			<div class='hud visible hidden' id='announce'>
+				<div id='announcemsg'>announcements</div>
+				<button id='announcedone'>OK</button>
 			</div>
+
+			<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
+			<div class='hud visible' id='whereami'>
+			</div>
+
+			<div class='hud visible' id='chronometer'>
+				<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
+				<button g id='timeminusbtn'><img src='i/minus_black.png' alt='time back'/></button>
+				<span id='time'>1300 BCE</span>	
+				<button g id='timeplusbtn'><img src='i/plus_black.png' alt='forward'/></button>
+			</div>
+
+
+			<div class='hud visible' id='mapzoom'>
+				<div class='visible' id='zoomscale'>2401</div>
+				<button g id='zoomplusbtn'><img src='i/plus_black.png' title='zoom in'/></button><br/>
+				<input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br/>
+				<button g id='zoomminusbtn'><img src='i/minus_black.png' alt='zoom out'/></button>
+			</div>
+			<button g id='projectbtn'>
+				<img id='globeimg' src='i/globe_black_24.png' title='globe'/>
+				<img id='mercimg'  src='i/mercator_black_24.png' title='mercator'/>
+			</button>
 		</div>
 		
-		<!---- modeless dialogs ----------------------------------------->
+		<!-- ===== modeless dialogs ================================ -->
 
 		<aside initially hidden class='panel popup leftnav blu' id='settings-dialog'>
 			<div><label for='menucheat'><input id='menucheat' type='checkbox' />Cheat (Alt-C)</label></div>
@@ -154,7 +152,7 @@
 			<div><span><button class='anchor' id='newlayer'>New...</a></span></div>
 		</nav>
 
-		<!---- modal dialog container and forms ----------------------------->
+		<!-- ===== modal dialog container and forms ================ -->
 
 		<div hidden id='modalcontainer' class='full smoke'>
 			<div class='centered modal'>

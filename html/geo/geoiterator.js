@@ -209,13 +209,14 @@ voyc.GeoIteratorDraw = function() {
 voyc.GeoIteratorDraw.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
 
 voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
-	console.log(['iterate draw',collection.name])
+	console.log(voyc.prepString('iterate draw $1',[collection.name]))
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
 	this.scalerank = add[3]
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
+	this.prevScaleRank = false
 	return true
 }
 
@@ -223,15 +224,18 @@ voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
 	// most layers have one palette, so we draw the whole layer in one go at the end
 	if (this.palette.length == 1)
 		this.draw(0)
+	else
+		this.draw(this.prevScaleRank-1)
 }
 voyc.GeoIteratorDraw.prototype.geometryEnd = function(geometry) {
 	// some layers have multiple palettes, one per scalerank
-	if (this.palette.length > 1)
-		this.draw(4)
-// sort the rivers by scalerank
-// iterate rivers only once
-// draw here whenever the scalerank changes
-// add qualification by scalerank
+	if (this.palette.length > 1) {
+		if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)){
+			this.draw(this.prevScaleRank-1)
+			this.ctx.beginPath()
+		}
+		this.prevScaleRank = geometry.scalerank
+	}
 }
 voyc.GeoIteratorDraw.prototype.draw = function(ndx) {
 	var palette = this.palette[ndx]

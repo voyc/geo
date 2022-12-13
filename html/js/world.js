@@ -94,7 +94,7 @@ voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
 	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
 	this.scale.factor = scalefactor
-	this.scale.now = halfwid * scalefactor
+	this.scale.now = Math.round(halfwid * scalefactor)
 }
 
 // public zoom by increment, as with key arrow or mouse wheel
@@ -107,7 +107,7 @@ voyc.World.prototype.zoom = function(dir,pt) {
 		case voyc.Spin.OUT: x = -1; break;
 	}
 	//var newscale = this.scale.now + (x * this.scale.step); // constant step amount, no good
-	var newscale = this.scale.now + (this.scale.now * x * this.option.scaleStepPct);
+	var newscale = Math.round(this.scale.now + (this.scale.now * x * this.option.scaleStepPct))
 	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
 	this.setScale(newscale);
 	if (pt) {
@@ -124,7 +124,7 @@ voyc.World.prototype.setScale = function(newscale) {
 	this.moved = true;
 	voyc.geosketch.render(0);
 	voyc.geosketch.hud.setZoom(this.scale.now);
-	this.scale.factor = this.scale.now / (Math.min(this.w,this.h) /2)
+	this.scale.factor = Math.round(this.scale.now / (Math.min(this.w,this.h) /2))
 	this.stoScale()
 }
 
@@ -147,7 +147,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','lakes','feature'].values())
+	for (var id of ['empire','rivers','lakes','feature'].values())
 		this.show(this.layer[id].e, false)
 	this.animate(false)
 }
@@ -166,7 +166,7 @@ voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
 	//for (var id of ['empire','rivers','anima','feature'].values())
-	for (var id of ['empire','rivers1','rivers2','rivers3','rivers4','rivers5','rivers6','lakes','feature'].values())
+	for (var id of ['empire','rivers','lakes','feature'].values())
 		this.show(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
 	//this.animate(true)
@@ -388,7 +388,7 @@ voyc.World.prototype.hit = function(pt) {
 voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
-	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
+	this.projection.translate([this.w/2, this.h/2]);
 	var newscale = Math.round(this.scale.factor * (Math.min(this.w,this.h) /2))
 	this.setScale(newscale)
 
@@ -519,7 +519,7 @@ voyc.Spin = {
 	UP:7,
 	DOWN:8,
 }		
-
+/*
 voyc.worldPalette = {
 bkgrd:           {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},
 water:           {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},
@@ -541,7 +541,7 @@ highmountains:   {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,
 mediummountains: {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 lowmountains:    {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
 }
-
+*/
 voyc.layers = {
 	water:           'Oceans',
 	land:            'Land',
@@ -568,13 +568,12 @@ voyc.palette = {
 	sketch:[{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	empire:[{isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	rivers: [
-		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[255,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
+		{isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
+		{isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 3:green
+		{isStroke:1, stroke:[255,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
+		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
+		{isStroke:1, stroke:[128,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 6:maroon
 	],
 	lakes:           [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
 	animation:       [{isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
