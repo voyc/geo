@@ -254,6 +254,8 @@ voyc.World.prototype.setupLayers = function() {
 		a.iterator = self.iterator[iterator]
 		a.data = voyc.data[dataid]
 		a.palette = voyc.worldPalette[dataid]
+		if (dataid == 'rivers')
+			a.palette = voyc.worldPalette[id]
 		a.ctx = a.e.getContext("2d")
 		if (useImageData) a.ctx.createImageData(self.w, self.h)
 		self.layer[id] = a
@@ -543,6 +545,12 @@ grid:            {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,
 sketch:          {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 empire:          {isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 rivers:          {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers1:         {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers2:         {isStroke:1, stroke:[255,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers3:         {isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers4:         {isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers5:         {isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+rivers6:         {isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
 lakes:           {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},
 animation:       {isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
 deserts:         {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},

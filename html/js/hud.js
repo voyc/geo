@@ -391,8 +391,9 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	evt.preventDefault();
 	evt.stopPropagation();
 	this.dragPrev = false;
+	if (this.mousebuttondown) 
+		voyc.geosketch.world.drop()
 	this.mousebuttondown = false
-	voyc.geosketch.world.drop()
 }
 
 voyc.Hud.prototype.onclick = function(evt) {
