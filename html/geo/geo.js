@@ -129,7 +129,7 @@ voyc.Geo.drawTexture = function(dst,src) {
 	graticule()
 	create a geojson multiline object of parallels and meridians
 */
-voyc.Geo.graticule = function() {
+voyc.Geo.graticulePrimary = function() {
 	var lng = [
 		0, // prime meridian
 		90,
@@ -159,6 +159,33 @@ voyc.Geo.graticule = function() {
 		lines.push([]);
 		for (var x=-180; x<=180; x+=10) {
 			lines[n].push([x,lat[y]]);
+		}
+		n++;
+	}
+	return lines;
+}
+
+voyc.Geo.graticuleFine10 = function() {
+	
+	// meridians
+	var lines = [];
+	var n = 0;
+	for (var x=-170; x<=170; x+=10) {
+		if (x == 90 || x == -90)
+			continue
+		lines.push([]);
+		for (var y=-80; y<=80; y+=10) {
+			lines[n].push([x,y]);
+		}
+		n++;
+	}
+	// parallels
+	for (var y=-80; y<=80; y+=10) {
+		if (y == 0)
+			continue
+		lines.push([]);
+		for (var x=-180; x<=180; x+=10) {
+			lines[n].push([x,y])
 		}
 		n++;
 	}

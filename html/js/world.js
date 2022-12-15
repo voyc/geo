@@ -121,11 +121,11 @@ voyc.World.prototype.zoom = function(dir,pt) {
 voyc.World.prototype.setScale = function(newscale) {
 	this.scale.now = newscale || this.scale.now
 	this.projection.scale(this.scale.now);
-	this.moved = true;
-	voyc.geosketch.render(0);
-	voyc.geosketch.hud.setZoom(this.scale.now);
+	voyc.geosketch.hud.setZoom(this.scale.now, this.calcZoomScaleRank())
 	this.scale.factor = Math.round(this.scale.now / (Math.min(this.w,this.h) /2))
 	this.stoScale()
+	this.moved = true;
+	voyc.geosketch.render(0);
 }
 
 // --------  public move
@@ -220,9 +220,24 @@ voyc.World.prototype.setupData = function() {
 		'geometries': [
 			{
 				'type': "MultiLineString", 
-				'coordinates': voyc.Geo.graticule(),
-			}
+				'name': "primary",
+				'scalerank': 1,
+				'coordinates': voyc.Geo.graticulePrimary(),
+			},
+			{
+				'type': "MultiLineString", 
+				'name': "fine10",
+				'scalerank': 2,
+				'coordinates': voyc.Geo.graticuleFine10(),
+			},
 		]
+	}
+
+	// highlight
+	voyc.data.hilite = {
+		'name': 'hilite',
+		'type': 'GeometryCollection',
+		'geometries': []
 	}
 }
 
@@ -257,8 +272,6 @@ voyc.World.prototype.setupLayers = function() {
 		a.ctx = a.e.getContext("2d")
 		if (useImageData) a.ctx.createImageData(self.w, self.h)
 		self.layer[id] = a
-
-		a.scalerank = parseInt(e.id.substr(6,1)) || 'x'
 	}
 
 	createLayerDiv = function(id, container) {
@@ -302,6 +315,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('empire'          ,'empire'          ,false ,'draw')
 	createLayerCanvas('sketch'          ,'sketch'          ,false ,'draw')
 	createLayerCanvas('grid'            ,'grid'            ,false ,'draw')
+	createLayerCanvas('hilite'          ,'hilite'          ,false ,'draw')
 }
 
 
@@ -380,7 +394,15 @@ voyc.World.prototype.clearLayers = function() {
 }
 
 voyc.World.prototype.hit = function(pt) {
-	return this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
+	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
+	voyc.data.hilite.geometries = [geom]
+	if (geom)
+		this.drawHilite()
+	else {
+		this.moved = true;
+		voyc.geosketch.render(0);
+	}
+	return geom.name
 }
 
 // --------  drawing
@@ -416,6 +438,7 @@ voyc.World.prototype.draw = function() {
 		this.drawLayer('land')
 		this.drawLayer('grid')
 		this.drawLayer('sketch')
+		this.drawLayer('hilite')
 		if (!this.dragging) {
 			//this.drawEmpire();
 			this.drawFeatures();
@@ -428,12 +451,15 @@ voyc.World.prototype.draw = function() {
 voyc.World.prototype.drawLayer = function(id) {
 	var layer = this.layer[id]
 	if (!layer.enabled) return
+
+	var zoomScaleRank = this.calcZoomScaleRank() 
+
 	layer.iterator.iterateCollection(
 		layer.data, 
 		this.projection, 
 		layer.ctx, 
 		layer.palette,
-		layer.scalerank)
+		zoomScaleRank)
 }
 
 voyc.World.prototype.drawWater = function() {
@@ -471,6 +497,10 @@ voyc.World.prototype.drawRiver = function() {
 	ctx = this.animationlayer[2].ctx
 	iterator.iterateCollection(data, this.projection, ctx, palette, 3, 3);
 	// rivers scale 0-6
+}
+
+voyc.World.prototype.drawHilite = function() {
+	this.drawLayer('hilite')
 }
 
 voyc.World.prototype.drawFeatures = function() {
@@ -564,16 +594,19 @@ voyc.palette = {
 	bkgrd: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},],
 	water: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},],
 	land:  [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},],
-	grid:  [{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	grid:  [
+		{isStroke:1, stroke:[255,255,  0], pen: 2, isFill:0, fill:[  0,  0,  0]},
+		{isStroke:1, stroke:[255,255,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
+	],
 	sketch:[{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	empire:[{isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	rivers: [
-		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
-		{isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
-		{isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 3:green
-		{isStroke:1, stroke:[255,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
-		{isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
-		{isStroke:1, stroke:[128,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 6:maroon
+		{isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
+		{isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
+		{isStroke:1, stroke:[  0,  0,255], pen:3 , isFill:0, fill:[  0,  0,  0]}, // 3:green
+		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
+		{isStroke:1, stroke:[  0,  0,255], pen:1 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
+		{isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]}, // 6:maroon
 	],
 	lakes:           [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
 	animation:       [{isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
@@ -581,4 +614,22 @@ voyc.palette = {
 	highmountains:   [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
 	mediummountains: [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
 	lowmountains:    [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	hilite:          [{isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
 }
+
+voyc.World.prototype.calcZoomScaleRank = function() {
+	var table = voyc.zoomScaleRankTable
+	var scale = this.scale.now 
+	var rank = table.length
+	for (var r=0; r<table.length; r++) {
+		if (scale < table[r]) {
+			rank = r+1
+			break
+		}
+	}
+	return rank
+}
+
+// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
+voyc.zoomScaleRankTable = [ 242, 531, 897, 1329, 1969, 2904, ]
+

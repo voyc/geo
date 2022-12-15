@@ -224,31 +224,47 @@ voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
 	// most layers have one palette, so we draw the whole layer in one go at the end
 	if (this.palette.length == 1)
 		this.draw(0)
-	else
-		this.draw(this.prevScaleRank-1)
+	else if (this.prevScaleRank)
+		this.draw(this.prevScaleRank)
 }
-voyc.GeoIteratorDraw.prototype.geometryEnd = function(geometry) {
+voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
+	if (!geometry)  // empty hilite, for example
+		return false
+	if (!((!geometry.scalerank) || (geometry.scalerank <= this.scalerank)))
+		return false  // qualification by scalerank, if the data has a scalerank
+	
 	// some layers have multiple palettes, one per scalerank
 	if (this.palette.length > 1) {
 		if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)){
-			this.draw(this.prevScaleRank-1)
+			this.draw(this.prevScaleRank)
 			this.ctx.beginPath()
 		}
 		this.prevScaleRank = geometry.scalerank
 	}
-}
-voyc.GeoIteratorDraw.prototype.draw = function(ndx) {
-	var palette = this.palette[ndx]
-	this.ctx.fillStyle = palette.fill
-	this.ctx.strokeStyle = palette.stroke
-	this.ctx.linewidth = palette.pen
-	if (palette.isFill) this.ctx.fill()
-	if (palette.isStroke) this.ctx.stroke()
+	return true
 }
 
-voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
-	// qualification by scalerank
-	return ((this.scalerank == 'x') || (geometry.scalerank >= this.scalerank))
+voyc.GeoIteratorDraw.prototype.geometryEnd = function(geometry) {
+}
+voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
+	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
+		var paletteNdx = 0
+		if (geomScaleRank) {
+			var adj = maxScaleRank - zoomScaleRank   // value 5-0
+			var paletteLevel = geomScaleRank + adj  // 1-6
+			var paletteNdx = paletteLevel - 1  // 0-5
+		}
+		return paletteNdx
+	}
+	//if (this.collection.name == 'grid')
+	//	debugger;
+	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+	var palette = this.palette[paletteNdx]
+	this.ctx.fillStyle = palette.fill
+	this.ctx.strokeStyle = palette.stroke
+	this.ctx.lineWidth = palette.pen
+	if (palette.isFill) this.ctx.fill()
+	if (palette.isStroke) this.ctx.stroke()
 }
 
 voyc.GeoIteratorDraw.prototype.lineStart = function(line) {
@@ -437,24 +453,29 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 }
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
+	this.ptPrev = false
+	return true
+}
+voyc.GeoIteratorHitTest.prototype.lineStart = function(geometry) {
+	this.ptPrev = false
 	return true
 }
 voyc.GeoIteratorHitTest.prototype.geometryEnd = function(geometry) {
 	if (this.ret) {
 		this.d.sort()
 		var d = this.d[0]
-		this.hits.push({name:geometry.name,d:d})
+		this.hits.push({geom:geometry,d:d})
 		this.ret = false
 	}
 }
 voyc.GeoIteratorHitTest.prototype.collectionEnd = function() {
 	var a = []
 	for (var o of this.hits)
-		a.push(o.name)
+		a.push(o.geom.name)
 	console.log(a)
 	if (this.hits.length > 0) {
 		this.hits.sort(function(a, b){return a.d - b.d})
-		this.ret = this.hits[0].name
+		this.ret = this.hits[0].geom
 	}
 }
 

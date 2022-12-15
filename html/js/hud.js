@@ -74,52 +74,12 @@ voyc.Hud.prototype.attach = function() {
 
 	// ----- attach button handlers
 
-	//this.attachButtonHandlers()
-	var self = this;
-	//document.getElementById('menubtn').addEventListener('click', function(evt) {
-	//	//evt.stopPropagation();
-	//	if (self.menuIsOpen) {
-	//		self.hide(document.getElementById('menu'));
-	//		self.menuIsOpen = false;
-	//	}
-	//	else {
-	//		self.populateMenu();
-	//		self.show(document.getElementById('menu'));
-	//		self.menuIsOpen = true;
-	//	}
-	//}, false);
-	document.getElementById('menuhires').addEventListener('click', function(evt) {
-		evt.stopPropagation();
-		voyc.geosketch.setOption(voyc.option.HIRES, evt.target.checked);
-	}, false);
-	document.getElementById('menucheat').addEventListener('click', function(evt) {
-		evt.stopPropagation();
-		voyc.geosketch.setOption(voyc.option.CHEAT, evt.target.checked);
-	}, false);
-	document.getElementById('menugraticule').addEventListener('click', function(evt) {
-		evt.stopPropagation();
-		voyc.geosketch.setOption(voyc.option.GRATICULE, evt.target.checked);
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			voyc.geosketch.render(0);
-		}
-	}, false);
-	document.getElementById('menupresentday').addEventListener('click', function(evt) {
-		evt.stopPropagation();
-		voyc.geosketch.setOption(voyc.option.PRESENTDAY, evt.target.checked);
-	}, false);
 	document.getElementById('announcedone').addEventListener('click', function(evt) {
 		evt.stopPropagation();
 		self.closeAnnouncement();
 	}, false);
 
 	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
-	document.getElementById('point').addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('point')}, false);
-	document.getElementById('line' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('line')}, false);
-	document.getElementById('poly' ).addEventListener('click', function() {voyc.geosketch.sketch.drawWhat('poly')}, false);
-	document.getElementById('finish').addEventListener('click', function() {voyc.geosketch.sketch.finish()}, false);
-	document.getElementById('erase').addEventListener('click', function() {voyc.geosketch.sketch.erase()}, false);
-	document.getElementById('save' ).addEventListener('click', function() {voyc.geosketch.sketch.save()}, false);
-	document.getElementById('clear' ).addEventListener('click', function() {voyc.geosketch.sketch.clear()}, false);
 	
 	// -------- attach map zoomer handlers
 	
@@ -335,11 +295,11 @@ voyc.Hud.prototype.setTime = function(time) {
 	}
 }
 
-voyc.Hud.prototype.setZoom = function(newvalue) {
+voyc.Hud.prototype.setZoom = function(newvalue, newrank) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = newvalue;
 	}
-	voyc.$('zoomscale').innerHTML = newvalue;
+	voyc.$('zoomscale').innerHTML = newvalue + '/' + newrank
 }
 
 // -------- mouse handlers
