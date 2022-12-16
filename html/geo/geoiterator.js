@@ -89,8 +89,14 @@ voyc.GeoIterator.prototype.iterateCollection = function(collection, ...add) {
 
 voyc.GeoIterator.prototype.iterateGeometry = function(geometry) {
 	this.geometry = geometry
-	if (this.geometryStart(geometry)) {
-		var boo = true
+	var boo = null
+	var geostat = this.geometryStart(geometry)
+	if (geostat === 0)  // skip this geom, but continue loop
+		boo = true
+	else if (geostat === false) // kill the loop
+		boo = false
+	else if (geostat === true) {   // process this geom
+		boo = true
 		var coordinates = geometry['coordinates']
 		var len = coordinates.length
 		var i = -1
@@ -228,19 +234,26 @@ voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
 		this.draw(this.prevScaleRank)
 }
 voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
-	if (!geometry)  // empty hilite, for example
-		return false
-	if (!((!geometry.scalerank) || (geometry.scalerank <= this.scalerank)))
-		return false  // qualification by scalerank, if the data has a scalerank
-	
-	// some layers have multiple palettes, one per scalerank
-	if (this.palette.length > 1) {
-		if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)){
-			this.draw(this.prevScaleRank)
-			this.ctx.beginPath()
-		}
-		this.prevScaleRank = geometry.scalerank
+	// the hilite layer is usually empty. no further processing.
+	if (!geometry)
+		return false  // kill the loop
+
+	// two things happen in here: qualification and draw by scalerank
+	if (this.palette.length <= 1)
+		return true
+
+	// if palette.length > 1, the presence of geometry.scalerank and this.scalerank are implied
+
+	// qualify by scalerank
+	if (geometry.scalerank > this.scalerank)
+		return 0  // disqualified. skip this geom but keep going
+
+	// draw in groups by scalerank
+	if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)) {
+		this.draw(this.prevScaleRank)
+		this.ctx.beginPath()
 	}
+	this.prevScaleRank = geometry.scalerank
 	return true
 }
 
@@ -260,6 +273,8 @@ voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
 	//	debugger;
 	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
 	var palette = this.palette[paletteNdx]
+	if (!palette)
+		debugger;
 	this.ctx.fillStyle = palette.fill
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.lineWidth = palette.pen

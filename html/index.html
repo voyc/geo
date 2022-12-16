@@ -83,7 +83,6 @@
 
 
 			<div class='hud visible' id='mapzoom'>
-				<div class='visible' id='zoomscale'>2401</div>
 				<button g id='zoomplusbtn'><img src='i/plus_black.png' title='zoom in'/></button><br/>
 				<input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br/>
 				<button g id='zoomminusbtn'><img src='i/minus_black.png' alt='zoom out'/></button>
@@ -107,7 +106,8 @@
 		<aside initially hidden class='panel popup leftnav blu' id='settings-dialog'>
 			<p><label for='showscale'><input id='showscale' type='checkbox' /> Show Scale</label></p>
 			<p id='setting-dim'>pxl dim: 894 x 894</p>
-			<p id='setting-scale'>scale: 246/2/1</p>
+			<p id='setting-scale'>scale: 246/1</p>
+			<p id='setting-co'>45.23, -175.84</p>
 		</aside>
 		<aside initially hidden class='panel popup leftnav blu' id='user-dialog'>
 			<p><button close class='anchor' request='logout'        >Logout</button></p>

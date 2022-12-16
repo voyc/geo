@@ -125,69 +125,20 @@ voyc.Geo.drawTexture = function(dst,src) {
 	//log&&console.log(voyc.timer()+'texture data put complete');
 }
 
-/**
-	graticule()
-	create a geojson multiline object of parallels and meridians
-*/
-voyc.Geo.graticulePrimary = function() {
-	var lng = [
-		0, // prime meridian
-		90,
-		180, // antimeridian
-		-90,
-	];
-	var lat = [
-		66.55772,  // artic circle
-		23.43715,  // tropic of cancer
-		0,         // equator
-		-23.43715, // tropic of capricorn
-		-66.55772, // antartic circle
-	];
-
-	// meridians
-	var lines = [];
-	var n = 0;
-	for (var x=0; x<lng.length; x++) {
-		lines.push([]);
-		for (var y=-90; y<=90; y+=10) {
-			lines[n].push([lng[x],y]);
-		}
-		n++;
+voyc.Geo.drawMeridian = function(lng,goalltheway) {
+	var goalltheway = goalltheway || false
+	var threshold = (goalltheway) ? 90 : 80
+	var coords = []
+	for (var lat=0-threshold; lat<=threshold; lat+=10) {
+		coords.push([lng,lat])
 	}
-	// parallels
-	for (var y=0; y<lat.length; y++) {
-		lines.push([]);
-		for (var x=-180; x<=180; x+=10) {
-			lines[n].push([x,lat[y]]);
-		}
-		n++;
+	return coords
+}
+voyc.Geo.drawParallel = function(lat) {
+	var coords = []
+	for (var lng=-180; lng<=180; lng+=10) {
+		coords.push([lng,lat])
 	}
-	return lines;
+	return coords
 }
 
-voyc.Geo.graticuleFine10 = function() {
-	
-	// meridians
-	var lines = [];
-	var n = 0;
-	for (var x=-170; x<=170; x+=10) {
-		if (x == 90 || x == -90)
-			continue
-		lines.push([]);
-		for (var y=-80; y<=80; y+=10) {
-			lines[n].push([x,y]);
-		}
-		n++;
-	}
-	// parallels
-	for (var y=-80; y<=80; y+=10) {
-		if (y == 0)
-			continue
-		lines.push([]);
-		for (var x=-180; x<=180; x+=10) {
-			lines[n].push([x,y])
-		}
-		n++;
-	}
-	return lines;
-}

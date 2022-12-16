@@ -46,7 +46,7 @@ voyc.DualProjection = function() {
 	// rotate
 	this.δλ = 0;  // delta lambda, horizontal angle in radians
 	this.δφ = 0;  // delta phi, vertical angle in radians
-	this.δγ = 0;  // delta gamma, elevation
+	this.δγ = 0;  // delta gamma, z-axis angle in radians
 	this.cosδφ = 0;
 	this.sinδφ = 0;
 	this.cosδγ = 0;
@@ -60,7 +60,7 @@ voyc.DualProjection = function() {
 	// new stuff added for mercator
 	this.wd = 0;
 	this.ht = 0;
-	this.co = [];    // center [lng,lat]  E and S are positive
+	this.co = [];    // center [lng,lat]  E and S are positive (opposite of world.co)
 
 	// scale
 	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
@@ -83,11 +83,11 @@ voyc.DualProjection = function() {
 		spin adjusts by an increment
 		passes the zero-complement of the three values as ro
 */
-voyc.DualProjection.prototype.rotateIncr = function(ro) {
-	ro[0] -= this.co[0]
-	ro[1] += this.co[1]
-	this.rotate(ro)
-}
+//voyc.DualProjection.prototype.rotateIncr = function(ro) {
+//	ro[0] -= this.co[0]
+//	ro[1] += this.co[1]
+//	this.rotate(ro)
+//}
 
 voyc.DualProjection.prototype.rotate = function(ro) {
 	// for mercator, set the center coordinate
@@ -123,21 +123,21 @@ voyc.DualProjection.prototype.scale = function(k) {
 	this.pxlPerDgr = (k * 4) / 360
 }
 
-/**
-	center([lng,lat])
-	Sets the projection’s center to the specified coordinate, 
-	a three-element array of longitude in degrees.
-
-	Called by World.drag() and Hud.ontap().  Hud.ondrop() calls ontap().
-*/
-voyc.DualProjection.prototype.center = function(co) {
-	this.rotate([0-co[0], 0-co[1]]);
-	// legacy - replace with rotate
-	// rotate to a coordinate
-	// center starts at 0,0
-	// to move lng 50 to center
-	// rotate by 0-50
-}
+///**
+//	center([lng,lat])
+//	Sets the projection’s center to the specified coordinate, 
+//	a three-element array of longitude in degrees.
+//
+//	Called by World.drag() and Hud.ontap().  Hud.ondrop() calls ontap().
+//*/
+//voyc.DualProjection.prototype.center = function(co) {
+//	this.rotate([0-co[0], 0-co[1]]);
+//	// legacy - replace with rotate
+//	// rotate to a coordinate
+//	// center starts at 0,0
+//	// to move lng 50 to center
+//	// rotate by 0-50
+//}
 
 /**
 	translate([x,y])

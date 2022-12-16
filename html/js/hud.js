@@ -91,6 +91,7 @@ voyc.Hud.prototype.attach = function() {
 	this.mapzoomer = document.getElementById('mapzoomer');
 	this.mapzoomer.min = voyc.geosketch.world.scale.min;
 	this.mapzoomer.max = voyc.geosketch.world.scale.max;
+	var self = this
 	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false);
 	this.mapzoomer.addEventListener('touchstart', function(evt) {self.mapZoomerDown(evt)}, false);
 	this.mapzoomer.addEventListener('input', function(evt) {self.mapZoomerMove(evt)}, false);
@@ -295,11 +296,15 @@ voyc.Hud.prototype.setTime = function(time) {
 	}
 }
 
-voyc.Hud.prototype.setZoom = function(newvalue, newrank) {
+voyc.Hud.prototype.setZoom = function(newvalue, newfactor) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = newvalue;
 	}
-	voyc.$('zoomscale').innerHTML = newvalue + '/' + newrank
+	voyc.$('setting-scale').innerHTML = 'scale: ' + newvalue + '/' + newfactor
+}
+
+voyc.Hud.prototype.setCo = function(co,gamma) {
+	voyc.$('setting-co').innerHTML = co[0].toFixed(2)+','+co[1].toFixed(2)+','+gamma
 }
 
 // -------- mouse handlers

@@ -12,7 +12,7 @@ voyc.World = function() {
 	this.h = 0;
 
 	this.projection = {};
-	this.globe = {};
+//	this.globe = {};
 	this.layer = [];  // array of layer objects, layer is a canvas
 
 	this.moved = true;
@@ -78,6 +78,7 @@ voyc.World.prototype.stoPro = function() {
 voyc.World.prototype.stoCo = function() {
 	localStorage.setItem('co', JSON.stringify(this.co))
 	localStorage.setItem('gamma',this.gamma)
+	voyc.geosketch.hud.setCo(this.co,this.gamma)
 }
 voyc.World.prototype.stoScale = function() {
 	localStorage.setItem('scalefactor',this.scale.factor)
@@ -99,7 +100,7 @@ voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 
 // public zoom by increment, as with key arrow or mouse wheel
 voyc.World.prototype.zoom = function(dir,pt) {
-	pt = pt || false
+	pt = pt || false // if mousewheel, zoom centered on the mouse point
 	var coOld = (pt) ? this.projection.invert(pt) : false
 	var x = 0;
 	switch(dir) {
@@ -111,9 +112,11 @@ voyc.World.prototype.zoom = function(dir,pt) {
 	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
 	this.setScale(newscale);
 	if (pt) {
-		var coNew = this.projection.invert(pt)
-		var vector = voyc.subtractArray(coNew, coOld)
-		this.moveByVector(vector)
+		var coNew = this.projection.invert(pt) // same point, new coord
+		var rotation = voyc.subtractArray(coNew,coOld)
+		this.co = voyc.subtractArray(this.co, rotation)
+		this.co = this.clampCoord(this.co)
+		this.moveToCoord(this.co)
 	}
 }
 
@@ -121,14 +124,35 @@ voyc.World.prototype.zoom = function(dir,pt) {
 voyc.World.prototype.setScale = function(newscale) {
 	this.scale.now = newscale || this.scale.now
 	this.projection.scale(this.scale.now);
-	voyc.geosketch.hud.setZoom(this.scale.now, this.calcZoomScaleRank())
-	this.scale.factor = Math.round(this.scale.now / (Math.min(this.w,this.h) /2))
+	
+	//this.scale.factor = Math.round(this.scale.now / (Math.min(this.w,this.h) /2))
+	this.scale.factor = parseFloat((this.scale.now / (Math.min(this.w,this.h) /2)).toFixed(2))
+
+	voyc.geosketch.hud.setZoom(this.scale.now, this.scale.factor)
 	this.stoScale()
 	this.moved = true;
 	voyc.geosketch.render(0);
 }
 
 // --------  public move
+
+voyc.World.prototype.clampCoord = function(newco, oldco) {
+	var lng = newco[0]
+	var lat = newco[1]
+	if (lng > 180) lng -= 360
+	if (lng < -180) lng += 360 
+
+	if (lat > 90) lat = 90
+	if (lat < -90) lat = -90
+
+	return [lng,lat]
+}
+voyc.World.prototype.clampGamma = function(gamma) {
+	var newgamma = gamma
+	if (newgamma >= 360)  newgamma -= 360
+	if (newgamma <= -360) newgamma += 360 
+	return newgamma
+}
 
 voyc.World.prototype.spin = function(dir) {
 	switch(dir) {
@@ -139,6 +163,8 @@ voyc.World.prototype.spin = function(dir) {
 		case voyc.Spin.CW   : this.gamma += this.option.spinStep; break;
 		case voyc.Spin.CCW  : this.gamma -= this.option.spinStep; break;
 	}
+	this.co = this.clampCoord(this.co)
+	this.gamma = this.clampGamma(this.gamma)
 	this.moved = true;
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	voyc.geosketch.render(0);
@@ -155,12 +181,9 @@ voyc.World.prototype.drag = function(pt,prev) {
 	var coNew = this.projection.invert(pt);
 	var coOld = this.projection.invert(prev);
 	var rotation = voyc.subtractArray(coNew,coOld)
-	this.projection.rotateIncr(rotation)
-	this.moved = true
-	this.dragging = true
-	voyc.geosketch.render(0);
-	this.co = this.flipLat(this.projection.co)
-	this.stoCo()
+	this.co = voyc.subtractArray(this.co, rotation)
+	this.co = this.clampCoord(this.co)
+	this.moveToCoord(this.co)
 }
 voyc.World.prototype.drop = function() {
 	this.dragging = false
@@ -172,10 +195,10 @@ voyc.World.prototype.drop = function() {
 	//this.animate(true)
 }
 
-voyc.World.prototype.flipLat = function(co) {
-	// in projection, S is positive. Everywhere else, N is positive.
-	return [co[0], 0-co[1]]
-}
+//voyc.World.prototype.flipLat = function(co) {
+//	// in projection, S is positive. Everywhere else, N is positive.
+//	return [co[0], 0-co[1]]
+//}
 
 voyc.World.prototype.moveToPoint = function(pt) {
 	var co = this.projection.invert(pt)
@@ -188,13 +211,13 @@ voyc.World.prototype.moveToCoord = function(co) {
 	voyc.geosketch.render(0);
 	this.stoCo()
 }
-voyc.World.prototype.moveByVector = function(rotation) {
-	this.projection.rotateIncr(rotation)
-	this.moved = true
-	voyc.geosketch.render(0);
-	this.co = this.flipLat(this.projection.co)
-	this.stoCo()
-}
+//voyc.World.prototype.moveByVector = function(rotation) {
+//	this.projection.rotateIncr(rotation)
+//	this.moved = true
+//	voyc.geosketch.render(0);
+//	this.co = this.flipLat(this.projection.co)
+//	this.stoCo()
+//}
 
 voyc.World.prototype.getCenterPoint = function() {
 	return ([Math.round(this.w/2), Math.round(this.h/2)]);
@@ -213,32 +236,49 @@ voyc.World.prototype.setupData = function() {
 		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
 	}
 
-	// graticule
-	voyc.data.grid = {
-		'name': 'grid',
-		'type': 'GeometryCollection',
-		'geometries': [
-			{
-				'type': "MultiLineString", 
-				'name': "primary",
-				'scalerank': 1,
-				'coordinates': voyc.Geo.graticulePrimary(),
-			},
-			{
-				'type': "MultiLineString", 
-				'name': "fine10",
-				'scalerank': 2,
-				'coordinates': voyc.Geo.graticuleFine10(),
-			},
-		]
-	}
-
 	// highlight
 	voyc.data.hilite = {
 		'name': 'hilite',
 		'type': 'GeometryCollection',
 		'geometries': []
 	}
+
+	// graticule
+	voyc.data.grid = {
+		'name': 'grid',
+		'type': 'GeometryCollection',
+		'geometries': [
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
+			
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel([0])},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian([0],true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian([180],true)},
+
+		]
+	}
+
+	var geomlist = voyc.data.grid.geometries
+	for (var lat=-80; lat<=80; lat+=10)
+		if (lat != 0)
+			geomlist.unshift( { 
+				'type': "LineString", 'scalerank': 3, 
+				'featureclass': "Parallel",
+				'name': String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
+				'coordinates': voyc.Geo.drawParallel(lat),
+			})
+	for (var lng=-170; lng<=170; lng+=10)
+		if (lng != 90 && lng != -90 && lng != 0)
+			geomlist.unshift( { 
+				'type': "LineString", 'scalerank': 3, 
+				'featureclass': "Meridian",
+				'name': String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
+				'coordinates': voyc.Geo.drawMeridian(lng),
+			})
 }
 
 voyc.World.prototype.setupIterators = function() {
@@ -394,7 +434,9 @@ voyc.World.prototype.clearLayers = function() {
 }
 
 voyc.World.prototype.hit = function(pt) {
-	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
+	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
+	if (!geom)
+		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
 	voyc.data.hilite.geometries = [geom]
 	if (geom)
 		this.drawHilite()
@@ -452,7 +494,7 @@ voyc.World.prototype.drawLayer = function(id) {
 	var layer = this.layer[id]
 	if (!layer.enabled) return
 
-	var zoomScaleRank = this.calcZoomScaleRank() 
+	var zoomScaleRank = this.calcRank(id) 
 
 	layer.iterator.iterateCollection(
 		layer.data, 
@@ -591,38 +633,40 @@ voyc.layers = {
 }
 
 voyc.palette = {
-	bkgrd: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},],
-	water: [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},],
-	land:  [{isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},],
+	bkgrd: [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},],
+	water: [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},],
+	land:  [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},],
 	grid:  [
-		{isStroke:1, stroke:[255,255,  0], pen: 2, isFill:0, fill:[  0,  0,  0]},
-		{isStroke:1, stroke:[255,255,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
+		{scale: 300,isStroke:1, stroke:[255,255,255], pen:2.5,isFill:0, fill:[  0,  0,  0]},
+		{scale: 900,isStroke:1, stroke:[255,255,255], pen:1.5,isFill:0, fill:[  0,  0,  0]},
+		{scale:5000,isStroke:1, stroke:[255,255,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
 	],
-	sketch:[{isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
-	empire:[{isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	sketch:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	empire:[{scale:5000,isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	rivers: [
-		{isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
-		{isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
-		{isStroke:1, stroke:[  0,  0,255], pen:3 , isFill:0, fill:[  0,  0,  0]}, // 3:green
-		{isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
-		{isStroke:1, stroke:[  0,  0,255], pen:1 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
-		{isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]}, // 6:maroon
+		{scale: 242,isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
+		{scale: 531,isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
+		{scale: 897,isStroke:1, stroke:[  0,  0,255], pen:3 , isFill:0, fill:[  0,  0,  0]}, // 3:green
+		{scale:1329,isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
+		{scale:1969,isStroke:1, stroke:[  0,  0,255], pen:1 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
+		{scale:2904,isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]}, // 6:maroon
 	],
-	lakes:           [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
-	animation:       [{isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
-	deserts:         [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	highmountains:   [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	mediummountains: [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	lowmountains:    [{isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	hilite:          [{isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
+	lakes:           [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
+	animation:       [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	deserts:         [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	highmountains:   [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	mediummountains: [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	lowmountains:    [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	hilite:          [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
 }
 
-voyc.World.prototype.calcZoomScaleRank = function() {
-	var table = voyc.zoomScaleRankTable
+// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
+voyc.World.prototype.calcRank = function(id) {
+	var table = voyc.palette[id]
 	var scale = this.scale.now 
 	var rank = table.length
 	for (var r=0; r<table.length; r++) {
-		if (scale < table[r]) {
+		if (scale < table[r].scale) {
 			rank = r+1
 			break
 		}
@@ -630,6 +674,17 @@ voyc.World.prototype.calcZoomScaleRank = function() {
 	return rank
 }
 
-// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
-voyc.zoomScaleRankTable = [ 242, 531, 897, 1329, 1969, 2904, ]
+//voyc.World.prototype.calcZoomScaleRank = function() {
+//	var table = voyc.zoomScaleRankTable
+//	var scale = this.scale.now 
+//	var rank = table.length
+//	for (var r=0; r<table.length; r++) {
+//		if (scale < table[r]) {
+//			rank = r+1
+//			break
+//		}
+//	}
+//	return rank
+//}
+//voyc.zoomScaleRankTable = [ 242, 531, 897, 1329, 1969, 2904, ]
 
