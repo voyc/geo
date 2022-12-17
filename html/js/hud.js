@@ -210,17 +210,24 @@ voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
 	}
 }
 
-voyc.Hud.prototype.showWhereami = function (pt,s) {
-	var s = s || ''
-	if (!s) {
-		var co = voyc.geosketch.world.projection.invert(pt)
-		lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
-		latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
-		lng = Math.abs(Math.round(co[0]))
-		lat = Math.abs(Math.round(co[1]))
-		s = lat + latd + lng + lngd
-	}
+voyc.Hud.prototype.showWhereami = function (pt) {
+	var co = voyc.geosketch.world.projection.invert(pt)
+	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
+	latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
+	lng = Math.abs(Math.round(co[0]))
+	lat = Math.abs(Math.round(co[1]))
+	s = lat + latd + lng + lngd
 	voyc.$('whereami').innerHTML = s
+}
+
+voyc.Hud.prototype.showLabel = function (pt,s) {
+	var e = voyc.$('label')
+	if (pt) {
+		e.innerHTML = s
+		e.style.left= pt[0] + 'px'
+		e.style.top = pt[1] + 'px'
+	}
+	voyc.show(e, (pt))
 }
 
 // -------- mapzoomer handlers
@@ -364,13 +371,20 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 voyc.Hud.prototype.onclick = function(evt) {
 	evt.preventDefault();
 	evt.stopPropagation();
+	this.unHit()
 	var pt = this.getMousePt(evt)
 	if (evt.shiftKey) {
-		var s = voyc.geosketch.world.hit(pt)
-		this.showWhereami(pt,s)
+		var s = voyc.geosketch.world.testHit(pt)
+		if (s)
+			this.showLabel(pt,s)
 	}
 	else
 		voyc.geosketch.sketch.addPoint(pt)
+}
+
+voyc.Hud.prototype.unHit = function() {
+	this.showLabel(false)
+	voyc.geosketch.world.clearHilite()
 }
 
 voyc.Hud.prototype.ondblclick = function(evt) {

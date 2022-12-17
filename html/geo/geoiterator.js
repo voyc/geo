@@ -134,8 +134,9 @@ voyc.GeoIterator.prototype.iterateGeometry = function(geometry) {
 voyc.GeoIterator.prototype.iteratePolygon = function(polygon) {
 	this.polygon = polygon
 	var poly = polygon[0] // voyc uses only one ring per polygon
+	var boo = true
 	if (this.polygonStart(poly)) {
-		var boo = true
+		boo = true
 		var len = poly.length
 		len--  // skip the last point because it duplicates the first
 		var i = -1
@@ -469,7 +470,9 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
 	this.ptPrev = false
-	return true
+	if (!geometry.name) // don't hit anything that doesn't have a name, like grid lines
+		return 0
+	return true 
 }
 voyc.GeoIteratorHitTest.prototype.lineStart = function(geometry) {
 	this.ptPrev = false
@@ -494,6 +497,13 @@ voyc.GeoIteratorHitTest.prototype.collectionEnd = function() {
 	}
 }
 
+voyc.GeoIteratorHitTest.prototype.polygonStart = function(polygon) {
+	var match = this.pointInPolygon(this.mouseco,polygon)
+	if (match)
+		this.ret = true
+	return false
+}
+
 voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
 	var pt = this.projection.project(co)
 	//console.log(['co',co[0],co[1],'pt',pt[0],pt[1]])
@@ -502,8 +512,9 @@ voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within) {
 	if (pt) {
 		if (within == 'point') 
 			match = this.pointInRect(pt,this.rect)
+	
 		if (within == 'poly')
-			match = this.pointInPoly(pt,poly)
+			; //never gets here, hit test done in polygonStart()
 	
 		if (within == 'line')
 			if (this.ptPrev) {

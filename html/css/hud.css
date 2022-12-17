@@ -48,6 +48,10 @@ icon {
 	display:table-cell;
 	margin-right:.3rem;
 }
+#label {
+	background-color:#ff8;
+	border:4px ridge #ff4;
+}
 #announce {
 	left:50%;
 	top:50%;

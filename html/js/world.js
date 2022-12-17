@@ -268,7 +268,7 @@ voyc.World.prototype.setupData = function() {
 			geomlist.unshift( { 
 				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Parallel",
-				'name': String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
+				'name': '', //String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
 				'coordinates': voyc.Geo.drawParallel(lat),
 			})
 	for (var lng=-170; lng<=170; lng+=10)
@@ -276,7 +276,7 @@ voyc.World.prototype.setupData = function() {
 			geomlist.unshift( { 
 				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Meridian",
-				'name': String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
+				'name': '', //String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
 				'coordinates': voyc.Geo.drawMeridian(lng),
 			})
 }
@@ -340,12 +340,10 @@ voyc.World.prototype.setupLayers = function() {
 
 	createLayerDiv('feature')
 	createLayerCanvas('deserts'         ,'deserts'         ,false ,'draw', 'feature')
-	createLayerCanvas('highmountains'   ,'highmountains'   ,false ,'draw', 'feature')
-	createLayerCanvas('lowmountains'    ,'lowmountains'    ,false ,'draw', 'feature')
-	createLayerCanvas('mediummountains' ,'mediummountains' ,false ,'draw', 'feature')
+	createLayerCanvas('mountains'       ,'mountains'       ,false ,'draw', 'feature')
 
 	createLayerCanvas('rivers'          ,'rivers'          ,false ,'draw')
-	createLayerCanvas('lakes'            ,'lakes'           ,false ,'draw')
+	createLayerCanvas('lakes'            ,'lakes'          ,false ,'draw')
 
 	//createLayerDiv('anima')
 	//createLayerCanvas('anim1'           ,'rivers'          ,false ,'animate', 'anima')
@@ -365,8 +363,8 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 		var x = 'debug me'
 	layer.enabled = boo
 	voyc.show(layer.e, boo)
-	this.moved = true
-	voyc.geosketch.render(0)
+	//this.moved = true
+	//voyc.geosketch.render(0)
 }
 
 // --------  animation
@@ -433,18 +431,17 @@ voyc.World.prototype.clearLayers = function() {
 		this.layer[lay].ctx.clearRect(0,0,this.w,this.h)
 }
 
-voyc.World.prototype.hit = function(pt) {
+voyc.World.prototype.testHit = function(pt) {
 	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
 	if (!geom)
 		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
-	voyc.data.hilite.geometries = [geom]
+	if (!geom)
+		geom =  this.iterator['hittest'].iterateCollection(voyc.data.lakes, this.projection, pt);
+	if (!geom)
+		geom =  this.iterator['hittest'].iterateCollection(voyc.data.mountains, this.projection, pt);
 	if (geom)
-		this.drawHilite()
-	else {
-		this.moved = true;
-		voyc.geosketch.render(0);
-	}
-	return geom.name
+		this.drawHilite(geom)
+	return (geom) ? geom.name : false
 }
 
 // --------  drawing
@@ -541,12 +538,17 @@ voyc.World.prototype.drawRiver = function() {
 	// rivers scale 0-6
 }
 
-voyc.World.prototype.drawHilite = function() {
+voyc.World.prototype.drawHilite = function(geom) {
+	this.enableLayer('hilite', true)
+	voyc.data.hilite.geometries = [geom]
 	this.drawLayer('hilite')
+}
+voyc.World.prototype.clearHilite = function() {
+	this.enableLayer('hilite', false)
 }
 
 voyc.World.prototype.drawFeatures = function() {
-	for (var id of ['deserts','highmountains','mediummountains','lowmountains'].values())
+	for (var id of ['deserts','mountains'].values())
 		this.drawLayer(id)
 }
 
@@ -560,8 +562,10 @@ voyc.World.prototype.setupPalette = function() {
 	}
 }
 voyc.World.prototype.fixupPalette = function() {
-	for (var id of ['deserts', 'highmountains', 'mediummountains', 'lowmountains'].values())
-		this.palette[id][0].fill = this.layer[id].ctx.createPattern(voyc.geosketch.asset.get(id), 'repeat');
+	this.palette['deserts'][0].fill   = this.layer['deserts'].ctx.createPattern(voyc.geosketch.asset.get('deserts'), 'repeat');
+	this.palette['mountains'][0].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_1'), 'repeat');
+	this.palette['mountains'][1].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_2'), 'repeat');
+	this.palette['mountains'][2].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_3'), 'repeat');
 }
 
 /** @struct */
@@ -654,14 +658,17 @@ voyc.palette = {
 	lakes:           [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
 	animation:       [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	deserts:         [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	highmountains:   [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	mediummountains: [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
-	lowmountains:    [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+
+	mountains:       [
+		{scale: 300,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
+		{scale:1000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
+	],
 	hilite:          [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
 }
 
-// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
 voyc.World.prototype.calcRank = function(id) {
+	// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
 	var table = voyc.palette[id]
 	var scale = this.scale.now 
 	var rank = table.length
