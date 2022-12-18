@@ -98,16 +98,17 @@
 		<nav initially hidden class='panel popup leftnav blu' id='main-menu'>
 			<p><button open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
 			   <button open='user-dialog' class='anchor'> User Account</button></p>
-			<p><button open='settings-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
-			   <button open='settings-dialog' class='anchor'> Settings</button></p>
+			<p><button open='options-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
+			   <button open='options-dialog' class='anchor'> Settings</button></p>
 			<p><button open='about-dialog' class='anchor'> About</button></p>
 			<p><button open='help-dialog' class='anchor'> User Guide</button></p>
 		</nav>
-		<aside initially hidden class='panel popup leftnav blu' id='settings-dialog'>
-			<p><label for='showscale'><input id='showscale' type='checkbox' /> Show Scale</label></p>
-			<p id='setting-dim'>pxl dim: 894 x 894</p>
-			<p id='setting-scale'>scale: 246/1</p>
-			<p id='setting-co'>45.23, -175.84</p>
+		<aside initially hidden class='panel popup leftnav blu' id='options-dialog'>
+			<p><label for='option-showid'><input id='option-showid' type='checkbox' /> Show Ids</label></p>
+			<p>Max Scale <label for='option-maxscale'><input id='option-maxscale' type='number' /></label></p>
+			<p id='option-dim'>x pxl dim: 894 x 894</p>
+			<p id='option-scale'>x scale: 246/1</p>
+			<p id='option-co'>x 45.23, -175.84, 0</p>
 		</aside>
 		<aside initially hidden class='panel popup leftnav blu' id='user-dialog'>
 			<p><button close class='anchor' request='logout'        >Logout</button></p>

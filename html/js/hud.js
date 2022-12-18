@@ -80,14 +80,18 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 
 	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
+
+	
+	document.getElementById('option-maxscale').addEventListener('change', function(evt) {
+		voyc.geosketch.setOption( 'maxscale', parseFloat(evt.target.value))
+	}, false)
+
+	document.getElementById('option-showid').addEventListener('change',  function(evt) {
+		voyc.geosketch.setOption( 'showid', evt.target.checked)
+	}, false)
 	
 	// -------- attach map zoomer handlers
 	
-	//document.getElementById('mapzoom').addEventListener('click', function(evt) {
-	//	if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-	//		evt.stopPropagation();
-	//	}
-	//}, false);
 	this.mapzoomer = document.getElementById('mapzoomer');
 	this.mapzoomer.min = voyc.geosketch.world.scale.min;
 	this.mapzoomer.max = voyc.geosketch.world.scale.max;
@@ -109,85 +113,69 @@ voyc.Hud.prototype.attach = function() {
 	// -------- time slider handlers
 	
 	document.getElementById('timeslide').addEventListener('click', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			evt.stopPropagation();
-		}
+		evt.stopPropagation();
 	}, false);
 	this.timeslider = document.getElementById('timeslider');
 	this.timeslider.min = voyc.geosketch.time.begin;
 	this.timeslider.max = voyc.geosketch.time.end;
 	this.timeslider.addEventListener('mousedown', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			self.timesliderIsHot = true;
-			evt.stopPropagation();
-			voyc.geosketch.timeslideStart();
-		}
+		self.timesliderIsHot = true;
+		evt.stopPropagation();
+		voyc.geosketch.timeslideStart();
 	}, false);
 	this.timeslider.addEventListener('input', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			voyc.geosketch.timeslideValue(parseInt(this.value,10));
-			evt.stopPropagation();
-		}
+		voyc.geosketch.timeslideValue(parseInt(this.value,10));
+		evt.stopPropagation();
 	}, false);
 	this.timeslider.addEventListener('mouseup', function(evt) {
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			//voyc.geosketch.timeslideValue(this.value);
-			evt.stopPropagation();
-			voyc.geosketch.timeslideStop();
-			self.timesliderIsHot = false;
-		}
+		//voyc.geosketch.timeslideValue(this.value);
+		evt.stopPropagation();
+		voyc.geosketch.timeslideStop();
+		self.timesliderIsHot = false;
 	}, false);
 
 	// -------- keyboard handlers
 
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
-			voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
-			return;
+			return
 		}
 		if (evt.keyCode == voyc.Key.P && evt.altKey) {
-			voyc.geosketch.game.toggle();
-			return;
+			return
 		}
-		if (evt.keyCode == voyc.Key.T && evt.altKey) {
-			voyc.geosketch.render(voyc.geosketch.previousTimestamp + 100);
-			return;
+		if (evt.ctrlKey) {
+			switch (evt.keyCode) {
+				case 39: voyc.geosketch.timeForward(); break;
+				case 37: voyc.geosketch.timeBackward(); break;
+				default: return;
+			}
 		}
-		if (voyc.geosketch.getOption(voyc.option.CHEAT)) {
-			if (evt.ctrlKey) {
-				switch (evt.keyCode) {
-					case 39: voyc.geosketch.timeForward(); break;
-					case 37: voyc.geosketch.timeBackward(); break;
-					default: return;
-				}
+		else if (evt.shiftKey) {
+			switch (evt.keyCode) {
+				case 39: voyc.geosketch.world.spin(voyc.Spin.CW); break;
+				case 37: voyc.geosketch.world.spin(voyc.Spin.CCW); break;
+				case 38: voyc.geosketch.world.zoom(voyc.Spin.IN); break;
+				case 40: voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
+				default: return;
 			}
-			else if (evt.shiftKey) {
-				switch (evt.keyCode) {
-					case 39: voyc.geosketch.world.spin(voyc.Spin.CW); break;
-					case 37: voyc.geosketch.world.spin(voyc.Spin.CCW); break;
-					case 38: voyc.geosketch.world.zoom(voyc.Spin.IN); break;
-					case 40: voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
-					default: return;
-				}
-			}
-			else {
-				switch (evt.keyCode) {
-					case 39: voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
-					case 37: voyc.geosketch.world.spin(voyc.Spin.LEFT ); break;
-					case 38: voyc.geosketch.world.spin(voyc.Spin.DOWN ); break;
-					case 40: voyc.geosketch.world.spin(voyc.Spin.UP   ); break;
-					default: return;
-				}
-			}
-			evt.preventDefault();
-			this.keyIsDown = true;
 		}
+		else {
+			switch (evt.keyCode) {
+				case 39: voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
+				case 37: voyc.geosketch.world.spin(voyc.Spin.LEFT ); break;
+				case 38: voyc.geosketch.world.spin(voyc.Spin.DOWN ); break;
+				case 40: voyc.geosketch.world.spin(voyc.Spin.UP   ); break;
+				default: return;
+			}
+		}
+		evt.preventDefault();
+		this.keyIsDown = true;
 	}, false);
+
 	window.addEventListener('keyup', function(evt) {
 		if (this.keyIsDown) {
 			this.keyIsDown = false;
 			evt.preventDefault();
-			//voyc.geosketch.world.zoomStop();
 		}
 	}, false);
 }
@@ -274,13 +262,6 @@ voyc.Hud.prototype.hide = function(elem) {
 	elem.classList.add('hidden');
 }
 
-voyc.Hud.prototype.populateMenu = function() {
-	document.getElementById('menuhires').checked = voyc.geosketch.getOption(voyc.option.HIRES);
-	document.getElementById('menucheat').checked = voyc.geosketch.getOption(voyc.option.CHEAT);
-	document.getElementById('menugraticule').checked = voyc.geosketch.getOption(voyc.option.GRATICULE);
-	document.getElementById('menupresentday').checked = voyc.geosketch.getOption(voyc.option.PRESENTDAY);
-}
-
 voyc.Hud.prototype.announce = function(msg,duration) {
 	document.getElementById('announcemsg').innerHTML = msg;
 	this.show(document.getElementById('announce'));
@@ -307,11 +288,11 @@ voyc.Hud.prototype.setZoom = function(newvalue, newfactor) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = newvalue;
 	}
-	voyc.$('setting-scale').innerHTML = 'scale: ' + newvalue + '/' + newfactor
+	voyc.$('option-scale').innerHTML = 'scale: ' + newvalue + ', ' + newfactor
 }
 
 voyc.Hud.prototype.setCo = function(co,gamma) {
-	voyc.$('setting-co').innerHTML = co[0].toFixed(2)+','+co[1].toFixed(2)+','+gamma
+	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma
 }
 
 // -------- mouse handlers

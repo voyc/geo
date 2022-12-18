@@ -12,13 +12,20 @@ voyc.World = function() {
 	this.h = 0;
 
 	this.projection = {};
-//	this.globe = {};
 	this.layer = [];  // array of layer objects, layer is a canvas
 
 	this.moved = true;
 	this.dragging = false;
 	
-	this.option = {
+	this.scale = {}
+//	this.scale = {
+//		min = halfwid * this.defaultScale.minScaleFactor   // small number, zoomed out
+//		max = halfwid * this.defaultScale.maxScaleFactor   // large number, zoomed in
+//		factor = scalefactor
+//		now = Math.round(halfwid * scalefactor)
+//	}
+
+	this.defaultScale = {
 		minScaleFactor: .5,
 		maxScaleFactor: 6,
 		scaleStepPct: .14,  // percentage of scale
@@ -48,8 +55,6 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
 	this.projection.scale(this.scale.now);                  // size of the circle in pixels
-	
-	
 }
 
 // --------  public options
@@ -91,9 +96,8 @@ voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 	// scale = number of pixels to display the radius of the globe
 	var halfwid = Math.round(Math.min(w, h) / 2)
 	this.scale = {}
-	this.scale.min = halfwid * this.option.minScaleFactor   // .5, small number, zoomed out
-	this.scale.max = halfwid * this.option.maxScaleFactor   // 6, large number, zoomed in
-	this.scale.step = Math.round((this.scale.max - this.scale.min) * this.option.scaleStepPct) // .14
+	this.scale.min = halfwid * this.defaultScale.minScaleFactor   // small number, zoomed out
+	this.scale.max = halfwid * this.defaultScale.maxScaleFactor   // large number, zoomed in
 	this.scale.factor = scalefactor
 	this.scale.now = Math.round(halfwid * scalefactor)
 }
@@ -107,8 +111,7 @@ voyc.World.prototype.zoom = function(dir,pt) {
 		case voyc.Spin.IN: x = 1; break;
 		case voyc.Spin.OUT: x = -1; break;
 	}
-	//var newscale = this.scale.now + (x * this.scale.step); // constant step amount, no good
-	var newscale = Math.round(this.scale.now + (this.scale.now * x * this.option.scaleStepPct))
+	var newscale = Math.round(this.scale.now + (this.scale.now * x * this.defaultScale.scaleStepPct))
 	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
 	this.setScale(newscale);
 	if (pt) {
@@ -156,12 +159,12 @@ voyc.World.prototype.clampGamma = function(gamma) {
 
 voyc.World.prototype.spin = function(dir) {
 	switch(dir) {
-		case voyc.Spin.LEFT : this.co[0] += this.option.spinStep; break;
-		case voyc.Spin.RIGHT: this.co[0] -= this.option.spinStep; break;
-		case voyc.Spin.UP   : this.co[1] += this.option.spinStep; break;
-		case voyc.Spin.DOWN : this.co[1] -= this.option.spinStep; break;
-		case voyc.Spin.CW   : this.gamma += this.option.spinStep; break;
-		case voyc.Spin.CCW  : this.gamma -= this.option.spinStep; break;
+		case voyc.Spin.LEFT : this.co[0] += this.defaultScale.spinStep; break;
+		case voyc.Spin.RIGHT: this.co[0] -= this.defaultScale.spinStep; break;
+		case voyc.Spin.UP   : this.co[1] += this.defaultScale.spinStep; break;
+		case voyc.Spin.DOWN : this.co[1] -= this.defaultScale.spinStep; break;
+		case voyc.Spin.CW   : this.gamma += this.defaultScale.spinStep; break;
+		case voyc.Spin.CCW  : this.gamma -= this.defaultScale.spinStep; break;
 	}
 	this.co = this.clampCoord(this.co)
 	this.gamma = this.clampGamma(this.gamma)
@@ -432,6 +435,7 @@ voyc.World.prototype.clearLayers = function() {
 }
 
 voyc.World.prototype.testHit = function(pt) {
+	var ret = false
 	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
 	if (!geom)
 		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
@@ -441,7 +445,10 @@ voyc.World.prototype.testHit = function(pt) {
 		geom =  this.iterator['hittest'].iterateCollection(voyc.data.mountains, this.projection, pt);
 	if (geom)
 		this.drawHilite(geom)
-	return (geom) ? geom.name : false
+		ret = geom.name
+		if (voyc.geosketch.getOption('showid') && geom.id)
+			ret += ' ('+geom.id+')'
+	return ret
 }
 
 // --------  drawing
@@ -468,7 +475,6 @@ voyc.World.prototype.resize = function(w, h) {
 			a.e.style.height = this.h + 'px';
 		}
 	}
-	
 }
 
 voyc.World.prototype.draw = function() {
@@ -680,18 +686,3 @@ voyc.World.prototype.calcRank = function(id) {
 	}
 	return rank
 }
-
-//voyc.World.prototype.calcZoomScaleRank = function() {
-//	var table = voyc.zoomScaleRankTable
-//	var scale = this.scale.now 
-//	var rank = table.length
-//	for (var r=0; r<table.length; r++) {
-//		if (scale < table[r]) {
-//			rank = r+1
-//			break
-//		}
-//	}
-//	return rank
-//}
-//voyc.zoomScaleRankTable = [ 242, 531, 897, 1329, 1969, 2904, ]
-

@@ -16,12 +16,17 @@ voyc.GeoSketch = function () {
 		sliding: false,
 		speed: 10 // years per second	
 	}
-	
-	this.options = JSON.parse(localStorage.getItem('options')) || {};
-	localStorage.setItem( 'options', JSON.stringify(this.options));
+
+	this.options = {}
+	this.defaultOptions = {
+		showid:true,
+		maxscale:6,
+	}
 }
 
 voyc.GeoSketch.prototype.setup = function () {
+	this.setupOptions()
+
 	this.observer = new voyc.Observer();
 	new voyc.View();
 	new voyc.User();
@@ -97,31 +102,30 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 
 	this.world.moved = true
 	this.world.setScale() // to set the zoomer, forces a render
+	this.hud.setCo(this.world.co, this.world.gamma)
 
 	this.observer.publish('setup-complete', 'geosketch', {});
 }
 
-voyc.option = {
-	HIRES:0,
-	CHEAT:1,
-	GRATICULE:2,
-	PRESENTDAY:3
+// -------- options, settings, preferences
+
+voyc.GeoSketch.prototype.setupOptions = function () {
+	this.options = JSON.parse(localStorage.getItem('options')) || this.defaultOptions
+	localStorage.setItem( 'options', JSON.stringify(this.options));
+
+	voyc.$('option-showid').checked = this.options.showid
+	voyc.$('option-maxscale').value = this.options.maxscale
+	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
 }
-voyc.GeoSketch.prototype.getOption = function(x) {
-	return true;
+voyc.GeoSketch.prototype.setOption = function (key,value) {
+	this.options[key] = value
+	localStorage.setItem('options', JSON.stringify(this.options))
 }
-voyc.GeoSketch.prototype.setOption = function (option,value) {
-	this.options[option] = value;
-	localStorage.setItem(voyc.GeoSketch.storageKey, JSON.stringify(this.options));
-	//if (option == voyc.option.CHEAT) {
-	//	this.cheat(value);
-	//}
-	//if (option == voyc.option.HIRES) {
-	//	this.world.showHiRes(value);
-	//}
-	this.world.moved = true;
+voyc.GeoSketch.prototype.getOption = function (key) {
+	return this.options[key]
 }
 
+// -------- demo from Account
 
 voyc.GeoSketch.prototype.onProfileRequested = function(note) {
 	var svcname = 'getprofile';
@@ -193,72 +197,28 @@ voyc.GeoSketch.prototype.onSetProfileReceived = function(note) {
 
 voyc.GeoSketch.prototype.render = function (timestamp) {
 	if (timestamp) {
-		this.calcTime(timestamp);
+		this.calcTime(timestamp)
 	}
-
-	// update
-	//if (!this.getOption(voyc.option.CHEAT)) {
-	//	var keyed = this.hud.checkKeyboard();
-	//	this.hero.move(keyed, timestamp);
-	//}
-
-	//if (this.world.moved) {
-	//	this.hero.updateDestination();
-	//}
-
-	// draw world		
-	//if (this.world.moved || this.time.moved) {
-	//	var ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
-	//	ctx.clearRect(0, 0, this.world.w, this.world.h);
-	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
-	//	ctx.clearRect(0, 0, this.world.w, this.world.h);
-	//}
 	this.world.draw()
 
-//	if (this.world.moved) {
-//		this.world.drawOceansAndLand();
-//		this.world.drawGrid();
-//		this.world.drawSketch();
-//	}	
-//	if (this.world.moved && !this.world.dragging && !this.world.zooming) {
-//		this.world.drawFeatures();
-
-//	//	this.world.drawRivers();
-//	}
-	//if ((this.world.moved || this.time.moved) && !this.world.dragging && !this.world.zooming) {
-	//	var ctx = this.world.getLayer(voyc.layer.EMPIRE).ctx;
-	//	this.drawEmpire(ctx);
-	//	ctx = this.world.getLayer(voyc.layer.FOREGROUND).ctx;
-	//	this.drawTreasure(ctx);
-	//	this.world.drawRiversAnim();
-	//}
-	//if ((this.world.moved || this.hero.moved) && !this.getOption(voyc.option.CHEAT)) {
-	//	this.hero.draw();
-	//}
-
-	//if ((this.getOption(voyc.option.CHEAT) && !this.world.dragging && !this.world.zooming)
-	//		|| (!this.getOption(voyc.option.CHEAT) && (this.hero.moved))) {
-	//	this.hitTestFeatures();
-	//}
-
-	//if ((this.time.moved || this.hero.moved) && !this.getOption(voyc.option.CHEAT)) {
-	//	this.hitTestTreasure();
-	//}
-
-	//this.hero.speed.now = (this.hero.moved) ? this.hero.speed.best : 0;
-	//this.hud.setSpeed(this.hero.speed.now);
-	////console.log('set speed: ' + this.hero.speed.now);
-
-	//this.drawEffects(ctx);
-	
-	this.world.moved = false;
-	//this.time.moved = false;
-	//this.hero.moved = false;
-	this.previousTimestamp = timestamp;
-	return;
+	this.time.moved = false
+	this.world.moved = false
+	this.previousTimestamp = timestamp
 }
 
-/* on startup */
+voyc.GeoSketch.prototype.resize = function (evt) {
+	var w = document.body.clientWidth 
+	var h = document.body.clientHeight
+	voyc.$('option-dim').innerHTML = w+' x '+h
+	
+	this.world.resize(w,h)
+	this.sketch.resize(w.h)
+	this.world.moved = true
+	this.render(0)
+}
+
+// -------- startup events
+
 window.addEventListener('load', function(evt) {
 	voyc.geosketch = new voyc.GeoSketch();
 	voyc.geosketch.setup();
@@ -266,13 +226,6 @@ window.addEventListener('load', function(evt) {
 		voyc.geosketch.resize()
 	}, false);
 }, false);
-
-voyc.GeoSketch.prototype.resize = function (evt) {
-	this.world.resize(document.body.clientWidth, document.body.clientHeight);
-	this.sketch.resize(document.body.clientWidth, document.body.clientHeight);
-	this.world.moved = true;
-	this.render(0);
-}
 
 window['voyc']['onScriptLoaded'] = function(filename) {
 	console.log(filename + ' loaded')

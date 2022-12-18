@@ -188,9 +188,9 @@ voyc.GeoIteratorCount.prototype = Object.create(voyc.GeoIterator.prototype)
 voyc.GeoIteratorCount.prototype.collectionStart = function(collection, add) {
 	console.log(['iterate count',collection.name])
 	this.saveCollection = collection
-	this.option1 = add[0] // custom
-	this.option2 = add[1]
-	this.option3 = add[2]
+	this.param1 = add[0] // custom
+	this.param2 = add[1]
+	this.param3 = add[2]
 	this.points = 0
 	this.lines = 0
 	this.polygons = 0

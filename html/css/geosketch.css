@@ -20,11 +20,8 @@
 #svctable  td:last-child {
 	font-family:initial;
 }
-#settings-dialog  table {
-	margin:0 1em;
-}
-#settings-dialog td:last-child {
-	max-width:4cm;
+#option-maxscale {
+	width: 2rem;
 }
 
 html, body {
