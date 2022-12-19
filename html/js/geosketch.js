@@ -58,9 +58,9 @@ voyc.GeoSketch.prototype.setup = function () {
 		{key:'redxbox' ,path:path+'images/red-xbox.png'},
 		{key:'bluebox' ,path:path+'images/blue-xbox.png'},
 		{key:'treasure',path:path+'images/chest32.png'},
-		{key:'mountains_1'   ,path:path+'images/mountains_1.png'},
-		{key:'mountains_2'   ,path:path+'images/mountains_2.png'},
-		{key:'mountains_3'   ,path:path+'images/mountains_3.png'},
+		{key:'mountains_1'   ,path:path+'images/mountains_1b.png'},
+		{key:'mountains_2'   ,path:path+'images/mountains_2b.png'},
+		{key:'mountains_3'   ,path:path+'images/mountains_3b.png'},
 		{key:'deserts'         ,path:path+'images/deserts.png'},
 		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];

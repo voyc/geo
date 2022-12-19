@@ -14,7 +14,7 @@
 				top:0px;
 				left:0px;
 				width:100%;
-				height:100%;
+				height:50%;
 			}
 			#red { xbackground-color: red; }    // background color affects appearance only, not behavior.  transparent by default.
 			#grn { xbackground-color: green; }
@@ -128,13 +128,16 @@ Sub.prototype.goo = function() {
 		</script>
 	</head>
 	<body>
-		<div id='container'>  <!-- all events bubble up to this container -->
+		<div id='container' class='full'>  <!-- all events bubble up to this container -->
 			<div id='red' class='full'>red</div>
 			<div id='grn' class='full'>grn</div>
 			<div id='blu' class='full'>blu</div>  <!-- last overlaid div is on top and receives all the events -->
 		</div>
 		<br/>
 		<br/>
-		<input type='color'/>
+		<input type='color'>
+		<br/>
+		<br/>
+		<img src='assets/images/mountains_1.png'\>
 	</body>
 </html>

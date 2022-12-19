@@ -1,0 +1,79 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test canvas</title>
+
+		<script>
+			voyc = {
+				pat: null,
+			}
+
+			window.addEventListener('load', function(e) {
+				var canvas = document.getElementById('canvas')
+				var ctx = canvas.getContext('2d')
+
+				var img = document.getElementById('pattern')
+				var color = 'red'
+				voyc.pat = makePattern( img, color)
+
+				ctx.fillStyle = voyc.pat
+				ctx.fillRect(10,10,150,100)
+
+				document.getElementById('make').addEventListener('click', function(evt) {
+					var img = document.getElementById('pattern')
+					var color = document.getElementById('color-picker').value
+					voyc.pat = makePattern( img, color)
+				}, false)	
+					
+				document.getElementById('refill').addEventListener('click', function(evt) {
+					var canvas = document.getElementById('canvas')
+					var ctx = canvas.getContext('2d')
+					ctx.fillStyle = voyc.pat
+					ctx.fillRect(10,10,150,100)
+				}, false)	
+			}, false)	
+
+			makePattern = function( img, color) {
+				// make a pattern in a hidden canvas from an image and a color
+				// https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation#operations
+				var canvas = document.createElement('canvas')
+				document.getElementById('parent').appendChild(canvas)
+				canvas.width = img.width
+				canvas.height = img.height
+				var ctx = canvas.getContext('2d')
+
+				// start with image
+				var pat = ctx.createPattern(img, 'repeat')
+				ctx.fillStyle =pat 
+				ctx.fillRect(0,0,canvas.width,canvas.height)
+
+				// mask in the color
+				ctx.globalCompositeOperation = 'source-in'
+				ctx.fillStyle = color
+				ctx.fillRect(0,0,canvas.width,canvas.height)
+
+				var pat = ctx.createPattern(canvas, 'repeat')
+				return pat
+			}
+		</script>
+	</head>
+	<body>
+		hello
+		<br/>
+		<br/>
+		<input id='color-picker' type='color'>
+		<br/>
+		<br/>
+		<img id='pattern' src='assets/images/mountains_1.png'\>
+		<img id='pattern1' src='assets/images/mtnhi.png'\>
+		<img id='pattern2' src='assets/images/mtnhi1.png'\>
+		<br/>
+		<br/>
+		<canvas id='canvas'></canvas>
+		<div id='parent'></div>
+		<button id='make'>Make</button>
+		<button id='refill'>Refill</button>
+	</body>
+</html>
