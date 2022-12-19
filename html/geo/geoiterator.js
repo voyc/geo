@@ -276,7 +276,7 @@ voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
 	var palette = this.palette[paletteNdx]
 	if (!palette)
 		debugger;
-	this.ctx.fillStyle = palette.fill
+	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.lineWidth = palette.pen
 	if (palette.isFill) this.ctx.fill()

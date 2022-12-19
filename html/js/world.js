@@ -46,7 +46,6 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.setupIterators()
 	this.setupPalette()
 	this.setupLayers()
-	this.fixupPalette()
 	this.setupAnimation()
 	
 	this.projection = new voyc.DualProjection();
@@ -507,6 +506,20 @@ voyc.World.prototype.drawLayer = function(id) {
 		zoomScaleRank)
 }
 
+voyc.World.prototype.calcRank = function(id) {
+	// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
+	var table = this.palette[id]
+	var scale = this.scale.now 
+	var rank = table.length
+	for (var r=0; r<table.length; r++) {
+		if (scale < table[r].scale) {
+			rank = r+1
+			break
+		}
+	}
+	return rank
+}
+
 voyc.World.prototype.drawWater = function() {
 	var layer = this.layer['water']
 	if (!layer.enabled) return
@@ -559,19 +572,36 @@ voyc.World.prototype.drawFeatures = function() {
 }
 
 voyc.World.prototype.setupPalette = function() {
-	this.palette = voyc.palette
+	this.palette = voyc.defaultPalette
 	for (var id in this.palette) {
 		for (var palette of this.palette[id]) {
 			palette.fill = voyc.prepString('rgb($1,$2,$3)', palette.fill)
 			palette.stroke = voyc.prepString('rgb($1,$2,$3)', palette.stroke)
+			if (palette.patfile)
+				palette.pat = this.makePattern(voyc.geosketch.asset.get(palette.patfile), palette.fill)
 		}
 	}
 }
-voyc.World.prototype.fixupPalette = function() {
-	this.palette['deserts'][0].fill   = this.layer['deserts'].ctx.createPattern(voyc.geosketch.asset.get('deserts'), 'repeat');
-	this.palette['mountains'][0].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_1'), 'repeat');
-	this.palette['mountains'][1].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_2'), 'repeat');
-	this.palette['mountains'][2].fill = this.layer['mountains'].ctx.createPattern(voyc.geosketch.asset.get('mountains_3'), 'repeat');
+voyc.World.prototype.makePattern = function( img, color) {
+	// make a pattern in a hidden canvas from an image and a color
+	// https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/globalCompositeOperation#operations
+	var canvas = document.createElement('canvas')
+	canvas.width = img.width
+	canvas.height = img.height
+	var ctx = canvas.getContext('2d')
+
+	// start with image
+	var pat = ctx.createPattern(img, 'repeat')
+	ctx.fillStyle =pat 
+	ctx.fillRect(0,0,canvas.width,canvas.height)
+
+	// mask in the color
+	ctx.globalCompositeOperation = 'source-in'
+	ctx.fillStyle = color
+	ctx.fillRect(0,0,canvas.width,canvas.height)
+
+	var pat = ctx.createPattern(canvas, 'repeat')
+	return pat
 }
 
 /** @struct */
@@ -601,29 +631,6 @@ voyc.Spin = {
 	UP:7,
 	DOWN:8,
 }		
-/*
-voyc.worldPalette = {
-bkgrd:           {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},
-water:           {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},
-land:            {isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},
-grid:            {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
-sketch:          {isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
-empire:          {isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
-rivers:          {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers1:         {isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers2:         {isStroke:1, stroke:[255,  0,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers3:         {isStroke:1, stroke:[  0,255,  0], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers4:         {isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers5:         {isStroke:1, stroke:[  0,255,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-rivers6:         {isStroke:1, stroke:[255,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
-lakes:           {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},
-animation:       {isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},
-deserts:         {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-highmountains:   {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-mediummountains: {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-lowmountains:    {isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-}
-*/
 voyc.layers = {
 	water:           'Oceans',
 	land:            'Land',
@@ -642,7 +649,7 @@ voyc.layers = {
 	highmountains:   'Mountains',
 }
 
-voyc.palette = {
+voyc.defaultPalette = {
 	bkgrd: [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,  0]},],
 	water: [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[111,166,207]},],
 	land:  [{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[216,218,178]},],
@@ -654,35 +661,21 @@ voyc.palette = {
 	sketch:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	empire:[{scale:5000,isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 	rivers: [
-		{scale: 242,isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]}, // 1:blue
-		{scale: 531,isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]}, // 2:cyan
-		{scale: 897,isStroke:1, stroke:[  0,  0,255], pen:3 , isFill:0, fill:[  0,  0,  0]}, // 3:green
-		{scale:1329,isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]}, // 4:yellow
-		{scale:1969,isStroke:1, stroke:[  0,  0,255], pen:1 , isFill:0, fill:[  0,  0,  0]}, // 5:magenta
-		{scale:2904,isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]}, // 6:maroon
+		{scale: 242,isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]},
+		{scale: 531,isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]},
+		{scale: 897,isStroke:1, stroke:[  0,  0,255], pen:3 , isFill:0, fill:[  0,  0,  0]},
+		{scale:1329,isStroke:1, stroke:[  0,  0,255], pen:2 , isFill:0, fill:[  0,  0,  0]},
+		{scale:1969,isStroke:1, stroke:[  0,  0,255], pen:1 , isFill:0, fill:[  0,  0,  0]},
+		{scale:2904,isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
 	],
 	lakes:           [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
 	animation:       [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
-	deserts:         [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},],
+	deserts:         [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96, 96,  0], pat:false, patfile:'deserts'},],
 
 	mountains:       [
-		{scale: 300,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-		{scale:1000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
-		{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,  0]},
+		{scale: 300,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_1'},
+		{scale:1000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_2'},
+		{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_3'},
 	],
 	hilite:          [{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
-}
-
-voyc.World.prototype.calcRank = function(id) {
-	// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
-	var table = voyc.palette[id]
-	var scale = this.scale.now 
-	var rank = table.length
-	for (var r=0; r<table.length; r++) {
-		if (scale < table[r].scale) {
-			rank = r+1
-			break
-		}
-	}
-	return rank
 }
