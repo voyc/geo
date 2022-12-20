@@ -22,6 +22,7 @@ voyc.GeoSketch = function () {
 		showid:true,
 		maxscale:6,
 		animation:true,
+		fps:20,
 	}
 }
 
@@ -73,6 +74,7 @@ voyc.GeoSketch.prototype.setup = function () {
 	})
 
 	this.game = new voyc.Game()
+	this.game.maxfps = this.options.fps
 	this.game.onRender = function(elapsed) {
 		self.render(elapsed)
 	}
@@ -110,6 +112,9 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.world.setScale() // to set the zoomer, forces a render
 	this.hud.setCo(this.world.co, this.world.gamma)
 
+	if (this.options.animation)
+		this.game.start()
+
 	this.observer.publish('setup-complete', 'geosketch', {});
 }
 
@@ -123,6 +128,7 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 	voyc.$('option-maxscale').value = this.options.maxscale
 	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
 	voyc.$('option-animation').checked = this.options.animation
+	voyc.$('option-fps').value = this.options.fps
 }
 voyc.GeoSketch.prototype.setOption = function (key,value) {
 	this.options[key] = value
@@ -203,15 +209,20 @@ voyc.GeoSketch.prototype.onSetProfileReceived = function(note) {
 }
 
 voyc.GeoSketch.prototype.animate = function(boo) {
-	if (boo) this.game.start()
-	else this.game.stop()
+	if (boo) {
+		this.game.start()
+	}
+	else 
+		this.game.stop()
 }
 
 voyc.GeoSketch.prototype.render = function (timestamp) {
+	if (timestamp)
+		this.world.stepFrame()
+
 	this.world.draw()
 	this.time.moved = false
 	this.world.moved = false
-	this.previousTimestamp = timestamp
 }
 
 voyc.GeoSketch.prototype.resize = function (evt) {

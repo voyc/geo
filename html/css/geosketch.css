@@ -23,6 +23,9 @@
 #option-maxscale {
 	width: 2rem;
 }
+#option-fps {
+	width: 2rem;
+}
 
 html, body {
 	width: 100%;

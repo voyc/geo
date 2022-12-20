@@ -223,7 +223,6 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	this.scalerank = add[3]
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
-	this.ctx.strokeLineDash = [10,10]
 	this.prevScaleRank = false
 	return true
 }
@@ -254,7 +253,6 @@ voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
 	if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)) {
 		this.draw(this.prevScaleRank)
 		this.ctx.beginPath()
-		this.ctx.strokeLineDash = [10,10]
 	}
 	this.prevScaleRank = geometry.scalerank
 	return true
@@ -272,12 +270,8 @@ voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
 		}
 		return paletteNdx
 	}
-	//if (this.collection.name == 'grid')
-	//	debugger;
 	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
 	var palette = this.palette[paletteNdx]
-	if (!palette)
-		debugger;
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.lineWidth = palette.pen
@@ -397,54 +391,6 @@ voyc.GeoIteratorDraw.prototype.arcGap = function(a,d,ctr,r) {
 	this.ctx.arcTo(e[0],e[1],oc.pt[0],oc.pt[1],r);
 }
 
-// -------- subclass GeoIteratorAnimate, draw rivers with offset points
-
-voyc.GeoIteratorAnimate = function() {
-	voyc.GeoIterator.call(this) // super
-}
-voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
-
-voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
-	console.log(['iterate animate',collection.name])
-	this.projection = add[0]
-	this.ctx = add[1]
-	this.palette = add[2]
-	this.offset = add[3] || 1
-	this.skip   = add[4] || 3
-	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-	this.ctx.beginPath()
-	this.ctx.strokeLineDash = [10,10]
-	this.n = 0
-	return true
-}
-
-voyc.GeoIteratorAnimate.prototype.collectionEnd = function(collection) {
-	this.ctx.fillStyle = this.palette.fill
-	this.ctx.strokeStyle = this.palette.stroke
-	this.ctx.linewidth = this.palette.pen
-	if (this.palette.isFill) this.ctx.fill()
-	if (this.palette.isStroke) this.ctx.stroke()
-}
-
-voyc.GeoIteratorAnimate.prototype.doPoint = function(co, within) {
-	var pt = this.projection.project(co);
-	if (pt) {
-		this.n++
-		if ((this.n+this.offset) % this.skip == 0) {
-			var x = parseInt(pt[0])
-			var y = parseInt(pt[1])
-			var sz = this.palette.pen
-			this.ctx.moveTo(x-sz,y-sz)
-			this.ctx.lineTo(x+sz,y-sz)
-			this.ctx.lineTo(x+sz,y+sz)
-			this.ctx.lineTo(x-sz,y+sz)
-			this.ctx.lineTo(x-sz,y-sz)
-			this.ctx.closePath()
-		}
-	}
-	return true
-}
-
 // -------- subclass GeoIteratorHitTest, return a geometry intersecing a point
 
 voyc.GeoIteratorHitTest = function() {
@@ -549,4 +495,45 @@ voyc.GeoIteratorHitTest.prototype.pointInRect= function(pt,rect) {
 		&& (pt[0] < rect.e)
 		&& (pt[1] > rect.n)
 		&& (pt[1] < rect.s))
+}
+
+// -------- subclass GeoIteratorAnimate, subclass of GeoIteratorDraw, used to draw rivers with offset points
+
+voyc.GeoIteratorAnimate = function() {
+	voyc.GeoIteratorDraw.call(this) // super
+}
+voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+
+voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
+	console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	this.projection = add[0]
+	this.ctx = add[1]
+	this.palette = add[2]
+	this.scalerank = add[3]
+	this.offset = add[4]        // override
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
+	this.prevScaleRank = false
+	return true
+}
+
+voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
+	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
+		var paletteNdx = 0
+		if (geomScaleRank) {
+			var adj = maxScaleRank - zoomScaleRank   // value 5-0
+			var paletteLevel = geomScaleRank + adj  // 1-6
+			var paletteNdx = paletteLevel - 1  // 0-5
+		}
+		return paletteNdx
+	}
+	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+	var palette = this.palette[paletteNdx]
+	this.ctx.fillStyle = palette.pat || palette.fill
+	this.ctx.lineWidth = palette.pen
+	this.ctx.strokeStyle = 'rgb(176,176,255'    // override
+	this.ctx.lineDashOffset = -this.offset      // override
+	this.ctx.setLineDash([3,3])                 // override
+	if (palette.isFill) this.ctx.fill()
+	if (palette.isStroke) this.ctx.stroke()
 }

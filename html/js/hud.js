@@ -1,8 +1,7 @@
 ﻿/**
 	class Hud
 	singleton
-	manages the Hud as the top layer of the map
-	@constructor
+	manages the HUD as the top layer of the display 
 */
 voyc.Hud = function() {
 	// singleton
@@ -43,17 +42,15 @@ voyc.Hud.prototype.setup = function(elem) {
 voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
 	for (var id in voyc.geosketch.world.layer) {
-		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
-		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+		if (voyc.geosketch.world.layer[id].menulabel) {
+			s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
+			s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
+		}
 	}
 
-	{
-		s += "<div><span><b>Custom</b></span></div>"
-		var id = 'sketch'
-		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
-		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
-		s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
-	}
+	s += "<div><span><b>Custom</b></span></div>"
+	s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
+
 	var layermenu = voyc.$('layermenu')
 	layermenu.innerHTML = s
 
@@ -65,8 +62,6 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 		}, false)
 	})
 }
-
-
 
 voyc.Hud.prototype.attach = function() {
 	this.attachTouchHandlers()
@@ -93,6 +88,12 @@ voyc.Hud.prototype.attach = function() {
 	document.getElementById('option-animation').addEventListener('change',  function(evt) {
 		voyc.geosketch.setOption( 'animation', evt.target.checked)
 		voyc.geosketch.animate(evt.target.checked)
+	}, false)
+
+	document.getElementById('option-fps').addEventListener('change', function(evt) {
+		var fps = parseFloat(evt.target.value)
+		voyc.geosketch.setOption( 'fps', fps)
+		voyc.geosketch.game.maxfps = fps
 	}, false)
 	
 	// -------- attach map zoomer handlers

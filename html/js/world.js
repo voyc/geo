@@ -1,8 +1,7 @@
 /** 
 	class World
 	singleton
-	represents the output display, multiple layered canvas elements
-	@constructor 
+	manages the map display, multiple layered canvas elements
 */
 voyc.World = function() {
 	this.elem = {};
@@ -185,11 +184,6 @@ voyc.World.prototype.drop = function() {
 	//this.animate(true)
 }
 
-//voyc.World.prototype.flipLat = function(co) {
-//	// in projection, S is positive. Everywhere else, N is positive.
-//	return [co[0], 0-co[1]]
-//}
-
 voyc.World.prototype.moveToPoint = function(pt) {
 	var co = this.projection.invert(pt)
 	this.moveToCoord(co)
@@ -201,13 +195,6 @@ voyc.World.prototype.moveToCoord = function(co) {
 	voyc.geosketch.render(0);
 	this.stoCo()
 }
-//voyc.World.prototype.moveByVector = function(rotation) {
-//	this.projection.rotateIncr(rotation)
-//	this.moved = true
-//	voyc.geosketch.render(0);
-//	this.co = this.flipLat(this.projection.co)
-//	this.stoCo()
-//}
 
 voyc.World.prototype.getCenterPoint = function() {
 	return ([Math.round(this.w/2), Math.round(this.h/2)]);
@@ -294,7 +281,7 @@ voyc.World.prototype.setupLayers = function() {
 
 		// create the layer array element
 		var a = {}
-		a.isOn = true
+//		a.isOn = true
 		a.menulabel = menulabel
 		a.offset = offset
 		a.type = 'canvas'
@@ -341,6 +328,7 @@ voyc.World.prototype.setupLayers = function() {
 		// create the layer array element
 		var a = {};
 		a.type = 'div'
+		a.menulabel = menulabel
 		a.e = e
 		a.enabled = true
 		self.layer[id] = a
@@ -358,12 +346,12 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'draw'   ,'feature'   ,0)
 	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'draw'   ,'feature'   ,0)
 	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'draw'   ,false       ,0)
-	createLayerDiv(   'riverbase','Rivers'    )
+	createLayerDiv(   'riverbase' ,'Rivers'    )
 	createLayerCanvas('rivers'    ,false       ,'rivers'    ,false ,'draw'   ,'riverbase' ,6)
 	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'draw'   ,false       ,0)
+	createLayerCanvas('sketch'    ,'Sketch'    ,'sketch'    ,false ,'draw'   ,false       ,0)
 
 	this.animation = this.layer.rivers.overlays
 }
@@ -462,7 +450,6 @@ voyc.World.prototype.draw = function() {
 			this.drawRiver();
 		}
 	}
-	this.stepFrame(true)
 }
 
 voyc.World.prototype.drawLayer = function(id) {
@@ -518,7 +505,7 @@ voyc.World.prototype.drawRiver = function() {
 
 voyc.World.prototype.drawLayerRiver = function(id) {
 	var layer = this.layer[id]
-	var offset = this.layer[id].offset
+	var offset = this.layer[id].overlays.length //offset
 	if (!layer.enabled) return
 
 	var zoomScaleRank = this.calcRank(id) 
@@ -531,12 +518,13 @@ voyc.World.prototype.drawLayerRiver = function(id) {
 		zoomScaleRank)
 
 	for (var i=0; i<offset; i++)
-		layer.iterator.iterateCollection(
+		this.iterator['animate'].iterateCollection(
 			layer.data, 
 			this.projection, 
 			this.layer.rivers.overlays[i].getContext("2d"),
 			layer.palette,
-			zoomScaleRank)
+			zoomScaleRank,
+			i)
 }
 
 voyc.World.prototype.drawHilite = function(geom) {
