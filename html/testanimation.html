@@ -1,0 +1,137 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test animation</title>
+
+		<style>
+			#river,#a1,#a2,#a3,#a4,#a5,#a6 {
+				position:absolute;
+			}
+			.hidden {
+				visibility:hidden;
+			}
+		</style>
+
+		<script>
+			var voyc = {}
+			var log = true
+		</script>
+		<script src='fx/game.js'></script>
+
+		<script>
+			var animation = []  // list of overlay elements
+			var counter = -1
+			var timer = false
+
+			window.addEventListener('load', function(e) {
+				document.getElementById('start').addEventListener('click', function(evt) {
+					start()
+				}, false)	
+				document.getElementById('stop').addEventListener('click', function(evt) {
+					stop()
+				}, false)	
+
+				setup()
+
+				voyc.game = new voyc.Game();
+
+				voyc.game.onRender = function(elapsed) {
+					step()
+				};
+			}, false)	
+
+			setup = function() {
+				// draw main feature
+				var canvas = document.getElementById('river')
+				var ctx = canvas.getContext('2d')
+				ctx.fillStyle = 'lightgreen'
+				ctx.fillRect(0,0,canvas.width,canvas.height)
+
+				ctx.moveTo(10,10)
+				ctx.lineTo(100,100)
+				ctx.lineTo(200,10)
+				ctx.lineWidth = 2
+				ctx.strokeStyle = 'blue'
+				ctx.stroke()
+				
+				ctx.moveTo(10,30)
+				ctx.lineTo(100,130)
+				ctx.lineTo(200,30)
+				ctx.lineWidth = 1
+				ctx.stroke()
+
+				// draw multiple overlays
+				setupOverlay('a1', 0)
+				setupOverlay('a2', 1)
+				setupOverlay('a3', 2)
+				setupOverlay('a4', 3)
+				setupOverlay('a5', 4)
+				setupOverlay('a6', 5)
+			}
+
+			// setup one overlay
+			setupOverlay = function(id,offset) {
+				var canvas = document.getElementById(id)
+				animation[offset] = canvas
+				var ctx = canvas.getContext('2d')
+				show(canvas, offset==0)
+
+				ctx.moveTo(10,10)
+				ctx.lineTo(100,100)
+				ctx.lineTo(200,10)
+				ctx.lineWidth = 2
+				ctx.strokeStyle = 'rgb(176,176,255'
+				ctx.lineDashOffset = -offset
+				ctx.setLineDash([3,3])
+				ctx.stroke()
+
+				ctx.moveTo(10,30)
+				ctx.lineTo(100,130)
+				ctx.lineTo(200,30)
+				ctx.lineWidth = 1
+				ctx.strokeStyle = 'rgb(176,176,255'
+				ctx.lineDashOffset = -offset
+				ctx.setLineDash([3,3])
+				ctx.stroke()
+			}
+
+			// one frame of the animation
+			step = function() {
+				++counter 
+				if (counter >= animation.length)
+					counter=0
+				for (var i=0; i<animation.length; i++)
+					show(animation[i], counter==i)
+			}
+
+			// show or hide one element
+			show = function(e, boo) {
+				if (boo) e.classList.remove('hidden')
+				else e.classList.add('hidden')
+			}
+
+			start = function() {
+				voyc.game.start()
+			}
+
+			stop = function() {
+				voyc.game.stop()
+			}
+		</script>
+	</head>
+	<body>
+		<div id='container' style='height:200px'>
+			<canvas id='river'></canvas>
+			<canvas id='a1'></canvas>
+			<canvas id='a2'></canvas>
+			<canvas id='a3'></canvas>
+			<canvas id='a4'></canvas>
+			<canvas id='a5'></canvas>
+			<canvas id='a6'></canvas>
+		</div>
+		<button id='start'>Start</button>
+		<button id='stop'>Stop</button>
+	</body>
+</html>

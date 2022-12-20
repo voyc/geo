@@ -42,15 +42,15 @@ voyc.Hud.prototype.setup = function(elem) {
 
 voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
-	for (var id in voyc.layers) {
-		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+	for (var id in voyc.geosketch.world.layer) {
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
 		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
 	}
 
 	{
 		s += "<div><span><b>Custom</b></span></div>"
 		var id = 'sketch'
-		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.layers[id]])
+		s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
 		s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
 		s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
 	}
@@ -89,6 +89,11 @@ voyc.Hud.prototype.attach = function() {
 	document.getElementById('option-showid').addEventListener('change',  function(evt) {
 		voyc.geosketch.setOption( 'showid', evt.target.checked)
 	}, false)
+
+	document.getElementById('option-animation').addEventListener('change',  function(evt) {
+		voyc.geosketch.setOption( 'animation', evt.target.checked)
+		voyc.geosketch.animate(evt.target.checked)
+	}, false)
 	
 	// -------- attach map zoomer handlers
 	
@@ -104,10 +109,10 @@ voyc.Hud.prototype.attach = function() {
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false);
 
 	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.Spin.IN)	
+		voyc.geosketch.world.zoom(voyc.spin.IN)	
 	}, false);
 	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.Spin.OUT)	
+		voyc.geosketch.world.zoom(voyc.spin.OUT)	
 	}, false);
 
 	// -------- time slider handlers
@@ -152,19 +157,19 @@ voyc.Hud.prototype.attach = function() {
 		}
 		else if (evt.shiftKey) {
 			switch (evt.keyCode) {
-				case 39: voyc.geosketch.world.spin(voyc.Spin.CW); break;
-				case 37: voyc.geosketch.world.spin(voyc.Spin.CCW); break;
-				case 38: voyc.geosketch.world.zoom(voyc.Spin.IN); break;
-				case 40: voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
+				case 39: voyc.geosketch.world.spin(voyc.spin.CW); break;
+				case 37: voyc.geosketch.world.spin(voyc.spin.CCW); break;
+				case 38: voyc.geosketch.world.zoom(voyc.spin.IN); break;
+				case 40: voyc.geosketch.world.zoom(voyc.spin.OUT); break;
 				default: return;
 			}
 		}
 		else {
 			switch (evt.keyCode) {
-				case 39: voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
-				case 37: voyc.geosketch.world.spin(voyc.Spin.LEFT ); break;
-				case 38: voyc.geosketch.world.spin(voyc.Spin.DOWN ); break;
-				case 40: voyc.geosketch.world.spin(voyc.Spin.UP   ); break;
+				case 39: voyc.geosketch.world.spin(voyc.spin.RIGHT); break;
+				case 37: voyc.geosketch.world.spin(voyc.spin.LEFT ); break;
+				case 38: voyc.geosketch.world.spin(voyc.spin.DOWN ); break;
+				case 40: voyc.geosketch.world.spin(voyc.spin.UP   ); break;
 				default: return;
 			}
 		}
@@ -248,7 +253,7 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 }
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
-	var spin = (evt.deltaY > 0) ? voyc.Spin.OUT : voyc.Spin.IN
+	var spin = (evt.deltaY > 0) ? voyc.spin.OUT : voyc.spin.IN
 	pt = this.getMousePt(evt)
 	voyc.geosketch.world.zoom(spin,pt)	
 }

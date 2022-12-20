@@ -223,6 +223,7 @@ voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	this.scalerank = add[3]
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
+	this.ctx.strokeLineDash = [10,10]
 	this.prevScaleRank = false
 	return true
 }
@@ -253,6 +254,7 @@ voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
 	if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)) {
 		this.draw(this.prevScaleRank)
 		this.ctx.beginPath()
+		this.ctx.strokeLineDash = [10,10]
 	}
 	this.prevScaleRank = geometry.scalerank
 	return true
@@ -411,6 +413,7 @@ voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
 	this.skip   = add[4] || 3
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
+	this.ctx.strokeLineDash = [10,10]
 	this.n = 0
 	return true
 }

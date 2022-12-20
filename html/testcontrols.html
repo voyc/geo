@@ -11,12 +11,14 @@
 		}
 		</style>
 		<script>
-			const rangeInput = document.getElementById('year');
-			const output = document.querySelector('yearout');
-			
-			rangeInput.addEventListener('change', function() {
-			  output.value = this.value;
-			});
+			window.addEventListener('load', function(evt) {
+				const rangeInput = document.getElementById('year');
+				const output = document.querySelector('yearout');
+				
+				rangeInput.addEventListener('change', function() {
+				  output.innerHTML += this.value;
+				}, false);
+			}, false);
 		</script>
 	</head>
 	<body>

@@ -21,6 +21,7 @@ voyc.GeoSketch = function () {
 	this.defaultOptions = {
 		showid:true,
 		maxscale:6,
+		animation:true,
 	}
 }
 
@@ -70,6 +71,11 @@ voyc.GeoSketch.prototype.setup = function () {
 		if (!key)
 			self.setupContinue();	
 	})
+
+	this.game = new voyc.Game()
+	this.game.onRender = function(elapsed) {
+		self.render(elapsed)
+	}
 }
 
 voyc.GeoSketch.prototype.setupContinue = function () {
@@ -116,6 +122,7 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 	voyc.$('option-showid').checked = this.options.showid
 	voyc.$('option-maxscale').value = this.options.maxscale
 	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
+	voyc.$('option-animation').checked = this.options.animation
 }
 voyc.GeoSketch.prototype.setOption = function (key,value) {
 	this.options[key] = value
@@ -195,12 +202,13 @@ voyc.GeoSketch.prototype.onSetProfileReceived = function(note) {
 	console.log('setprofile received');
 }
 
-voyc.GeoSketch.prototype.render = function (timestamp) {
-	if (timestamp) {
-		this.calcTime(timestamp)
-	}
-	this.world.draw()
+voyc.GeoSketch.prototype.animate = function(boo) {
+	if (boo) this.game.start()
+	else this.game.stop()
+}
 
+voyc.GeoSketch.prototype.render = function (timestamp) {
+	this.world.draw()
 	this.time.moved = false
 	this.world.moved = false
 	this.previousTimestamp = timestamp
