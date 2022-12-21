@@ -117,28 +117,19 @@ icon {
 	width:2rem;
 	height:7rem;
 }
+
 #chronometer {
 	bottom:0;
 	left:calc(50% - 5em);
-}
-#timeslide {
-	bottom:4rem;
-	width:15rem;
-	height:2rem;
-	padding:0;
-	border:0;
-	left:50%;
-	transform:translate(-50%);
-	-webkit-transform:translate(-50%);
-}
-#timeslide input {
-	width:15rem;
-	height:2rem;
+	width:250px;
 }
 #time {
 	display:inline-block;
-	width:10rem;
 	text-align:center;
+	width:178px;
+}
+#timeslider {
+	width:100%;
 }
 
 .fade {

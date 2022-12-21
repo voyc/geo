@@ -19,6 +19,16 @@ voyc.World = function() {
 	this.scale = {}
 
 	this.counter = 0
+
+	this.time = {
+		begin: -3000,
+		end: 2023,  // current year
+		now: 2023,  // current year
+		step: 10,
+		moved: false,
+		sliding: false,
+		speed: 10 // years per second	
+	}
 }
 
 voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
@@ -28,6 +38,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.co = JSON.parse(localStorage.getItem('co')) || co
 	this.gamma = localStorage.getItem('gamma') || 0
 	var scalefactor = localStorage.getItem('scalefactor') || scalefactor 
+	this.time.now = localStorage.getItem('timenow') || this.time.now 
 
 	this.setupScale(w,h,scalefactor)
 	this.setupData()
@@ -73,6 +84,36 @@ voyc.World.prototype.stoCo = function() {
 }
 voyc.World.prototype.stoScale = function() {
 	localStorage.setItem('scalefactor',this.scale.factor)
+}
+voyc.World.prototype.stoTime = function() {
+	localStorage.setItem('timenow',this.time.now)
+}
+
+// --------  time
+
+voyc.World.prototype.setTime = function(newtime) {
+	this.time.now = newtime
+	this.time.moved = true
+	voyc.geosketch.hud.setTime(this.time.now)
+	this.stoTime()	
+}
+
+voyc.World.prototype.stepTime = function(boo) {
+	var incr = (boo) ? this.time.step : 0-this.time.step
+	var newtime = this.time.now + incr
+	this.setTime(newtime)
+}
+
+voyc.World.prototype.grabTime = function(evt) {
+	this.time.sliding = true
+}
+
+//voyc.World.prototype.moveTime = function(evt) {
+//	this.time.sliding = true
+//}
+
+voyc.World.prototype.dropTime = function(evt) {
+	this.time.sliding = false 
 }
 
 // --------  scale
@@ -164,7 +205,7 @@ voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
 	for (var id of ['empire','riverbase','lakes','feature'].values())
 		this.showLayer(this.layer[id].e, false)
-	this.animate(false)
+	//this.animate(false)
 }
 voyc.World.prototype.drag = function(pt,prev) {
 	var coNew = this.projection.invert(pt);
@@ -264,6 +305,7 @@ voyc.World.prototype.setupIterators = function() {
 	this.iterator['draw']    = new voyc.GeoIteratorDraw()
 	this.iterator['animate'] = new voyc.GeoIteratorAnimate()
 	this.iterator['hittest'] = new voyc.GeoIteratorHitTest()
+	this.iterator['empire']  = new voyc.GeoIteratorEmpire()
 }
 
 voyc.World.prototype.setupLayers = function() {
@@ -348,7 +390,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'draw'   ,false       ,0)
 	createLayerDiv(   'riverbase' ,'Rivers'    )
 	createLayerCanvas('rivers'    ,false       ,'rivers'    ,false ,'draw'   ,'riverbase' ,6)
-	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'draw'   ,false       ,0)
+	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
 	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('sketch'    ,'Sketch'    ,'sketch'    ,false ,'draw'   ,false       ,0)
@@ -444,11 +486,16 @@ voyc.World.prototype.draw = function() {
 		this.drawLayer('sketch')
 		this.drawLayer('hilite')
 		if (!this.dragging) {
-			//this.drawEmpire();
-			this.drawFeatures();
-			this.drawRiver();
+			this.drawEmpire()
+			this.drawFeatures()
+			this.drawRiver()
 		}
 	}
+	
+	if (this.time.moved)
+		this.drawEmpire()
+	this.moved = false
+	this.time.moved = false
 }
 
 voyc.World.prototype.drawLayer = function(id) {
@@ -540,6 +587,16 @@ voyc.World.prototype.drawFeatures = function() {
 		this.drawLayer(id)
 }
 
+voyc.World.prototype.drawEmpire = function() {
+	var layer = this.layer['empire']
+	layer.iterator.iterateCollection(
+		layer.data, 
+		this.projection, 
+		layer.ctx, 
+		layer.palette,
+		this.time.now)
+}
+
 voyc.World.prototype.setupPalette = function() {
 	this.palette = voyc.defaultPalette
 	for (var id in this.palette) {
@@ -607,7 +664,14 @@ voyc.defaultPalette = {
 		{scale:5000,isStroke:1, stroke:[255,255,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
 	],
 	sketch:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
-	empire:[{scale:5000,isStroke:1, stroke:[128,128,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
+	empire:[
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[255,  0,  0]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,255,  0]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,  0,255]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[255,  0,255]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[255,255,  0]},
+		{scale:5000,isStroke:0, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[  0,255,255]},
+	],
 	rivers: [
 		{scale: 242,isStroke:1, stroke:[  0,  0,255], pen:5 , isFill:0, fill:[  0,  0,  0]},
 		{scale: 531,isStroke:1, stroke:[  0,  0,255], pen:4 , isFill:0, fill:[  0,  0,  0]},

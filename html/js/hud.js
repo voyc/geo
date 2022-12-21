@@ -58,7 +58,13 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 	list.forEach((e) => {
 		e.addEventListener('click', function(evt) {
 			evt.stopPropagation()
-			voyc.geosketch.world.enableLayer(evt.target.getAttribute('layerid'), evt.target.checked)
+			var layerid = evt.target.getAttribute('layerid')
+			var boo = evt.target.checked
+			voyc.geosketch.world.enableLayer(layerid, boo)
+
+			// show the chronometer only when empire layer is enabled
+			if (layerid == 'empire') 
+				voyc.show(voyc.$('chronometer'), boo)
 		}, false)
 	})
 }
@@ -123,30 +129,29 @@ voyc.Hud.prototype.attach = function() {
 	// -------- time slider handlers
 	
 	voyc.$('timeforwardbtn').addEventListener('click', function(evt) {
-		self.announce('oh yeah baby', 5000)	
+		voyc.geosketch.world.stepTime(true)
 	}, false)	
 	voyc.$('timebackbtn').addEventListener('click', function(evt) {
-		self.closeAnnouncement()
+		voyc.geosketch.world.stepTime(false)
 	}, false)	
-//	this.timeslider = document.getElementById('timeslider');
-//	this.timeslider.min = voyc.geosketch.time.begin;
-//	this.timeslider.max = voyc.geosketch.time.end;
-//	this.timeslider.addEventListener('mousedown', function(evt) {
-//		self.timesliderIsHot = true;
-//		evt.stopPropagation();
-//		voyc.geosketch.timeslideStart();
-//	}, false);
-//	this.timeslider.addEventListener('input', function(evt) {
-//		voyc.geosketch.timeslideValue(parseInt(this.value,10));
-//		evt.stopPropagation();
-//	}, false);
-//	this.timeslider.addEventListener('mouseup', function(evt) {
-//		//voyc.geosketch.timeslideValue(this.value);
-//		evt.stopPropagation();
-//		voyc.geosketch.timeslideStop();
-//		self.timesliderIsHot = false;
-//	}, false);
-//
+
+	this.timeslider = document.getElementById('timeslider');
+	this.timeslider.min = voyc.geosketch.world.time.begin;
+	this.timeslider.max = voyc.geosketch.world.time.end;
+
+	this.timeslider.addEventListener('mousedown', function(evt) {
+		self.timeSliderDown(evt)
+	}, false);
+	this.timeslider.addEventListener('mousemove', function(evt) {
+		self.timeSliderMove(evt)
+	}, false);
+	this.timeslider.addEventListener('input', function(evt) {
+		//self.timeSliderMove(evt)
+	}, false);
+	this.timeslider.addEventListener('mouseup', function(evt) {
+		self.timeSliderUp(evt)
+	}, false);
+
 	// -------- keyboard handlers
 
 	window.addEventListener('keydown', function(evt) {
@@ -231,6 +236,32 @@ voyc.Hud.prototype.showLabel = function (pt,s) {
 	voyc.show(e, (pt))
 }
 
+// -------- time handlers
+
+voyc.Hud.prototype.setTime = function(time) {
+	var era = (time < 0) ? ' BCE' : ' CE'
+	voyc.$('time').innerHTML = Math.abs(time) + era
+	//if (!this.timesliderIsHot) 
+		this.timeslider.value = time
+}
+
+voyc.Hud.prototype.timeSliderDown = function (evt) {
+	evt.stopPropagation()
+	this.timesliderIsHot = true
+	voyc.geosketch.world.grabTime(evt)
+}
+voyc.Hud.prototype.timeSliderMove = function (evt) {
+	evt.stopPropagation()
+	if (this.timesliderIsHot)
+		voyc.geosketch.world.setTime(parseInt(evt.target.value,10))
+}
+
+voyc.Hud.prototype.timeSliderUp = function (evt) {
+	evt.stopPropagation();
+	this.timesliderIsHot = false
+	voyc.geosketch.world.dropTime(evt)
+}
+
 // -------- mapzoomer handlers
 
 // five ways to zoom, to call world.setScale()
@@ -288,13 +319,6 @@ voyc.Hud.prototype.announce = function(msg,duration) {
 
 voyc.Hud.prototype.closeAnnouncement = function() {
 	this.fade(document.getElementById('announce'), false);
-}
-
-voyc.Hud.prototype.setTime = function(time) {
-	document.getElementById('time').innerHTML = Math.abs(time) + ' ' + ((time < 0) ? 'BCE' : 'CE');
-	if (!this.timesliderIsHot) {
-		this.timeslider.value = time;
-	}
 }
 
 voyc.Hud.prototype.setZoom = function(newvalue, newfactor) {

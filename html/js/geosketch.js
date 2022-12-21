@@ -7,16 +7,6 @@ voyc.GeoSketch = function () {
 	if (voyc.GeoSketch._instance) return voyc.GeoSketch._instance;
 	voyc.GeoSketch._instance = this;
 
-	this.time = {
-		begin: 0,
-		end: 0,
-		now: 0,
-		step: 0,
-		moved: false,
-		sliding: false,
-		speed: 10 // years per second	
-	}
-
 	this.options = {}
 	this.defaultOptions = {
 		showid:true,
@@ -111,6 +101,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.world.moved = true
 	this.world.setScale() // to set the zoomer, forces a render
 	this.hud.setCo(this.world.co, this.world.gamma)
+	this.hud.setTime(this.world.time.now)
 
 	if (this.options.animation)
 		this.game.start()
@@ -221,8 +212,6 @@ voyc.GeoSketch.prototype.render = function (timestamp) {
 		this.world.stepFrame()
 
 	this.world.draw()
-	this.time.moved = false
-	this.world.moved = false
 }
 
 voyc.GeoSketch.prototype.resize = function (evt) {

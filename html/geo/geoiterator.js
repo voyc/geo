@@ -537,3 +537,52 @@ voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
 	if (palette.isFill) this.ctx.fill()
 	if (palette.isStroke) this.ctx.stroke()
 }
+
+// -------- subclass GeoIteratorEmpire, subclass of GeoIteratorDraw
+
+voyc.GeoIteratorEmpire = function() {
+	voyc.GeoIteratorDraw.call(this) // super
+}
+voyc.GeoIteratorEmpire.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+
+voyc.GeoIteratorEmpire.prototype.collectionStart = function(collection, add) {
+	console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	this.projection = add[0]
+	this.ctx = add[1]
+	this.palette = add[2]
+	this.timenow = add[3]
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
+	this.prevColor = false
+	return true
+}
+
+voyc.GeoIteratorEmpire.prototype.geometryStart = function(geometry) {
+	if (!geometry)
+		return false  // kill the loop
+
+	// qualify by time
+	if ((geometry.b < this.timenow) && (this.timenow < geometry.e))
+		;
+	else
+		return 0  // disqualified. skip this geom but keep going
+
+	// draw in groups by color
+	if (this.prevColor && (this.prevColor != geometry.c)) {
+		this.draw(this.prevColor)
+		this.ctx.beginPath()
+	}
+	this.prevColor = geometry.c
+	return true
+}
+
+voyc.GeoIteratorEmpire.prototype.draw = function(prevColor) {
+	var paletteNdx = prevColor-1
+	var palette = this.palette[paletteNdx]
+	if (!palette)
+		debugger;
+	this.ctx.fillStyle = palette.pat || palette.fill
+	this.ctx.lineWidth = palette.pen
+	if (palette.isFill) this.ctx.fill()
+	if (palette.isStroke) this.ctx.stroke()
+}
