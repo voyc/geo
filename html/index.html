@@ -64,26 +64,28 @@
 		<div id='hud' class='full'>
 			<button g id='menubtn' open='main-menu'><img src='i/menu_black_24dp.png' title='menu'/></button>
 
-			<div class='hud visible hidden' id='label'></div>
+			<div hidden class='hud' id='label'></div>
 
-			<div class='hud visible hidden' id='announce'>
+			<div class='hud fade' id='announce'>
 				<div id='announcemsg'>announcements</div>
 				<button id='announcedone'>OK</button>
 			</div>
 
 			<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
-			<div class='hud visible' id='whereami'>
+			<div class='hud' id='whereami'>
 			</div>
 
-			<div class='hud visible' id='chronometer'>
-				<div class='hud visible hidden' id='timeslide'><input id='timeslider' type='range' /></div>
-				<button g id='timeminusbtn'><img src='i/minus_black.png' alt='time back'/></button>
-				<span id='time'>1300 BCE</span>	
-				<button g id='timeplusbtn'><img src='i/plus_black.png' alt='forward'/></button>
+			<div class='hud' id='chronometer'>
+				<div hidden class='hud' id='timeslide'><input id='timeslider' type='range' /></div>
+				<div id='timepicker'>
+					<button g id='timebackbtn'><img src='i/left_arrow_black.png' alt='time back'/></button>
+					<span id='time'>1300 BCE</span>	
+					<button g id='timeforwardbtn'><img src='i/right_arrow_black.png' alt='time forward'/></button>
+				</div>
 			</div>
 
 
-			<div class='hud visible' id='mapzoom'>
+			<div class='hud' id='mapzoom'>
 				<button g id='zoomplusbtn'><img src='i/plus_black.png' title='zoom in'/></button><br/>
 				<input id='mapzoomer' type='range' min='1' max='100' step='1' value='1' /><br/>
 				<button g id='zoomminusbtn'><img src='i/minus_black.png' alt='zoom out'/></button>
@@ -101,7 +103,7 @@
 			   <button open='user-dialog' class='anchor'> User Account</button></p>
 			<p><button open='options-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			   <button open='options-dialog' class='anchor'> Settings</button></p>
-			<p><button open='about-dialog' class='anchor'> About</button></p>
+			<p><button id='aboutbtn' class='anchor'> About</button></p>
 			<p><button open='help-dialog' class='anchor'> User Guide</button></p>
 		</nav>
 		<aside initially hidden class='panel popup leftnav blu' id='options-dialog'>

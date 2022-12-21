@@ -162,7 +162,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','rivers','lakes','feature'].values())
+	for (var id of ['empire','riverbase','lakes','feature'].values())
 		this.showLayer(this.layer[id].e, false)
 	this.animate(false)
 }
@@ -178,7 +178,7 @@ voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
 	//for (var id of ['empire','rivers','anima','feature'].values())
-	for (var id of ['empire','rivers','lakes','feature'].values())
+	for (var id of ['empire','riverbase','lakes','feature'].values())
 		this.showLayer(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
 	//this.animate(true)
@@ -368,8 +368,7 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 }
 
 voyc.World.prototype.showLayer = function(e,boo) {
-	if (boo) e.classList.remove('hidden')
-	else e.classList.add('hidden')
+	voyc.show(e,boo)
 }
 
 voyc.World.prototype.clearLayer = function(id) {

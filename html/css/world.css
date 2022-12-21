@@ -66,12 +66,3 @@ html, body {
 .ariver.wid6 {
 	stroke:#fff;
 }
-
-.visible {
-  opacity: 1;
-  transition: opacity .5s linear;
-}
-.hidden {
-  opacity: 0;
-  transition: opacity .5s linear;
-}

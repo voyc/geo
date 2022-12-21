@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test css positioning</title>
+		<style>
+			body {
+				background-color:black;
+			}
+			:root {
+				--wd: 10rem;
+				--ht:  3rem;
+			}
+			#container {
+				position:fixed;
+				bottom:0;
+				left:calc(50% - (var(--wd) / 2));
+				width: var(--wd);
+				height:var(--ht);
+				background-color:green;
+				margin:1rem;
+			}
+			#c1 {
+				background-color:yellow;
+				height:100%;
+			}
+			#c2 {
+				visibility:hidden;
+				background-color:red;
+				height:100%;
+				width:100%;
+				position:absolute;
+				top:0;
+				xpadding:.5rem;
+				
+			}
+			#btn7 {
+				position:absolute;
+				right:0;
+			}
+
+			.fade {
+			  opacity: 0;
+			  transition: opacity .5s linear;
+			}
+			.in {
+			  opacity: 1;
+			  transition: opacity .5s linear;
+			}
+			.textblock {
+				background-color:white;
+			}
+		</style>
+		<script>
+			helloin  = function() {document.getElementById('hello').classList.add('in')}
+			helloout = function() {document.getElementById('hello').classList.remove('in')}
+			goodbyein  = function() {document.getElementById('goodbye').classList.add('in')}
+			goodbyeout = function() {document.getElementById('goodbye').classList.remove('in')}
+		</script>
+	</head>
+	<body>
+		<div id='container'>
+			<div id='c1'></div>
+			<div id='c2'>
+				<button id='btn5'>5</button>
+				<button id='btn7'>7</button>
+			</div>
+		</div>
+
+		<div id='hello'   class='textblock fade in'>hello</div>
+		<div id='goodbye' class='textblock fade in'>goodbye</div>
+		<button id='helloin'   onclick=helloin() >hello in</button>
+		<button id='helloout'  onclick=helloout()>hello out</button>
+		<button id='goodbyein' onclick=goodbyein() >goodbye in</button>
+		<button id='goodbyeout'onclick=goodbyeout()>goodbye out</button>
+	</body>
+</html>
+
+

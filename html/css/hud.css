@@ -135,3 +135,17 @@ icon {
 	width:15rem;
 	height:2rem;
 }
+#time {
+	display:inline-block;
+	width:10rem;
+	text-align:center;
+}
+
+.fade {
+  opacity: 0;
+  transition: opacity .5s linear;
+}
+.in {
+  opacity: 1;
+  transition: opacity .5s linear;
+}
