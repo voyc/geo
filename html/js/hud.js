@@ -46,9 +46,9 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 			s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
 			s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
 		}
+		if (id == 'custom')
+			s += "<div><span><b>Custom</b></span></div>"
 	}
-
-	s += "<div><span><b>Custom</b></span></div>"
 	s += "<div><span><button class='anchor' id='newlayer'>New...</a></span></div>"
 
 	var layermenu = voyc.$('layermenu')

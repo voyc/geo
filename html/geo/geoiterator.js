@@ -586,3 +586,28 @@ voyc.GeoIteratorEmpire.prototype.draw = function(prevColor) {
 	if (palette.isFill) this.ctx.fill()
 	if (palette.isStroke) this.ctx.stroke()
 }
+
+// -------- subclass GeoIteratorSketch, subclass of GeoIteratorDraw
+
+voyc.GeoIteratorSketch = function() {
+	voyc.GeoIteratorDraw.call(this) // super
+}
+voyc.GeoIteratorSketch.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+
+voyc.GeoIteratorSketch.prototype.iteratePolygon = function(polygon) {
+	this.polygon = polygon
+	var poly = polygon[0] // voyc uses only one ring per polygon
+	var boo = true
+	if (this.polygonStart(poly)) {
+		boo = true
+		var len = poly.length
+//		len--  // skip the last point because it duplicates the first
+		var i = -1
+		while (boo && ++i<len) {
+			boo = this.doPoint(poly[i], 'poly')
+		}
+	}
+	this.polygonEnd(poly)
+	return boo 
+}
+
