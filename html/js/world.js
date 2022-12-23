@@ -203,7 +203,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of ['empire','riverbase','lakes','feature'].values())
+	for (var id of ['empire','riverbase','lakes','feature','custom'].values())
 		this.showLayer(this.layer[id].e, false)
 	//this.animate(false)
 }
@@ -219,7 +219,7 @@ voyc.World.prototype.drop = function() {
 	this.dragging = false
 	this.moved = true
 	//for (var id of ['empire','rivers','anima','feature'].values())
-	for (var id of ['empire','riverbase','lakes','feature'].values())
+	for (var id of ['empire','riverbase','lakes','feature','custom'].values())
 		this.showLayer(this.layer[id].e, true)
 	voyc.geosketch.render(0)  // more detailed drawing
 	//this.animate(true)
@@ -232,8 +232,8 @@ voyc.World.prototype.moveToPoint = function(pt) {
 voyc.World.prototype.moveToCoord = function(co) {
 	this.co = co
 	this.projection.rotate([0-co[0], 0-co[1]])
-	this.moved = true;
-	voyc.geosketch.render(0);
+	this.moved = true
+	voyc.geosketch.render(0)
 	this.stoCo()
 }
 
@@ -426,7 +426,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerDiv(   'custom'    ,false       )
-	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'draw'   ,false       ,0)
+	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'draw'   ,'custom'    ,0)
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 

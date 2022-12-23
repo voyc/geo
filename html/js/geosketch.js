@@ -220,7 +220,6 @@ voyc.GeoSketch.prototype.resize = function (evt) {
 	voyc.$('option-dim').innerHTML = w+' x '+h
 	
 	this.world.resize(w,h)
-	this.sketch.resize(w.h)
 	this.world.moved = true
 	this.render(0)
 }

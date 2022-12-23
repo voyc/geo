@@ -22,108 +22,41 @@
 			#container {
 				xposition:fixed;
 			}
+			#box {
+				position:fixed;
+				right:0;
+				bottom:0;
+				width:50px;
+				height:50px;
+				background-color:yellow;
+			}
 		</style>
 		<script> voyc={}</script>
 		<script src=jslib/utils.js></script>
 		<script>
 			window.addEventListener('load', function(e) {
 				document.getElementById('grn').addEventListener('mousedown', function(e) {  // never fired,  because blu is on top of grn
-					console.log(['mousedown', 'grn', e.button, e.offsetX, e.offsetY])
+					console.log(['mousedown', 'grn', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
 				document.getElementById('blu').addEventListener('mousedown', function(e) {
-					console.log(['mousedown', 'blu', e.button, e.offsetX, e.offsetY])
+					console.log(['mousedown', 'blu', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
 				document.getElementById('blu').addEventListener('mousedown', function(e) {
-					console.log(['mousedown', 'blu me', e.button, e.offsetX, e.offsetY])
+					console.log(['mousedown', 'blu me', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
 				document.getElementById('container').addEventListener('mousedown', function(e) {
-					console.log(['mousedown', 'container', e.button, e.offsetX, e.offsetY])
+					console.log(['mousedown', 'container', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
 				window.addEventListener('mousedown', function(e) {
-					console.log(['mousedown', 'window', e.button, e.offsetX, e.offsetY])
+					console.log(['mousedown', 'window', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
 				window.addEventListener('keydown', function(e) {
-					console.log(['keydown', 'blu', e.button, e.offsetX, e.offsetY])
+					console.log(['keydown', 'blu', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
 				}, false)
-
-
-				var a = {name:'john', eyes:'blue'}
-				var b = {name:'cheryl', eyes:'brown'}
-				var c = a
-				var d = (function() {return c})
-				var z = c
-				var w = d()
-				c = b
-				var x = 3
-
-				a = new A()
-				b = new B()
-				c = 3
-
-				b = new Base()
-				s = new Sub()
-				console.log([s.ba, 1])
-				s.hoo()
-				console.log([s.ba, 400])
-				s.hah()
-				console.log([s.sc, 300])
-				console.log([s.bc, 2])
-				s.goo()
-				console.log([s.sg, 63])
-				d = 4
+				document.getElementById('box').addEventListener('mousedown', function(e) {
+					console.log(['mousedown', 'box', e.button, e.offsetX, e.offsetY,e.target.id,e.currentTarget.id])
+				}, false)
 			}, false)	
-
-class A {
-	constructor() {
-		this.z = 3
-	}
-	hoo() {y = 4}
-}
-
-class B extends A {
-	constructor() {
-		super()
-		this.w = 4
-	}
-	hah = function() {this.x = 7}
-}
-
-Base = function() {
-	this.ba = 1
-	this.bc = 2
-}
-
-Base.prototype = {
-	hoo: function() {
-		this.ba = 400
-	},
-	hah: function() {
-		this.bc = 200
-	},
-}
-
-Sub = function() {
-	Base.call(this)
-	this.sa = 6
-	this.sb = 7
-	this.sc = 4
-	//this.prototype = new Base() // s.hah is from Base
-	//this.__proto__ = voyc.merge(Sub.__proto__, Base.__proto__) // s.hoo not found
-	//this.__proto__ = voyc.merge(Sub.prototype, Base.prototype) // s.hah is from Base
-	//this.__proto__ = voyc.merge(Base.prototype, Sub.prototype) // s.hah is from Base
-}
-
-Sub.prototype = Object.create(Base.prototype)
-Sub.prototype.hah = function() {
-	this.sc = 300
-}
-
-Sub.prototype.goo = function() {
-	this.sg = 63
-}
-
-
-
 
 		</script>
 	</head>
@@ -132,6 +65,7 @@ Sub.prototype.goo = function() {
 			<div id='red' class='full'>red</div>
 			<div id='grn' class='full'>grn</div>
 			<div id='blu' class='full'>blu</div>  <!-- last overlaid div is on top and receives all the events -->
+			<div id='box' class='box'>box</div>
 		</div>
 	</body>
 </html>

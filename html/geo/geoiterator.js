@@ -61,6 +61,9 @@
 	GeoIterator is an abstract class.  It iterates through the data but does nothing.
 	Instantiate one of the subclasses below.
 */
+
+var geolog = false
+
 voyc.GeoIterator = function() {
 	this.ret = false
 }
@@ -186,7 +189,7 @@ voyc.GeoIteratorCount = function() {
 voyc.GeoIteratorCount.prototype = Object.create(voyc.GeoIterator.prototype)
 
 voyc.GeoIteratorCount.prototype.collectionStart = function(collection, add) {
-	console.log(['iterate count',collection.name])
+	if (geolog) console.log(['iterate count',collection.name])
 	this.saveCollection = collection
 	this.param1 = add[0] // custom
 	this.param2 = add[1]
@@ -216,7 +219,7 @@ voyc.GeoIteratorDraw = function() {
 voyc.GeoIteratorDraw.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
 
 voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
-	console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
@@ -399,7 +402,7 @@ voyc.GeoIteratorHitTest = function() {
 voyc.GeoIteratorHitTest.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
 
 voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
-	console.log(['iterate hittest',collection.name])
+	if (geolog) console.log(['iterate hittest',collection.name])
 	this.ret = false
 	this.projection = add[0]
 	this.mousept = add[1]
@@ -505,7 +508,7 @@ voyc.GeoIteratorAnimate = function() {
 voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
 
 voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
-	console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
@@ -546,7 +549,7 @@ voyc.GeoIteratorEmpire = function() {
 voyc.GeoIteratorEmpire.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
 
 voyc.GeoIteratorEmpire.prototype.collectionStart = function(collection, add) {
-	console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]

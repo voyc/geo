@@ -30,6 +30,8 @@ voyc.Hud = function() {
 	this.hypo  = false
 	this.angle = false
 	this.pttouchstart = false
+
+	this.tool = 'move'
 }
 
 voyc.Hud.prototype.setup = function(elem) {
@@ -37,7 +39,10 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.menuIsOpen = false;
 	this.populateLayerMenu()
 	this.setupProjectBtn()
+	this.setupToolMenu()
 }
+
+// -------- Part 1.  Event handlers for buttons and sliders, children of the HUD element
 
 voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
@@ -70,9 +75,6 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 }
 
 voyc.Hud.prototype.attach = function() {
-	this.attachTouchHandlers()
-	this.attachMouseHandlers()
-
 	// ----- attach button handlers
 
 	document.getElementById('aboutbtn').addEventListener('click', function(evt) {
@@ -152,7 +154,10 @@ voyc.Hud.prototype.attach = function() {
 		self.timeSliderUp(evt)
 	}, false);
 
-	// -------- keyboard handlers
+	this.attachTouchHandlers()
+	this.attachMouseHandlers()
+
+// -------- Part 2.  Event handlers for keyboard events, attached to the window element
 
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
@@ -198,12 +203,49 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 }
 
+// -------- hud button clicks
+
+voyc.Hud.prototype.setupToolMenu = function() {
+	var e = voyc.$('toolbtn')
+	if (e) e.addEventListener('click', function(evt) {
+		evt.stopPropagation(); evt.preventDefault();
+	}, false)
+	var tools = document.querySelectorAll('.toolmenubtn')
+	var self = this
+	for (var tool of tools) {
+		tool.addEventListener('click', function(evt) {
+			evt.stopPropagation(); evt.preventDefault();
+			self.setTool(evt.currentTarget.id)
+		}, false)
+	}
+}
+
+voyc.Hud.prototype.setTool = function(newtool) {
+	this.tool = newtool.substring(0,newtool.indexOf('_'))
+	console.log(`tool: ${this.tool}`)
+
+	// hightlight the selected tool button
+	var toolbtns = document.querySelectorAll('.toolmenubtn')
+	for (var btn of toolbtns)
+		btn.classList.remove('down')
+	voyc.$(this.tool + '_btn').classList.add('down')	
+
+	// change the cursor
+	var e = voyc.$('hud')
+	for (var tool of voyc.tools)
+		e.classList.remove(tool)
+	e.classList.add(this.tool)
+}
+
 voyc.Hud.prototype.setupProjectBtn = function() {
 	var id = (voyc.geosketch.world.projection.mix == voyc.Projection.orthographic) ? 'globeimg' : 'mercimg'
 	voyc.show(voyc.$(id),false)
 }
 
 voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
+	console.log(['projectbtn','click',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); 
+	evt.stopPropagation()
 	if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
 		voyc.show(voyc.$('mercimg'),false)
 		voyc.show(voyc.$('globeimg'),true)
@@ -332,18 +374,23 @@ voyc.Hud.prototype.setCo = function(co,gamma) {
 	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma
 }
 
+// -------- Part 3.  Event handlers for mouse and touch on the HUD element
+
+// Every event can have one of four different operations, 
+//	depending on the tool selected, and optionally overridden by the shift or ctrl key.
+
 // -------- mouse handlers
 
 voyc.Hud.prototype.attachMouseHandlers = function() {
 	var self = this
-	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
 	this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
+	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
 	this.elem.addEventListener('mouseup',   function(evt) {self.onmouseup(evt)  , false})
-	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
-	this.elem.addEventListener('click',     function(evt) {self.onclick(evt)    , false})
 	this.elem.addEventListener('dblclick',  function(evt) {self.ondblclick(evt) , false})
-	this.dragPrev = false;
-	this.mousebuttondown = false;
+	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
+	this.dragPrev = false
+	this.mousebuttondown = false
+	this.mousemoved = true
 }
 
 voyc.Hud.prototype.getMousePt = function(evt) { 
@@ -355,49 +402,54 @@ voyc.Hud.prototype.getMousePt = function(evt) {
 }
 	
 voyc.Hud.prototype.onmousedown = function(evt) {
-	evt.preventDefault()
-	evt.stopPropagation()
+	console.log(['hud','mousedown',evt.target.id,evt.currentTarget.id])
+	if (evt.target.id != 'hud')
+		return console.log(['ignored','hud','mousedown',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); evt.stopPropagation()
 	this.dragPrev = this.getMousePt(evt)
 	this.mousebuttondown = evt.button
-	if (evt.button == voyc.mouse.middle)
+	
+	if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
 		voyc.geosketch.world.grab()
 }
 
 voyc.Hud.prototype.onmousemove = function(evt) {
-	evt.preventDefault()
-	evt.stopPropagation()
+	console.log(['hud','mousemove',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); evt.stopPropagation()
 	var pt = this.getMousePt(evt)
 	this.showWhereami(pt)
 	if (this.dragPrev) {
-		if (this.mousebuttondown == voyc.mouse.middle)
+		if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
 			voyc.geosketch.world.drag(pt, this.dragPrev);
-		else
+		else if (this.tool == 'sketch')
 			voyc.geosketch.sketch.addPoint(pt)
 		this.dragPrev = pt
+		this.mousemoved = true
 	}
 }
 
 voyc.Hud.prototype.onmouseup = function(evt) {
-	evt.preventDefault();
-	evt.stopPropagation();
-	this.dragPrev = false;
-	if (this.mousebuttondown) 
-		voyc.geosketch.world.drop()
-	this.mousebuttondown = false
-}
-
-voyc.Hud.prototype.onclick = function(evt) {
-	evt.preventDefault();
-	evt.stopPropagation();
-	this.unHit()
+	console.log(['hud','mouseup',evt.target.id,evt.currentTarget.id])
+	if (this.mousebuttondown === false)
+		return console.log(['ignored', 'hud','mouseup',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); evt.stopPropagation()
 	var pt = this.getMousePt(evt)
-	if (evt.shiftKey) {
+	var click = !(this.mousemoved)
+	if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
+		if (click)
+			voyc.geosketch.world.moveToPoint(pt)
+		voyc.geosketch.world.drop()
+	if (this.tool == 'point' || evt.shiftKey) {
 		var s = voyc.geosketch.world.testHit(pt)
 		if (s)
 			this.showLabel(pt,s)
 	}
-	else
-		voyc.geosketch.sketch.addPoint(pt)
+	else if (this.tool == 'sketch')
+		if (click)
+			voyc.geosketch.sketch.addPoint(pt)
+	this.dragPrev = false
+	this.mousebuttondown = false
+	this.mousemoved = false
 }
 
 voyc.Hud.prototype.unHit = function() {
@@ -406,14 +458,15 @@ voyc.Hud.prototype.unHit = function() {
 }
 
 voyc.Hud.prototype.ondblclick = function(evt) {
-	evt.preventDefault();
-	evt.stopPropagation();
-	voyc.geosketch.sketch.finish()
+	// on dblclick, the up and click events have already fired
+	console.log(['hud','dblclick',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); evt.stopPropagation()
+//	if (this.tool == 'sketch')
+//		voyc.geosketch.sketch.finish()
 }
 
 voyc.Hud.prototype.onwheel = function(evt) {
-	evt.preventDefault();
-	evt.stopPropagation();
+	evt.preventDefault(); evt.stopPropagation()
 	this.mapZoomWheel(evt)
 }
 
@@ -550,3 +603,9 @@ voyc.mouse = {
 	middle: 1,
 	right: 2,
 }
+
+voyc.tools = ['move','sketch','point','measure']
+// this.tool
+// tool button id: move_btn, sketch_btn, etc
+// #hud.classname with cursor setting
+

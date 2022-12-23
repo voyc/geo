@@ -66,11 +66,12 @@
 
 			<div hidden class='hud' id='label'></div>
 
-			<div class='hud fade' id='announce'>
+			<div hidden class='hud fade' id='announce'>
 				<div id='announcemsg'>announcements</div>
 				<button id='announcedone'>OK</button>
 			</div>
 
+			<!-- <button g id='toolbtn' open='toolmenu'><img src='i/wrench_black_24.png' title='layers'/></button> -->
 			<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
 			<div class='hud' id='whereami'>
 			</div>
@@ -97,15 +98,21 @@
 		
 		<!-- ===== modeless dialogs ================================ -->
 
-		<nav initially hidden class='panel popup leftnav blu' id='main-menu'>
+		<nav id='toolmenu' class=''>
+			<div><button g id='move_btn' class='toolmenubtn down'><img src='i/movetool_black_24.png'/></button></div> 
+			<div><button g id='point_btn' class='toolmenubtn'><img src='i/pointer_black_24.png'/></button></div> 
+			<div><button g id='sketch_btn' class='toolmenubtn'><img src='i/pencil_black_24.png'/></button></div> 
+			<div><button g id='measure_btn' class='toolmenubtn'><img src='i/ruler_black_24.png'/></button></div> 
+		</nav>
+		<nav id='main-menu' initially hidden class='panel popup leftnav blu'>
 			<p><button open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
 			   <button open='user-dialog' class='anchor'> User Account</button></p>
 			<p><button open='options-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			   <button open='options-dialog' class='anchor'> Settings</button></p>
 			<p><button id='aboutbtn' class='anchor'> About</button></p>
-			<p><button open='help-dialog' class='anchor'> User Guide</button></p>
+			<p><a id='helpbtn' href='https://curriculum.voyc.com/doku.php?id=geosketch_user_guide' target='new' class='anchor'> User Guide</a></p>
 		</nav>
-		<aside initially hidden class='panel popup leftnav blu' id='options-dialog'>
+		<aside id='options-dialog' initially hidden class='panel popup leftnav blu'>
 			<p><label for='option-showid'><input id='option-showid' type='checkbox' /> Show Ids</label></p>
 			<p>Max Scale <label for='option-maxscale'><input id='option-maxscale' type='number' /></label></p>
 			<p id='option-dim'>x pxl dim: 894 x 894</p>
@@ -114,15 +121,7 @@
 			<p><label for='option-animation'><input id='option-animation' type='checkbox' /> Animation</label></p>
 			<p>FPS <label for='option-fps'><input id='option-fps' type='number' /></label></p>
 		</aside>
-		<aside initially hidden class='panel popup leftnav blu' id='user-dialog'>
-			<p><button close class='anchor' request='logout'        >Logout</button></p>
-			<p><button close class='anchor' request='forgotpassword'>Forgot Password</button></p>
-			<p><button close class='anchor' request='changeusername'>Change Username</button></p>
-			<p><button close class='anchor' request='changepassword'>Change Password</button></p>
-			<p><button close class='anchor' request='changeemail'   >Change Email</button></p>
-			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
-		</aside>
-		<nav initially hidden class='panel popup leftnav blu' id='layermenu'>
+		<nav id='layermenu' initially hidden class='panel popup leftnav blu'>
 			<div><span><input type='checkbox' checked id='layerwater'     name='baselayers' /><label for='layerwater'     > Oceans    </label></span>
 				<button g id='waterpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
 			<div><span><input type='checkbox' checked id='layerland'      name='baselayers' /><label for='layerland'      > Land      </label></span>
@@ -147,6 +146,14 @@
 				<button g id='sketchpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
 			<div><span><button class='anchor' id='newlayer'>New...</a></span></div>
 		</nav>
+		<aside id='user-dialog' initially hidden class='panel popup leftnav blu'>
+			<p><button close class='anchor' request='logout'        >Logout</button></p>
+			<p><button close class='anchor' request='forgotpassword'>Forgot Password</button></p>
+			<p><button close class='anchor' request='changeusername'>Change Username</button></p>
+			<p><button close class='anchor' request='changepassword'>Change Password</button></p>
+			<p><button close class='anchor' request='changeemail'   >Change Email</button></p>
+			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
+		</aside>
 
 		<!-- ===== modal dialog container and forms ================ -->
 

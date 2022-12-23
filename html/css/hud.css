@@ -1,12 +1,20 @@
+#hud.move   { cursor:move; }
+#hud.sketch { cursor:crosshair; }
+#hud.point  { cursor:pointer; }
+#hud.measure{ cursor:ew-resize; }
+.toolmenubtn.down { background-color:yellow; }
+
 .hud {
 	position:fixed;
-	margin:.5rem;
+	xmargin:.5rem;
 	padding:.5rem;
 	background: rgba(255, 255, 255, 0.8);
 	font-family: Verdana;
 }
-.leftnav {
-	top:3em;
+#toolmenu {
+	position:fixed;
+	left:0;
+	top:3rem;
 }
 button[g] {
 	padding-top:4px;	
@@ -18,23 +26,25 @@ icon {
 #menubtn {
 	left:0;
 	top:0;
-	margin-left:.5rem;
-	margin-top:.5rem;
+	xmargin-left:.5rem;
+	xmargin-top:.5rem;
 }
 #layerbtn {
 	position:absolute;
 	left:0;
 	bottom:3rem;
-	margin-left:.5rem;
+	xmargin-left:.5rem;
 }
 #projectbtn {
 	position:absolute;
 	bottom:0rem;
 	right:4rem;
-	margin-bottom:.5rem;
+	xmargin-bottom:.5rem;
 }
 #layermenu {
 	display:table;
+	bottom:6rem;
+	top:unset;
 }
 #layermenu div {
 	display:table-row;

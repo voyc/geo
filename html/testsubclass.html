@@ -1,0 +1,113 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test fullscreen layers</title>
+
+		<style>
+			body {
+				margin:0px;
+			}
+			.full {
+				position:fixed;
+				top:0px;
+				left:0px;
+				width:100%;
+				height:50%;
+			}
+			#red { xbackground-color: red; }    // background color affects appearance only, not behavior.  transparent by default.
+			#grn { xbackground-color: green; }
+			#blu { xbackground-color: blue; }
+			#container {
+				xposition:fixed;
+			}
+		</style>
+		<script> voyc={}</script>
+		<script src=jslib/utils.js></script>
+		<script>
+			window.addEventListener('load', function(e) {
+				var a = {name:'john', eyes:'blue'}
+				var b = {name:'cheryl', eyes:'brown'}
+				var c = a
+				var d = (function() {return c})
+				var z = c
+				var w = d()
+				c = b
+				var x = 3
+
+				a = new A()
+				b = new B()
+				c = 3
+
+				b = new Base()
+				s = new Sub()
+				console.log([s.ba, 1])
+				s.hoo()
+				console.log([s.ba, 400])
+				s.hah()
+				console.log([s.sc, 300])
+				console.log([s.bc, 2])
+				s.goo()
+				console.log([s.sg, 63])
+				d = 4
+			}, false)	
+
+class A {
+	constructor() {
+		this.z = 3
+	}
+	hoo() {y = 4}
+}
+
+class B extends A {
+	constructor() {
+		super()
+		this.w = 4
+	}
+	hah = function() {this.x = 7}
+}
+
+Base = function() {
+	this.ba = 1
+	this.bc = 2
+}
+
+Base.prototype = {
+	hoo: function() {
+		this.ba = 400
+	},
+	hah: function() {
+		this.bc = 200
+	},
+}
+
+Sub = function() {
+	Base.call(this)
+	this.sa = 6
+	this.sb = 7
+	this.sc = 4
+	//this.prototype = new Base() // s.hah is from Base
+	//this.__proto__ = voyc.merge(Sub.__proto__, Base.__proto__) // s.hoo not found
+	//this.__proto__ = voyc.merge(Sub.prototype, Base.prototype) // s.hah is from Base
+	//this.__proto__ = voyc.merge(Base.prototype, Sub.prototype) // s.hah is from Base
+}
+
+Sub.prototype = Object.create(Base.prototype)
+Sub.prototype.hah = function() {
+	this.sc = 300
+}
+
+Sub.prototype.goo = function() {
+	this.sg = 63
+}
+
+
+
+
+		</script>
+	</head>
+	<body>
+		see console
+	</body>
+</html>
