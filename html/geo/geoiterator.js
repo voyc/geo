@@ -57,13 +57,13 @@
 			iteratees for each geometry within one collection iteration.
 */
 
-/* 
-	GeoIterator is an abstract class.  It iterates through the data but does nothing.
-	Instantiate one of the subclasses below.
-*/
-
 var geolog = false
 
+/* 
+	GeoIterator is an abstract class.  
+	It iterates through the data but does nothing.
+	Instantiate one of the subclasses below.
+*/
 voyc.GeoIterator = function() {
 	this.ret = false
 }
@@ -181,7 +181,7 @@ voyc.GeoIterator.prototype.polygonEnd = function(polygon) {}
 voyc.GeoIterator.prototype.lineStart = function(line) {return true}
 voyc.GeoIterator.prototype.lineEnd = function(line) {}
 
-// -------- subclass GeoIteratorCount, for debugging
+// -------- Count
 
 voyc.GeoIteratorCount = function() {
 	voyc.GeoIterator.call(this)
@@ -211,12 +211,16 @@ voyc.GeoIteratorCount.prototype.lineStart = function(line) { this.lines++; retur
 voyc.GeoIteratorCount.prototype.polygonStart = function(polygon) { this.polygons++; return true }
 voyc.GeoIteratorCount.prototype.geometryStart = function(geometry) { this.geometries++; return true}
 
-// -------- subclass GeoIteratorDraw, with clipping
+// -------- Draw 
 
 voyc.GeoIteratorDraw = function() {
 	voyc.GeoIterator.call(this) // super
 }
 voyc.GeoIteratorDraw.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
+
+voyc.GeoIteratorDraw.prototype.clear = function() {
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+}
 
 voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -394,7 +398,7 @@ voyc.GeoIteratorDraw.prototype.arcGap = function(a,d,ctr,r) {
 	this.ctx.arcTo(e[0],e[1],oc.pt[0],oc.pt[1],r);
 }
 
-// -------- subclass GeoIteratorHitTest, return a geometry intersecing a point
+// -------- HitTest
 
 voyc.GeoIteratorHitTest = function() {
 	voyc.GeoIterator.call(this) // super
@@ -442,7 +446,6 @@ voyc.GeoIteratorHitTest.prototype.collectionEnd = function() {
 	var a = []
 	for (var o of this.hits)
 		a.push(o.geom.name)
-	console.log(a)
 	if (this.hits.length > 0) {
 		this.hits.sort(function(a, b){return a.d - b.d})
 		this.ret = this.hits[0].geom
@@ -500,7 +503,7 @@ voyc.GeoIteratorHitTest.prototype.pointInRect= function(pt,rect) {
 		&& (pt[1] < rect.s))
 }
 
-// -------- subclass GeoIteratorAnimate, subclass of GeoIteratorDraw, used to draw rivers with offset points
+// -------- Animate
 
 voyc.GeoIteratorAnimate = function() {
 	voyc.GeoIteratorDraw.call(this) // super
@@ -541,7 +544,7 @@ voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
 	if (palette.isStroke) this.ctx.stroke()
 }
 
-// -------- subclass GeoIteratorEmpire, subclass of GeoIteratorDraw
+// -------- Empire
 
 voyc.GeoIteratorEmpire = function() {
 	voyc.GeoIteratorDraw.call(this) // super
@@ -590,12 +593,25 @@ voyc.GeoIteratorEmpire.prototype.draw = function(prevColor) {
 	if (palette.isStroke) this.ctx.stroke()
 }
 
-// -------- subclass GeoIteratorSketch, subclass of GeoIteratorDraw
+// -------- Sketch
 
 voyc.GeoIteratorSketch = function() {
 	voyc.GeoIteratorDraw.call(this) // super
 }
 voyc.GeoIteratorSketch.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+
+voyc.GeoIteratorSketch.prototype.collectionStart = function(collection, add) {
+	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	this.projection = add[0]
+	this.ctx = add[1]
+	this.palette = add[2]
+	this.shape = add[3]
+	this.ptNext = add[4]
+	//this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
+	this.prevScaleRank = false
+	return true
+}
 
 voyc.GeoIteratorSketch.prototype.iteratePolygon = function(polygon) {
 	this.polygon = polygon
@@ -606,11 +622,115 @@ voyc.GeoIteratorSketch.prototype.iteratePolygon = function(polygon) {
 		var len = poly.length
 //		len--  // skip the last point because it duplicates the first
 		var i = -1
+		var pos = i
+		if (i )
 		while (boo && ++i<len) {
-			boo = this.doPoint(poly[i], 'poly')
+			boo = this.doPoint(poly[i], 'poly', pos)
+			pos = (i==(len-2)) ? 1 : 0
 		}
 	}
 	this.polygonEnd(poly)
+	this.drawPoint(this.ptNext,2)
 	return boo 
+}
+
+voyc.GeoIteratorSketch.prototype.doPoint = function(co, within, pos) {
+	var within = this.shape
+	var pt = this.projection.project(co);
+	if (pt) {                                              // if visible
+		if (!this.firstVisiblePointInRing) {           //    if first visible point
+			this.firstVisiblePointInRing = pt;     //       save it
+		}
+		else if (this.lastVisiblePointBeforeGap) {     //    else if gap finished
+			this.firstVisiblePointAfterGap = pt;   //       save 1st visible after gap
+			if (within == 'poly')
+				this.arcGap(this.lastVisiblePointBeforeGap, 
+					this.firstVisiblePointAfterGap, 
+					this.projection.pt,    //       if poly 
+					this.projection.k)     //          draw arc in the gap 
+			else if (within == 'line')             //       if line
+				this.visiblePointCount = 0     //          kill the lineTo 
+			this.lastVisiblePointBeforeGap = false;//          mark done with gap
+		}
+		if (within == 'point')
+			this.drawPoint(pt, pos)
+		else {
+			if (this.visiblePointCount) {          //    if some visible point already
+				this.ctx.lineTo(pt[0],pt[1])   //       lineTo
+			}
+			else {                                 //    else
+				this.ctx.moveTo(pt[0],pt[1]);  //       moveTo
+			}
+		}
+		this.visiblePointCount++                       //    count it
+		this.lastVisiblePointInRing = pt               //    mark it last visible (so far)
+	}
+	else {                                                 // else if not visible
+		if (!this.pointCount) {                        //    if first point
+			this.isGapAtStart = true               //       mark gap at start
+		}
+		if (!this.lastVisiblePointBeforeGap &&         //    if no last-before-gap
+				this.previousPt) {             //       and not the first point
+			this.lastVisiblePointBeforeGap = this.previousPt;
+		}                                              //       prev point was last-before-gap
+	}
+	this.pointCount++                                      // count
+	this.previousPt = pt                                   // save previous
+	return true
+}
+
+voyc.GeoIteratorSketch.prototype.drawPoint = function(pt, pos) {
+	if (!pt)
+		return
+	var palette = this.palette[0]
+
+	var radius = this.palette[0].ptRadius
+	this.ctx.arc(pt[0],pt[1], radius, 0, 2*Math.PI, false)
+
+	if (palette.ptFill) {
+		if (pos == -1)
+			this.ctx.fillStyle = 'rgb(0,0,0)'
+		else if (pos == 0)
+			this.ctx.fillStyle = 'rgb(0,0,0)'
+		else if (pos == 1)
+			this.ctx.fillStyle = palette.ptFill
+		if (pos != 2)
+			this.ctx.fill()
+	}
+	if (palette.ptStroke) {
+		this.ctx.strokeStyle = palette.ptStroke
+		this.ctx.lineWidth = palette.ptPen
+		this.ctx.stroke()
+	}
+	this.ctx.beginPath()
+}
+
+voyc.GeoIteratorSketch.prototype.draw = function() {
+	var palette = this.palette[0]
+
+	if (this.shape == 'polygon' && palette.fill) {
+		this.ctx.fillStyle = palette.pat || palette.fill
+		this.ctx.fill()
+	}
+	if (this.shape == 'line' && palette.stroke) {
+		this.ctx.strokeStyle = palette.stroke
+		this.ctx.lineWidth = palette.pen
+		this.ctx.stroke()
+	}
+}
+
+voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
+	if (!this.previousPt) {
+		this.isGapAtEnd = true;
+	}
+	if (this.visiblePointCount && (this.isGapAtStart || this.isGapAtEnd)) {
+		this.arcGap(this.lastVisiblePointInRing, 
+			this.firstVisiblePointInRing, 
+			this.projection.pt, 
+			this.projection.k, 
+			this.ctx);
+		this.ctx.lineTo(this.firstVisiblePointInRing[0],this.firstVisiblePointInRing[1]);
+	}
+//	this.ctx.closePath();
 }
 

@@ -1,8 +1,8 @@
 #hud.move   { cursor:move; }
-#hud.sketch { cursor:crosshair; }
+#hud.sketch { cursor:default; } /* url(../i/pencil_black_24.cur); } */
 #hud.point  { cursor:pointer; }
 #hud.measure{ cursor:ew-resize; }
-.toolmenubtn.down { background-color:yellow; }
+.toolbtn.down { background-color:yellow; }
 
 .hud {
 	position:fixed;
@@ -11,10 +11,15 @@
 	background: rgba(255, 255, 255, 0.8);
 	font-family: Verdana;
 }
-#toolmenu {
+#toolbar {
 	position:fixed;
 	left:0;
 	top:3rem;
+}
+#editbar {
+	position:fixed;
+	left:0;
+	top:20rem;
 }
 button[g] {
 	padding-top:4px;	

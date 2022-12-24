@@ -3,6 +3,8 @@
 	singleton
 	manages the HUD as the top layer of the display 
 */
+var hudlog = false
+
 voyc.Hud = function() {
 	// singleton
 	if (voyc.Hud._instance) return voyc.Hud._instance;
@@ -39,7 +41,8 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.menuIsOpen = false;
 	this.populateLayerMenu()
 	this.setupProjectBtn()
-	this.setupToolMenu()
+	this.setupToolBar()
+	this.setupEditBar()
 }
 
 // -------- Part 1.  Event handlers for buttons and sliders, children of the HUD element
@@ -203,14 +206,14 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 }
 
-// -------- hud button clicks
+// -------- tool bar
 
-voyc.Hud.prototype.setupToolMenu = function() {
-	var e = voyc.$('toolbtn')
+voyc.Hud.prototype.setupToolBar = function() {
+	var e = voyc.$('toolbarbtn')
 	if (e) e.addEventListener('click', function(evt) {
 		evt.stopPropagation(); evt.preventDefault();
 	}, false)
-	var tools = document.querySelectorAll('.toolmenubtn')
+	var tools = document.querySelectorAll('.toolbtn')
 	var self = this
 	for (var tool of tools) {
 		tool.addEventListener('click', function(evt) {
@@ -219,13 +222,12 @@ voyc.Hud.prototype.setupToolMenu = function() {
 		}, false)
 	}
 }
-
 voyc.Hud.prototype.setTool = function(newtool) {
 	this.tool = newtool.substring(0,newtool.indexOf('_'))
-	console.log(`tool: ${this.tool}`)
+	if (hudlog) console.log(`tool: ${this.tool}`)
 
 	// hightlight the selected tool button
-	var toolbtns = document.querySelectorAll('.toolmenubtn')
+	var toolbtns = document.querySelectorAll('.toolbtn')
 	for (var btn of toolbtns)
 		btn.classList.remove('down')
 	voyc.$(this.tool + '_btn').classList.add('down')	
@@ -237,15 +239,29 @@ voyc.Hud.prototype.setTool = function(newtool) {
 	e.classList.add(this.tool)
 }
 
+// -------- edit bar
+
+voyc.Hud.prototype.setupEditBar = function() {
+	var tools = document.querySelectorAll('.editbtn')
+	var self = this
+	for (var tool of tools) {
+		tool.addEventListener('click', function(evt) {
+			evt.stopPropagation(); evt.preventDefault();
+			var action = evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_'))
+			voyc.geosketch.sketch[action]()
+		}, false)
+	}
+}
+
+// -------- project button
+
 voyc.Hud.prototype.setupProjectBtn = function() {
 	var id = (voyc.geosketch.world.projection.mix == voyc.Projection.orthographic) ? 'globeimg' : 'mercimg'
 	voyc.show(voyc.$(id),false)
 }
-
 voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
-	console.log(['projectbtn','click',evt.target.id,evt.currentTarget.id])
-	evt.preventDefault(); 
-	evt.stopPropagation()
+	if (hudlog) console.log(['projectbtn','click',evt.target.id,evt.currentTarget.id])
+	evt.preventDefault(); evt.stopPropagation()
 	if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
 		voyc.show(voyc.$('mercimg'),false)
 		voyc.show(voyc.$('globeimg'),true)
@@ -402,9 +418,9 @@ voyc.Hud.prototype.getMousePt = function(evt) {
 }
 	
 voyc.Hud.prototype.onmousedown = function(evt) {
-	console.log(['hud','mousedown',evt.target.id,evt.currentTarget.id])
+	if (hudlog) console.log(['hud','mousedown',evt.target.id,evt.currentTarget.id])
 	if (evt.target.id != 'hud')
-		return console.log(['ignored','hud','mousedown',evt.target.id,evt.currentTarget.id])
+		return (hudlog)&&console.log(['ignored','hud','mousedown',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 	this.dragPrev = this.getMousePt(evt)
 	this.mousebuttondown = evt.button
@@ -414,7 +430,7 @@ voyc.Hud.prototype.onmousedown = function(evt) {
 }
 
 voyc.Hud.prototype.onmousemove = function(evt) {
-	console.log(['hud','mousemove',evt.target.id,evt.currentTarget.id])
+	if (hudlog) console.log(['hud','mousemove',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 	var pt = this.getMousePt(evt)
 	this.showWhereami(pt)
@@ -422,16 +438,18 @@ voyc.Hud.prototype.onmousemove = function(evt) {
 		if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
 			voyc.geosketch.world.drag(pt, this.dragPrev);
 		else if (this.tool == 'sketch')
-			voyc.geosketch.sketch.addPoint(pt)
+			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
 		this.dragPrev = pt
 		this.mousemoved = true
 	}
+	else
+		voyc.geosketch.sketch.mousemove(pt)
 }
 
 voyc.Hud.prototype.onmouseup = function(evt) {
-	console.log(['hud','mouseup',evt.target.id,evt.currentTarget.id])
+	if (hudlog) console.log(['hud','mouseup',evt.target.id,evt.currentTarget.id])
 	if (this.mousebuttondown === false)
-		return console.log(['ignored', 'hud','mouseup',evt.target.id,evt.currentTarget.id])
+		return (hudlog)&&console.log(['ignored', 'hud','mouseup',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 	var pt = this.getMousePt(evt)
 	var click = !(this.mousemoved)
@@ -446,7 +464,7 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	}
 	else if (this.tool == 'sketch')
 		if (click)
-			voyc.geosketch.sketch.addPoint(pt)
+			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
 	this.dragPrev = false
 	this.mousebuttondown = false
 	this.mousemoved = false
@@ -459,7 +477,7 @@ voyc.Hud.prototype.unHit = function() {
 
 voyc.Hud.prototype.ondblclick = function(evt) {
 	// on dblclick, the up and click events have already fired
-	console.log(['hud','dblclick',evt.target.id,evt.currentTarget.id])
+	if (hudlog) console.log(['hud','dblclick',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 //	if (this.tool == 'sketch')
 //		voyc.geosketch.sketch.finish()
@@ -586,11 +604,11 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	// window events: touchstart, touchend, touchmove
 	// geosketch events: tap, doubletap, onefingermove, twofingermove
 	if (name == 'tap') 
-		voyc.geosketch.sketch.addPoint(pt)
+		voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
 	else if (name == 'doubletap') 
 		voyc.geosketch.sketch.finish()
 	else if (name == 'onefingermove') 
-		voyc.geosketch.sketch.addPoint(pt)
+		voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
 	else if (name == 'twofingermove') {
 		voyc.geosketch.world.drag(pt,this.ptPrev)
 		this.ptPrev = pt

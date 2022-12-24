@@ -71,7 +71,7 @@
 				<button id='announcedone'>OK</button>
 			</div>
 
-			<!-- <button g id='toolbtn' open='toolmenu'><img src='i/wrench_black_24.png' title='layers'/></button> -->
+			<!-- <button g id='toolbtn' open='toolbar'><img src='i/wrench_black_24.png' title='layers'/></button> -->
 			<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
 			<div class='hud' id='whereami'>
 			</div>
@@ -98,11 +98,17 @@
 		
 		<!-- ===== modeless dialogs ================================ -->
 
-		<nav id='toolmenu' class=''>
-			<div><button g id='move_btn' class='toolmenubtn down'><img src='i/movetool_black_24.png'/></button></div> 
-			<div><button g id='point_btn' class='toolmenubtn'><img src='i/pointer_black_24.png'/></button></div> 
-			<div><button g id='sketch_btn' class='toolmenubtn'><img src='i/pencil_black_24.png'/></button></div> 
-			<div><button g id='measure_btn' class='toolmenubtn'><img src='i/ruler_black_24.png'/></button></div> 
+		<nav id='toolbar' class=''>
+			<div><button g id='move_btn' class='toolbtn down' title='Move map'><img src='i/movetool_black_24.png'/></button></div> 
+			<div><button g id='point_btn' class='toolbtn' title='Select map feature'><img src='i/pointer_black_24.png'/></button></div> 
+			<div><button g id='sketch_btn' class='toolbtn' title='Sketch a new feature'><img src='i/pencil_black_24.png'/></button></div> 
+			<div><button g id='measure_btn' class='toolbtn' title='Measure distance between two points'><img src='i/ruler_black_24.png'/></button></div> 
+		</nav>
+		<nav id='editbar' class=''>
+			<div><button g id='trim_btn' class='editbtn' title='Trim sketch'><img src='i/scissors_black_24.png'/></button></div> 
+			<div><button g id='finish_btn' class='editbtn' title='Finish line'><img src='i/checkmark_black_24.png'/></button></div> 
+			<div><button g id='save_btn' class='editbtn' title='Save sketch'><img src='i/savedisk_black_24.png'/></button></div> 
+			<div><button g id='cancel_btn' class='editbtn' title='Cancel sketch'><img src='i/xcancel_black_24.png'/></button></div> 
 		</nav>
 		<nav id='main-menu' initially hidden class='panel popup leftnav blu'>
 			<p><button open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>

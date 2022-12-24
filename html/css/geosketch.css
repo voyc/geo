@@ -38,9 +38,3 @@ html, body {
 #background {
 	background-color:black;
 }
-/* each layer covers the screen */
-.layer {
-	position:absolute;
-	top:0;
-	left:0;
-}

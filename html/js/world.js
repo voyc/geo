@@ -518,7 +518,7 @@ voyc.World.prototype.draw = function() {
 		this.drawWater();
 		this.drawLayer('land')
 		this.drawLayer('grid')
-		this.drawLayer('sketch')
+		this.drawSketch()
 		this.drawLayer('hilite')
 		if (!this.dragging) {
 			this.drawEmpire()
@@ -560,6 +560,24 @@ voyc.World.prototype.calcRank = function(id) {
 		}
 	}
 	return rank
+}
+
+voyc.World.prototype.drawSketch = function(pt) {
+	var layer = this.layer['sketch']
+	var self = this
+	function draw(shape,pt) {
+		layer.iterator.iterateCollection(
+			layer.data, 
+			self.projection, 
+			layer.ctx, 
+			layer.palette,
+			shape,
+			pt)
+	}
+	this.clearLayer('sketch')
+	//draw('polygon')
+	draw('line', pt)
+	draw('point', pt)
 }
 
 voyc.World.prototype.drawWater = function() {
@@ -649,6 +667,8 @@ voyc.World.prototype.setupPalette = function() {
 		for (var palette of this.palette[id]) {
 			palette.fill = voyc.prepString('rgb($1,$2,$3)', palette.fill)
 			palette.stroke = voyc.prepString('rgb($1,$2,$3)', palette.stroke)
+			palette.ptStroke = voyc.prepString('rgb($1,$2,$3)', palette.ptStroke)
+			palette.ptFill = voyc.prepString('rgb($1,$2,$3)', palette.ptFill)
 			if (palette.patfile)
 				palette.pat = this.makePattern(voyc.geosketch.asset.get(palette.patfile), palette.fill)
 		}
@@ -726,13 +746,13 @@ voyc.defaultPalette = {
 		{scale:2904,isStroke:1, stroke:[  0,  0,255], pen:.5, isFill:0, fill:[  0,  0,  0]},
 	],
 	lakes: [{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[  0,  0,255]},],
-       deserts:[{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96, 96,  0], pat:false, patfile:'deserts'},],
+       deserts:[{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96, 96,  0],      pat:false, patfile:'deserts'},],
 	mountains:[
-		{scale: 300,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_1'},
-		{scale:1000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_2'},
-		{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0], pat:false, patfile:'mountains_3'},
+		{scale: 300,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0],      pat:false, patfile:'mountains_1'},
+		{scale:1000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0],      pat:false, patfile:'mountains_2'},
+		{scale:5000,isStroke:0, stroke:[  0,  0,255], pen:2 , isFill:1, fill:[ 96,  0,  0],      pat:false, patfile:'mountains_3'},
 	],
 	hilite:[{scale:5000,isStroke:1, stroke:[255,  0,  0], pen:10, isFill:0, fill:[  0,  0,  0]},],
-	sketch:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[255,  0,  0]},],
+	sketch:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:1, fill:[255,  0,  0],      opac:.5, ptRadius:5, ptStroke:[  0,  0,  0], ptPen:.5, ptFill:[  0,255,  0]},],
 	custom:[{scale:5000,isStroke:1, stroke:[  0,  0,  0], pen:.5, isFill:0, fill:[  0,  0,  0]},],
 }

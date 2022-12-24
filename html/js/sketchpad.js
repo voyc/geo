@@ -22,6 +22,8 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 //	if (options)
 //		voyc.utils.merge(this.options.options)
 
+	this.ptPrev = false
+
 	this.pointImage = document.getElementById('yellow-dot')
 
 	this.newGeom()
@@ -37,10 +39,10 @@ voyc.SketchPad.prototype = {
 		this.finish()
 	},
 
-	clear: function () {
-		this.geom = []
-		this.draw()
-	},
+	//clear: function () {
+	//	this.geom = []
+	//	this.draw()
+	//},
 
 	undo: function() {
 		// erase the current or most recent point 
@@ -49,25 +51,48 @@ voyc.SketchPad.prototype = {
 		this.draw()
 	},
 
+	trim: function() {
+		console.log('trim sketch')
+	},
+
 	finish: function() {
+		console.log('finish line')
 		this.newGeom()
 	},
 
 	save: function(w) {
 		// popup a dialog to get name of object
+		console.log('save sketch')
+	},
+
+	cancel: function() {
+		console.log('cancel sketch')
+		this.newGeom()
+		this.draw()
 	},
 
 	newGeom: function() {
-		this.geom = voyc.defaultGeom
+		//this.geom = voyc.defaultGeom
+		this.geom = voyc.clone(voyc.defaultGeom)
 		this.geom.coordinates.push(Array())
 		this.geom.coordinates[0].push(Array())
-		voyc.data.sketch.geometries.push(this.geom)
+		//voyc.data.sketch.geometries.push(this.geom)
+		voyc.data.sketch.geometries[0] = this.geom
+		this.ptPrev = false
 	},
 
 	addPoint: function (pt) {
-		var co = voyc.geosketch.world.projection.invert(pt)
-		this.geom.coordinates[0][0].push(co)
-		this.draw()
+		var distance = voyc.length(pt,this.ptPrev)
+		if ((distance > 20) || !this.ptPrev) {
+			var co = voyc.geosketch.world.projection.invert(pt)
+			this.geom.coordinates[0][0].push(co)
+			this.draw()
+			this.ptPrev = pt
+		}
+	},
+
+	mousemove: function(pt) {
+		this.draw(pt)
 	},
 
 	closePoly: function() {
@@ -77,8 +102,8 @@ voyc.SketchPad.prototype = {
 		this.geom.coordinates[0][0].push(firstCo)
 	},
 
-	draw: function () {
-		voyc.geosketch.world.drawLayer('sketch')
+	draw: function (pt) {
+		voyc.geosketch.world.drawSketch(pt)
 	}
 /*
 	// ---- drawing
