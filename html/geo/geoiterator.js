@@ -211,74 +211,28 @@ voyc.GeoIteratorCount.prototype.lineStart = function(line) { this.lines++; retur
 voyc.GeoIteratorCount.prototype.polygonStart = function(polygon) { this.polygons++; return true }
 voyc.GeoIteratorCount.prototype.geometryStart = function(geometry) { this.geometries++; return true}
 
-// -------- Draw 
+// -------- Clip   draw with small-circle clipping
 
-voyc.GeoIteratorDraw = function() {
+voyc.GeoIteratorClip = function() {
 	voyc.GeoIterator.call(this) // super
 }
-voyc.GeoIteratorDraw.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
+voyc.GeoIteratorClip.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
 
-// small circle clipping
-// qualify by scalerank
-// choose palette by scalerank
-// draw groups by scalerank, assume data is sorted by scalerank
-
-voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
+voyc.GeoIteratorClip.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
-	this.scalerank = add[3]
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
-	this.prevScaleRank = false
 	return true
 }
 
-voyc.GeoIteratorDraw.prototype.collectionEnd = function(collection) {
-	// most layers have one palette, so we draw the whole layer in one go at the end
-	if (this.palette.length == 1)
-		this.draw(0)
-	else if (this.prevScaleRank)
-		this.draw(this.prevScaleRank)
-}
-voyc.GeoIteratorDraw.prototype.geometryStart = function(geometry) {
-	// the hilite layer is usually empty. no further processing.
-	if (!geometry)
-		return false  // kill the loop
-
-	// two things happen in here: qualification and draw by scalerank
-	if (this.palette.length <= 1)
-		return true
-
-	// if palette.length > 1, the presence of geometry.scalerank and this.scalerank are implied
-
-	// qualify by scalerank
-	if (geometry.scalerank > this.scalerank)
-		return 0  // disqualified. skip this geom but keep going
-
-	// draw in groups by scalerank
-	if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)) {
-		this.draw(this.prevScaleRank)
-		this.ctx.beginPath()
-	}
-	this.prevScaleRank = geometry.scalerank
-	return true
+voyc.GeoIteratorClip.prototype.collectionEnd = function(collection) {
+	this.draw(0)
 }
 
-voyc.GeoIteratorDraw.prototype.geometryEnd = function(geometry) {
-}
-voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
-	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
-		var paletteNdx = 0
-		if (geomScaleRank) {
-			var adj = maxScaleRank - zoomScaleRank   // value 5-0
-			var paletteLevel = geomScaleRank + adj  // 1-6
-			var paletteNdx = paletteLevel - 1  // 0-5
-		}
-		return paletteNdx
-	}
-	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+voyc.GeoIteratorClip.prototype.draw = function(paletteNdx) {
 	var palette = this.palette[paletteNdx]
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.strokeStyle = palette.stroke
@@ -287,12 +241,12 @@ voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
 	if (palette.stroke) this.ctx.stroke()
 }
 
-voyc.GeoIteratorDraw.prototype.lineStart = function(line) {
+voyc.GeoIteratorClip.prototype.lineStart = function(line) {
 	this.polygonStart(line)
 	return true
 }
 
-voyc.GeoIteratorDraw.prototype.polygonStart = function(polygon) {
+voyc.GeoIteratorClip.prototype.polygonStart = function(polygon) {
 	this.pointCount = 0;
 	this.visiblePointCount = 0;
 	this.firstVisiblePointInRing = false;
@@ -304,7 +258,7 @@ voyc.GeoIteratorDraw.prototype.polygonStart = function(polygon) {
 	this.previousPt = false;
 	return true
 }
-voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
+voyc.GeoIteratorClip.prototype.polygonEnd = function(polygon) {
 	if (!this.previousPt) {
 		this.isGapAtEnd = true;
 	}
@@ -319,7 +273,7 @@ voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
 	this.ctx.closePath();
 }
 
-voyc.GeoIteratorDraw.prototype.doPoint = function(co, within) {
+voyc.GeoIteratorClip.prototype.doPoint = function(co, within) {
 	var pt = this.projection.project(co);
 	if (pt) {                                              // if visible
 		if (!this.firstVisiblePointInRing) {           //    if first visible point
@@ -359,7 +313,7 @@ voyc.GeoIteratorDraw.prototype.doPoint = function(co, within) {
 	return true
 }
 
-voyc.GeoIteratorDraw.prototype.findTangent = function(ob,oc,ctr,r) {
+voyc.GeoIteratorClip.prototype.findTangent = function(ob,oc,ctr,r) {
 	var dθ = oc.θ - ob.θ;
 	var θ3 = ob.θ + dθ/2;
 	var r3 = r/Math.cos(dθ/2);
@@ -367,7 +321,7 @@ voyc.GeoIteratorDraw.prototype.findTangent = function(ob,oc,ctr,r) {
 	var y1 = ctr[1] + r3*Math.sin(θ3);
 	return [x1,y1];
 }
-voyc.GeoIteratorDraw.prototype.extendToCircumference = function(pt,ctr,r) {
+voyc.GeoIteratorClip.prototype.extendToCircumference = function(pt,ctr,r) {
 	// translate to 0,0
 	var x1 = pt[0] - ctr[0];
 	var y1 = pt[1] - ctr[1];
@@ -386,7 +340,7 @@ voyc.GeoIteratorDraw.prototype.extendToCircumference = function(pt,ctr,r) {
 	y2 = y+ctr[1];
 	return {θ:θ, pt:[x2,y2]};
 }
-voyc.GeoIteratorDraw.prototype.arcGap = function(a,d,ctr,r) {
+voyc.GeoIteratorClip.prototype.arcGap = function(a,d,ctr,r) {
 	// given two points, a center and radius
 	// extend both points to the circumference, 
 	// 	otherwise you get a thick mish-mash of lines around the edge
@@ -397,6 +351,61 @@ voyc.GeoIteratorDraw.prototype.arcGap = function(a,d,ctr,r) {
 	var e = this.findTangent(ob, oc,ctr,r);
 	this.ctx.lineTo(ob.pt[0],ob.pt[1]);
 	this.ctx.arcTo(e[0],e[1],oc.pt[0],oc.pt[1],r);
+}
+
+// -------- Scale    qualify, group, and choose palette by scalerank
+
+voyc.GeoIteratorScale = function() {
+	voyc.GeoIteratorClip.call(this) // super
+}
+voyc.GeoIteratorScale.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
+
+voyc.GeoIteratorScale.prototype.collectionStart = function(collection, add) {
+	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
+	this.projection = add[0]
+	this.ctx = add[1]
+	this.palette = add[2]
+	this.scalerank = add[3]
+	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
+	this.ctx.beginPath()
+	this.prevScaleRank = false
+	return true
+}
+
+voyc.GeoIteratorScale.prototype.collectionEnd = function(collection) {
+	this.draw(this.prevScaleRank)
+}
+
+voyc.GeoIteratorScale.prototype.geometryStart = function(geometry) {
+	// two things happen in here: qualification and draw by scalerank
+	if (this.palette.length <= 1)
+		debugger;
+
+	// qualify by scalerank
+	if (geometry.scalerank > this.scalerank)
+		return 0  // disqualified. skip this geom but keep going
+
+	// draw in groups by scalerank
+	if (this.prevScaleRank && (this.prevScaleRank != geometry.scalerank)) {
+		this.draw(this.prevScaleRank)
+		this.ctx.beginPath()
+	}
+	this.prevScaleRank = geometry.scalerank
+	return true
+}
+
+voyc.GeoIteratorScale.prototype.draw = function(geomScaleRank) {
+	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
+		var paletteNdx = 0
+		if (geomScaleRank) {
+			var adj = maxScaleRank - zoomScaleRank   // value 5-0
+			var paletteLevel = geomScaleRank + adj  // 1-6
+			var paletteNdx = paletteLevel - 1  // 0-5
+		}
+		return paletteNdx
+	}
+	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+	voyc.GeoIteratorClip.prototype.draw.call(this,paletteNdx)
 }
 
 // -------- HitTest
@@ -507,9 +516,9 @@ voyc.GeoIteratorHitTest.prototype.pointInRect= function(pt,rect) {
 // -------- Animate
 
 voyc.GeoIteratorAnimate = function() {
-	voyc.GeoIteratorDraw.call(this) // super
+	voyc.GeoIteratorClip.call(this) // super
 }
-voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
 voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -548,9 +557,9 @@ voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
 // -------- Empire
 
 voyc.GeoIteratorEmpire = function() {
-	voyc.GeoIteratorDraw.call(this) // super
+	voyc.GeoIteratorScale.call(this) // super
 }
-voyc.GeoIteratorEmpire.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+voyc.GeoIteratorEmpire.prototype = Object.create(voyc.GeoIteratorScale.prototype) // inherit
 
 voyc.GeoIteratorEmpire.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -562,6 +571,10 @@ voyc.GeoIteratorEmpire.prototype.collectionStart = function(collection, add) {
 	this.ctx.beginPath()
 	this.prevColor = false
 	return true
+}
+
+voyc.GeoIteratorEmpire.prototype.collectionEnd = function(collection) {
+	this.draw(this.prevColor)
 }
 
 voyc.GeoIteratorEmpire.prototype.geometryStart = function(geometry) {
@@ -597,9 +610,9 @@ voyc.GeoIteratorEmpire.prototype.draw = function(prevColor) {
 // -------- Sketch
 
 voyc.GeoIteratorSketch = function() {
-	voyc.GeoIteratorDraw.call(this) // super
+	voyc.GeoIteratorClip.call(this) // super
 }
-voyc.GeoIteratorSketch.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+voyc.GeoIteratorSketch.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
 voyc.GeoIteratorSketch.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -720,7 +733,7 @@ voyc.GeoIteratorSketch.prototype.draw = function() {
 	}
 }
 
-voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
+voyc.GeoIteratorSketch.prototype.polygonEnd = function(polygon) {
 	if (!this.previousPt) {
 		this.isGapAtEnd = true;
 	}
@@ -738,9 +751,9 @@ voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
 // -------- Custom
 
 voyc.GeoIteratorCustom = function() {
-	voyc.GeoIteratorDraw.call(this) // super
+	voyc.GeoIteratorClip.call(this) // super
 }
-voyc.GeoIteratorCustom.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+voyc.GeoIteratorCustom.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
 voyc.GeoIteratorCustom.prototype.doPoint = function(pt, within) {
 	if (within == 'point') {

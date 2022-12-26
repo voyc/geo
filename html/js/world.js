@@ -335,7 +335,8 @@ voyc.World.prototype.setupData = function() {
 voyc.World.prototype.setupIterators = function() {
 	this.iterator = {}
 	this.iterator['count']   = new voyc.GeoIteratorCount()
-	this.iterator['draw']    = new voyc.GeoIteratorDraw()
+	this.iterator['clip']    = new voyc.GeoIteratorClip()
+	this.iterator['scale']   = new voyc.GeoIteratorScale()
 	this.iterator['animate'] = new voyc.GeoIteratorAnimate()
 	this.iterator['hittest'] = new voyc.GeoIteratorHitTest()
 	this.iterator['empire']  = new voyc.GeoIteratorEmpire()
@@ -417,20 +418,18 @@ voyc.World.prototype.setupLayers = function() {
 	var self = this
 	//                 id         ,menulabel   ,dataid      ,img   ,iterator ,group  ,offset
 	createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
-	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'draw'   ,false       ,0)
+	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
+	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'clip'   ,false       ,0)
 	createLayerDiv   ('rivers_'   ,'Rivers'    ,false       ,false ,false    ,false       ,0)
-	createLayerCanvas('rivers'    ,false       ,'rivers'    ,false ,'draw'   ,'rivers_'   ,6)
+	createLayerCanvas('rivers'    ,false       ,'rivers'    ,false ,'scale'  ,'rivers_'   ,6)
 	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
-	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
+	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
+	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
-	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'draw'   ,false       ,0)
-	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 
 	this.animation = this.layer.rivers.overlays
 
