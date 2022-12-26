@@ -51,7 +51,8 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
 	for (var id in voyc.geosketch.world.layer) {
 		if (voyc.geosketch.world.layer[id].menulabel) {
-			s += voyc.prepString("<div><span><input type='checkbox' checked layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel])
+			var isChecked = voyc.geosketch.world.layer[id].enabled ? 'checked':''
+			s += voyc.prepString("<div><span><input type='checkbox' $3 layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel, isChecked])
 			s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
 		}
 		if (id == 'custom')
@@ -151,7 +152,7 @@ voyc.Hud.prototype.attach = function() {
 		self.timeSliderMove(evt)
 	}, false);
 	this.timeslider.addEventListener('input', function(evt) {
-		//self.timeSliderMove(evt)
+		self.timeSliderMove(evt,true)
 	}, false);
 	this.timeslider.addEventListener('mouseup', function(evt) {
 		self.timeSliderUp(evt)
@@ -206,7 +207,7 @@ voyc.Hud.prototype.attach = function() {
 	}, false);
 }
 
-// -------- tool bar
+// -------- tool bars
 
 voyc.Hud.prototype.setupToolBar = function() {
 	var e = voyc.$('toolbarbtn')
@@ -218,15 +219,15 @@ voyc.Hud.prototype.setupToolBar = function() {
 	for (var tool of tools) {
 		tool.addEventListener('click', function(evt) {
 			evt.stopPropagation(); evt.preventDefault();
-			self.setTool(evt.currentTarget.id)
+			self.setTool(evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_')))
 		}, false)
 	}
 }
 voyc.Hud.prototype.setTool = function(newtool) {
-	this.tool = newtool.substring(0,newtool.indexOf('_'))
+	this.tool = newtool
 	if (hudlog) console.log(`tool: ${this.tool}`)
 
-	// hightlight the selected tool button
+	// highlight the selected tool button
 	var toolbtns = document.querySelectorAll('.toolbtn')
 	for (var btn of toolbtns)
 		btn.classList.remove('down')
@@ -237,18 +238,33 @@ voyc.Hud.prototype.setTool = function(newtool) {
 	for (var tool of voyc.tools)
 		e.classList.remove(tool)
 	e.classList.add(this.tool)
+
+	// show/hide the edit bar
+	if (this.tool == 'sketch')
+		voyc.$('editbar').classList.remove('hidden')	
+	else
+		voyc.$('editbar').classList.add('hidden')	
 }
 
-// -------- edit bar
-
 voyc.Hud.prototype.setupEditBar = function() {
-	var tools = document.querySelectorAll('.editbtn')
 	var self = this
+	var tools = document.querySelectorAll('.editbtn')
 	for (var tool of tools) {
 		tool.addEventListener('click', function(evt) {
 			evt.stopPropagation(); evt.preventDefault();
 			var action = evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_'))
 			voyc.geosketch.sketch[action]()
+		}, false)
+	}
+	var tools = document.querySelectorAll('.shapebtn')
+	for (var tool of tools) {
+		tool.addEventListener('click', function(evt) {
+			evt.stopPropagation(); evt.preventDefault();
+			var shape = evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_'))
+			voyc.geosketch.sketch.setShape(shape)
+			for (var tool of tools)
+				tool.classList.remove('down')
+			evt.currentTarget.classList.add('down')
 		}, false)
 	}
 }
@@ -299,8 +315,7 @@ voyc.Hud.prototype.showLabel = function (pt,s) {
 voyc.Hud.prototype.setTime = function(time) {
 	var era = (time < 0) ? ' BCE' : ' CE'
 	voyc.$('time').innerHTML = Math.abs(time) + era
-	//if (!this.timesliderIsHot) 
-		this.timeslider.value = time
+	this.timeslider.value = time
 }
 
 voyc.Hud.prototype.timeSliderDown = function (evt) {
@@ -308,9 +323,9 @@ voyc.Hud.prototype.timeSliderDown = function (evt) {
 	this.timesliderIsHot = true
 	voyc.geosketch.world.grabTime(evt)
 }
-voyc.Hud.prototype.timeSliderMove = function (evt) {
+voyc.Hud.prototype.timeSliderMove = function (evt,force) {
 	evt.stopPropagation()
-	if (this.timesliderIsHot)
+	if (this.timesliderIsHot || force)
 		voyc.geosketch.world.setTime(parseInt(evt.target.value,10))
 }
 
@@ -442,7 +457,7 @@ voyc.Hud.prototype.onmousemove = function(evt) {
 		this.dragPrev = pt
 		this.mousemoved = true
 	}
-	else
+	else if (this.tool == 'sketch')
 		voyc.geosketch.sketch.mousemove(pt)
 }
 

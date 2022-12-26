@@ -218,9 +218,10 @@ voyc.GeoIteratorDraw = function() {
 }
 voyc.GeoIteratorDraw.prototype = Object.create(voyc.GeoIterator.prototype) // inherit
 
-voyc.GeoIteratorDraw.prototype.clear = function() {
-	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-}
+// small circle clipping
+// qualify by scalerank
+// choose palette by scalerank
+// draw groups by scalerank, assume data is sorted by scalerank
 
 voyc.GeoIteratorDraw.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -282,8 +283,8 @@ voyc.GeoIteratorDraw.prototype.draw = function(geomScaleRank) {
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.lineWidth = palette.pen
-	if (palette.isFill) this.ctx.fill()
-	if (palette.isStroke) this.ctx.stroke()
+	if (palette.fill) this.ctx.fill()
+	if (palette.stroke) this.ctx.stroke()
 }
 
 voyc.GeoIteratorDraw.prototype.lineStart = function(line) {
@@ -540,8 +541,8 @@ voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
 	this.ctx.strokeStyle = 'rgb(176,176,255'    // override
 	this.ctx.lineDashOffset = -this.offset      // override
 	this.ctx.setLineDash([3,3])                 // override
-	if (palette.isFill) this.ctx.fill()
-	if (palette.isStroke) this.ctx.stroke()
+	if (palette.fill) this.ctx.fill()
+	if (palette.stroke) this.ctx.stroke()
 }
 
 // -------- Empire
@@ -589,8 +590,8 @@ voyc.GeoIteratorEmpire.prototype.draw = function(prevColor) {
 		debugger;
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.lineWidth = palette.pen
-	if (palette.isFill) this.ctx.fill()
-	if (palette.isStroke) this.ctx.stroke()
+	if (palette.fill) this.ctx.fill()
+	if (palette.stroke) this.ctx.stroke()
 }
 
 // -------- Sketch
@@ -732,5 +733,40 @@ voyc.GeoIteratorDraw.prototype.polygonEnd = function(polygon) {
 		this.ctx.lineTo(this.firstVisiblePointInRing[0],this.firstVisiblePointInRing[1]);
 	}
 //	this.ctx.closePath();
+}
+
+// -------- Custom
+
+voyc.GeoIteratorCustom = function() {
+	voyc.GeoIteratorDraw.call(this) // super
+}
+voyc.GeoIteratorCustom.prototype = Object.create(voyc.GeoIteratorDraw.prototype) // inherit
+
+voyc.GeoIteratorCustom.prototype.doPoint = function(pt, within) {
+	if (within == 'point') {
+		this.ctx.arc(pt[0],pt[1], this.palette.ptRadius, 0, 2*Math.PI, false)
+		this.ctx.lineWidth = this.palette.ptPen
+		this.ctx.strokeStyle = this.palette.ptStroke
+		this.ctx.fillStyle = this.palette.ptFill
+		if (this.palette.ptStroke) this.ctx.stroke()
+		if (this.palette.ptFill) this.ctx.fill()
+	}
+	return true
+}
+
+voyc.GeoIteratorCustom.prototype.lineEnd = function() {
+	this.ctx.lineWidth = this.palette.lnPen
+	this.ctx.strokeStyle = this.palette.lnStroke
+	this.ctx.fillStyle = this.palette.lnFill
+	if (this.palette.lnStroke) this.ctx.stroke()
+	if (this.palette.lnFill) this.ctx.fill()
+}
+
+voyc.GeoIteratorCustom.prototype.polygonEnd = function() {
+	this.ctx.lineWidth = this.palette.pen
+	this.ctx.strokeStyle = this.palette.stroke
+	this.ctx.fillStyle = this.palette.fill
+	if (this.palette.stroke) this.ctx.stroke()
+	if (this.palette.fill) this.ctx.fill()
 }
 

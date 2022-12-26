@@ -1,8 +1,11 @@
 #hud.move   { cursor:move; }
-#hud.sketch { cursor:default; } /* url(../i/pencil_black_24.cur); } */
+#hud.sketch { cursor:default; }
 #hud.point  { cursor:pointer; }
 #hud.measure{ cursor:ew-resize; }
+
 .toolbtn.down { background-color:yellow; }
+.editbtn.down { background-color:yellow; }
+.shapebtn.down { background-color:yellow; }
 
 .hud {
 	position:fixed;
