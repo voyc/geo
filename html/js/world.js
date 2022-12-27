@@ -15,10 +15,11 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.nodraglayers = ['empire','rivers_','lakes','deserts', 'mountains']
+	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains']
 	
 	this.scale = {}
 
+	this.animation = []
 	this.counter = 0
 
 	this.time = {
@@ -314,7 +315,7 @@ voyc.World.prototype.setupData = function() {
 		{type:'LineString',scalerank:1,featureclass:'Parallel',name:'Equator',coordinates:[[-180,0],[-170,0],[-160,0],[-150,0],[-140,0],[-130,0],[-120,0],[-110,0],[-100,0],[-90,0],[-80,0],[-70,0],[-60,0],[-50,0],[-40,0],[-30,0],[-20,0],[-10,0],[0,0],[10,0],[20,0],[30,0],[40,0],[50,0],[60,0],[70,0],[80,0],[90,0],[100,0],[110,0],[120,0],[130,0],[140,0],[150,0],[160,0],[170,0],[180,0]]},
 		{type:'MultiLineString',id:109,name:'Albert Nile',coordinates:[[[32.015855,3.613656],[31.935343,3.528002],[31.885114,3.508391],[31.838501,3.526271],[31.784655,3.522989],[31.72378,3.498598],[31.623838,3.363283],[31.484828,3.117019],[31.404316,2.950725],[31.382095,2.864322],[31.387573,2.804015],[31.420646,2.769702],[31.433772,2.718749],[31.42695,2.651208],[31.449895,2.588318],[31.502501,2.530078],[31.515317,2.475922],[31.474803,2.400732]]]},
 		{type:'Polygon',id:1,name:'Mesopotamia',b:-4000,e:-1950,fb:0,c:5,coordinates:[[[41.904411,27.702338],[41.805987,29.078789],[43.001109,29.761618],[44.359202,29.393941],[45.174058,28.606062],[44.956763,27.555557],[44.087583,26.820204],[42.512195,26.662628],[41.904411,27.702338]]], },
-		{type:'MultiPolygon',id:18843,name:'Egypt',b:-1560,e:-1070,fb:3,c:2,coordinates:[[[[26.502052,29.016168],[26.502052,31.136625],[28.955884,30.82472],[32.11083,31.130038],[32.92501,29.705223],[32.92501,28.992816],[33.840962,27.873319],[34.451597,26.143187],[35.475377,24.143486],[34.179207,23.993073],[33.549932,23.390302],[33.298222,22.78753],[33.235295,21.314089],[32.794802,20.175521],[32.731875,18.501156],[32.35431,17.697461],[31.85089,17.362588],[29.963065,17.295613],[29.145007,18.501156],[29.145007,22.385683],[29.33379,22.92148],[29.207935,24.260971],[27.005472,27.073904],[26.502052,29.016168]]],[[[32.57655,30.841031],[32.799517,31.119739],[33.356934,31.286965],[34.025835,31.119739],[34.360286,31.286965],[34.896775,32.136976],[34.997264,32.030024],[35.154583,31.360278],[35.060192,30.958431],[33.073997,29.497922],[32.57655,30.841031]]]],},
+	//	{type:'MultiPolygon',id:18843,name:'Egypt',b:-1560,e:-1070,fb:3,c:2,coordinates:[[[[26.502052,29.016168],[26.502052,31.136625],[28.955884,30.82472],[32.11083,31.130038],[32.92501,29.705223],[32.92501,28.992816],[33.840962,27.873319],[34.451597,26.143187],[35.475377,24.143486],[34.179207,23.993073],[33.549932,23.390302],[33.298222,22.78753],[33.235295,21.314089],[32.794802,20.175521],[32.731875,18.501156],[32.35431,17.697461],[31.85089,17.362588],[29.963065,17.295613],[29.145007,18.501156],[29.145007,22.385683],[29.33379,22.92148],[29.207935,24.260971],[27.005472,27.073904],[26.502052,29.016168]]],[[[32.57655,30.841031],[32.799517,31.119739],[33.356934,31.286965],[34.025835,31.119739],[34.360286,31.286965],[34.896775,32.136976],[34.997264,32.030024],[35.154583,31.360278],[35.060192,30.958431],[33.073997,29.497922],[32.57655,30.841031]]]],},
 	]}
 
 	// highlight
@@ -371,22 +372,34 @@ voyc.World.prototype.setupLayers = function() {
 		a.ctx = a.e.getContext("2d")
 		if (useImageData) a.ctx.createImageData(self.w, self.h)
 		self.layer[id] = a
-		a.overlays = createLayerAnimation( id, offset, container)
+		if (offset) {
+			a.overlays = createLayerAnimation( id, offset)
+			self.animation = a.overlays
+		}
 	}
 
-	createLayerAnimation = function(id, offset, container) {
+	createLayerAnimation = function(id, offset) {
+		var e = document.createElement('div')
+		e.setAttribute('group', id)
+		e.classList.add('layer');
+		e.style.width =  self.w + 'px';
+		e.style.height = self.h + 'px';
+		self.elem.appendChild(e);
+		e.appendChild(document.getElementById(id))
+		var container = e
+
 		// create an array of html elements
 		var a = []
 		for (var i=0; i<offset; i++) {
 			var e = document.createElement('canvas')
+			e.setAttribute('group', id)
 			e.id = id + '_' + i
 			e.classList.add('layer') 
 			e.width  = self.w
 			e.height = self.h
 			e.style.width =  self.w + 'px'
 			e.style.height = self.h + 'px'
-			var cont = (container) ? self.layer[container].e : self.elem 
-			cont.appendChild(e)
+			container.appendChild(e)
 			a[i] = e
 		}
 		return a
@@ -423,15 +436,12 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
 	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'clip'   ,false       ,0)
-	createLayerDiv   ('rivers_'   ,'Rivers'    ,false       ,false ,false    ,false       ,0)
-	createLayerCanvas('rivers'    ,false       ,'rivers'    ,false ,'scale'  ,'rivers_'   ,6)
+	createLayerCanvas('rivers'    ,'Rivers'    ,'rivers'    ,false ,'scale'  ,false       ,6)
 	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
 	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
-
-	this.animation = this.layer.rivers.overlays
 
 	var stolay = JSON.parse(localStorage.getItem('layers'))
 	if (stolay)
@@ -446,6 +456,11 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 	var layer = this.layer[layerid]
 	layer.enabled = boo
 	this.showLayer(layer.e, boo)
+	if (layer.offset) {
+		var group = document.querySelectorAll(`[group=${layerid}]`)
+		for (e of group)
+			this.showLayer(e, boo)
+	}
 	this.moved = true
 	voyc.geosketch.render(0)
 	this.stoLay()
@@ -467,6 +482,7 @@ voyc.World.prototype.clearLayers = function() {
 // --------  animation
 
 voyc.World.prototype.stepFrame = function() {
+	if (!this.animation.length) return
 	++this.counter 
 	if (this.counter >= this.animation.length)
 		this.counter=0
@@ -615,7 +631,6 @@ voyc.World.prototype.drawWater = function() {
 voyc.World.prototype.drawRiver = function() {
 	var id = 'rivers'
 	var layer = this.layer[id]
-	var offset = this.layer[id].overlays.length //offset
 	if (!layer.enabled) return
 
 	var zoomScaleRank = this.calcRank(id) 
@@ -627,7 +642,7 @@ voyc.World.prototype.drawRiver = function() {
 		layer.palette,
 		zoomScaleRank)
 
-	for (var i=0; i<offset; i++)
+	for (var i=0; i<this.layer[id].offset; i++)
 		this.iterator['animate'].iterateCollection(
 			layer.data, 
 			this.projection, 
@@ -669,8 +684,7 @@ voyc.World.prototype.drawCustom = function() {
 		layer.data, 
 		this.projection, 
 		layer.ctx, 
-		this.palette['custom'],   //layer.palette,
-		false)
+		this.palette['custom'])
 }
 
 voyc.World.prototype.setupPalette = function() {
@@ -678,9 +692,10 @@ voyc.World.prototype.setupPalette = function() {
 	for (var id in this.palette) {
 		for (var palette of this.palette[id]) {
 			if (palette.fill) palette.fill = voyc.prepString('rgb($1,$2,$3)', palette.fill)
+			if (palette.ptFill) palette.ptFill = voyc.prepString('rgb($1,$2,$3)', palette.ptFill)
 			if (palette.stroke) palette.stroke = voyc.prepString('rgb($1,$2,$3)', palette.stroke)
 			if (palette.ptStroke) palette.ptStroke = voyc.prepString('rgb($1,$2,$3)', palette.ptStroke)
-			if (palette.ptfill) palette.ptFill = voyc.prepString('rgb($1,$2,$3)', palette.ptFill)
+			if (palette.lnStroke) palette.lnStroke = voyc.prepString('rgb($1,$2,$3)', palette.lnStroke)
 			if (palette.patfile)
 				palette.pat = this.makePattern(voyc.geosketch.asset.get(palette.patfile), palette.fill)
 		}
@@ -766,5 +781,5 @@ voyc.defaultPalette = {
 	],
 	hilite:[{scale:5000, stroke:[255,  0,  0], pen:10, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
 	sketch:[{scale:5000, stroke:[  0,  0,  0], pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen:.5, ptRadius:5, ptStroke:[  0,  0,  0], ptPen:.5, ptFill:[  0,255,  0]},],
-	custom:[{scale:5000, stroke:[255,  0,255], pen:10, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen:.5, ptRadius:5, ptStroke:[  0,  0,  0], ptPen:.5, ptFill:[  0,255,  0]},],
+	custom:[{scale:5000, stroke:[255,  0,255], pen:10, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 2, ptFill:[  0,255,  0]},],
 }

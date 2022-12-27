@@ -290,11 +290,13 @@ voyc.GeoIteratorClip.prototype.doPoint = function(co, within) {
 				this.visiblePointCount = 0     //          kill the lineTo 
 			this.lastVisiblePointBeforeGap = false;//          mark done with gap
 		}
-		if (this.visiblePointCount) {                  //    if some visible point already
-			this.ctx.lineTo(pt[0],pt[1])           //       lineTo
-		}
-		else {                                         //    else
-			this.ctx.moveTo(pt[0],pt[1]);          //       moveTo
+		if (within == 'point')
+			this.drawPoint(pt)
+		else {
+			if (this.visiblePointCount)            //    if some visible point already
+				this.ctx.lineTo(pt[0],pt[1])   //       lineTo
+			else                                   //    else
+				this.ctx.moveTo(pt[0],pt[1])   //       moveTo
 		}
 		this.visiblePointCount++                       //    count it
 		this.lastVisiblePointInRing = pt               //    mark it last visible (so far)
@@ -313,6 +315,12 @@ voyc.GeoIteratorClip.prototype.doPoint = function(co, within) {
 	return true
 }
 
+voyc.GeoIteratorClip.prototype.drawPoint = function(pt) {
+	var palette = this.palette[0]
+	var radius = this.palette[0].ptRadius
+	this.ctx.arc(pt[0],pt[1], radius, 0, 2*Math.PI, false)
+	this.ctx.beginPath()
+}
 voyc.GeoIteratorClip.prototype.findTangent = function(ob,oc,ctr,r) {
 	var dθ = oc.θ - ob.θ;
 	var θ3 = ob.θ + dθ/2;
@@ -516,9 +524,9 @@ voyc.GeoIteratorHitTest.prototype.pointInRect= function(pt,rect) {
 // -------- Animate
 
 voyc.GeoIteratorAnimate = function() {
-	voyc.GeoIteratorClip.call(this) // super
+	voyc.GeoIteratorScale.call(this) // super
 }
-voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
+voyc.GeoIteratorAnimate.prototype = Object.create(voyc.GeoIteratorScale.prototype) // inherit
 
 voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
 	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
@@ -755,31 +763,43 @@ voyc.GeoIteratorCustom = function() {
 }
 voyc.GeoIteratorCustom.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
-voyc.GeoIteratorCustom.prototype.doPoint = function(pt, within) {
-	if (within == 'point') {
-		this.ctx.arc(pt[0],pt[1], this.palette.ptRadius, 0, 2*Math.PI, false)
-		this.ctx.lineWidth = this.palette.ptPen
-		this.ctx.strokeStyle = this.palette.ptStroke
-		this.ctx.fillStyle = this.palette.ptFill
-		if (this.palette.ptStroke) this.ctx.stroke()
-		if (this.palette.ptFill) this.ctx.fill()
-	}
+voyc.GeoIteratorCustom.prototype.collectionEnd = function(collection) {
+}
+voyc.GeoIteratorCustom.prototype.draw = function() {
+}
+
+voyc.GeoIteratorCustom.prototype.geometryStart = function(geometry) {
+	this.ctx.beginPath()
+	return true
+}
+
+voyc.GeoIteratorCustom.prototype.drawPoint = function(pt) {
+	var palette = this.palette[0]
+	this.ctx.arc(pt[0],pt[1], palette.ptRadius, 0, 2*Math.PI, false)
+	this.ctx.lineWidth = palette.ptPen
+	this.ctx.strokeStyle = palette.ptStroke
+	this.ctx.fillStyle = palette.ptFill
+	if (palette.ptStroke) this.ctx.stroke()
+//	if (palette.ptFill) this.ctx.fill()
+	this.ctx.beginPath()
 	return true
 }
 
 voyc.GeoIteratorCustom.prototype.lineEnd = function() {
-	this.ctx.lineWidth = this.palette.lnPen
-	this.ctx.strokeStyle = this.palette.lnStroke
-	this.ctx.fillStyle = this.palette.lnFill
-	if (this.palette.lnStroke) this.ctx.stroke()
-	if (this.palette.lnFill) this.ctx.fill()
+	var palette = this.palette[0]
+	this.ctx.lineWidth = palette.lnPen
+	this.ctx.strokeStyle = palette.lnStroke
+	if (palette.lnStroke) this.ctx.stroke()
+	this.ctx.beginPath()
 }
 
 voyc.GeoIteratorCustom.prototype.polygonEnd = function() {
-	this.ctx.lineWidth = this.palette.pen
-	this.ctx.strokeStyle = this.palette.stroke
-	this.ctx.fillStyle = this.palette.fill
-	if (this.palette.stroke) this.ctx.stroke()
-	if (this.palette.fill) this.ctx.fill()
+	var palette = this.palette[0]
+	this.ctx.lineWidth = palette.pen
+	this.ctx.strokeStyle = palette.stroke
+	this.ctx.fillStyle = palette.fill
+	if (palette.stroke) this.ctx.stroke()
+	if (palette.fill) this.ctx.fill()
+	this.ctx.beginPath()
 }
 
