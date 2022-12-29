@@ -110,7 +110,7 @@
 			<div><button g id='poly_btn' class='shapebtn down' title='Polygon'><img src='i/poly_black_24.png'/></button></div> 
                         <div>&nbsp; </div>
 			<div><button g id='trim_btn' class='editbtn' title='Trim sketch'><img src='i/scissors_black_24.png'/></button></div> 
-			<div><button g id='finish_btn' class='editbtn' title='Save shape'><img src='i/checkmark_black_24.png'/></button></div> 
+			<div><button g id='finish_btn' open='saveshape' class='editbtn' title='Save shape'><img src='i/checkmark_black_24.png'/></button></div> 
 			<!-- <div><button g id='save_btn' class='editbtn' title='Save sketch'><img src='i/savedisk_black_24.png'/></button></div> --> 
 			<div><button g id='cancel_btn' class='editbtn' title='Cancel sketch'><img src='i/xcancel_black_24.png'/></button></div> 
 		</nav>
@@ -180,6 +180,16 @@
 			</div>
 		</div>
 		<div hidden id='offscreen'>
+			<form modal id='saveshape' class='dialog' title='Save this shape'>
+				<p><label for='layer'>Layer: </label><input name='layer' type='dropdown' ></p>
+				<p><label for='name'>Name: </label><input name='name' type='text' autofocus ></p>
+				<p><label for='begin'>Begin: </label><input name='begin' type='number' ></p>
+				<p><label for='end'>End: </label><input name='end' type='number' ></p>
+				<p class='tright'>
+					<input close type='button' value='Cancel' class='anchor' tabindex='-1'>
+					<input type='submit' value='Save' class='submit'>
+				</p>
+			</form>
 			<form modal id='login' svc='ua' class='dialog' title='Login to Your Account'>
 				<p><input name='both' type='text' placeholder='Username or Email' autofocus required pattern='[a-zA-Z0-9_@.+]{6,100}' title='Letters and numbers or @ or period or underscore. Length between 6 and 100.'></p>
 				<p><input name='pword' type='password' placeholder='Password' required pattern='[a-zA-Z0-9@&amp;#$%]{8,255}' title='Letters and numbers or @,&amp;,#,$,%. Length between 8 and 255.'></p>

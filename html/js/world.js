@@ -456,11 +456,11 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 	var layer = this.layer[layerid]
 	layer.enabled = boo
 	this.showLayer(layer.e, boo)
-	if (layer.offset) {
-		var group = document.querySelectorAll(`[group=${layerid}]`)
-		for (e of group)
-			this.showLayer(e, boo)
-	}
+//	if (layer.offset) {
+//		var group = document.querySelectorAll(`[group=${layerid}]`)
+//		for (e of group)
+//			this.showLayer(e, boo)
+//	}
 	this.moved = true
 	voyc.geosketch.render(0)
 	this.stoLay()
@@ -468,6 +468,12 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 
 voyc.World.prototype.showLayer = function(e,boo) {
 	voyc.show(e,boo)
+	var layer = this.layer[e.id]
+	if (layer && layer.offset) {
+		var group = document.querySelectorAll(`div[group=${e.id}]`)
+		for (e of group)
+			this.showLayer(e, boo)
+	}
 }
 
 voyc.World.prototype.clearLayer = function(id) {
@@ -594,20 +600,12 @@ voyc.World.prototype.calcRank = function(id) {
 
 voyc.World.prototype.drawSketch = function(pt) {
 	var layer = this.layer['sketch']
-	var self = this
-	function draw(shape,pt) {
-		layer.iterator.iterateCollection(
-			layer.data, 
-			self.projection, 
-			layer.ctx, 
-			layer.palette,
-			shape,
-			pt)
-	}
-	this.clearLayer('sketch')
-	//draw('polygon')
-	draw('line', pt)
-	draw('point', pt)
+	layer.iterator.iterateCollection(
+		layer.data, 
+		this.projection, 
+		layer.ctx, 
+		layer.palette,
+		pt)
 }
 
 voyc.World.prototype.drawWater = function() {
@@ -780,6 +778,7 @@ voyc.defaultPalette = {
 		{scale:5000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	hilite:[{scale:5000, stroke:[255,  0,  0], pen:10, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
-	sketch:[{scale:5000, stroke:[  0,  0,  0], pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen:.5, ptRadius:5, ptStroke:[  0,  0,  0], ptPen:.5, ptFill:[  0,255,  0]},],
 	custom:[{scale:5000, stroke:[255,  0,255], pen:10, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 2, ptFill:[  0,255,  0]},],
+//	sketch:[{scale:5000, stroke:[  0,  0,  0], pen:.5, fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,255], lnPen:10, ptRadius:5, ptStroke:[  0,255,255], ptPen: 2, ptFill:[  0,255,255]},],
+	sketch:[{scale:5000, stroke:[  0,  0,  0], pen: 1, fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen: 1, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,  0]},],
 }

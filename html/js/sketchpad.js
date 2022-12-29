@@ -70,26 +70,19 @@ voyc.SketchPad.prototype = {
 	setupGeom: function(shape,coords) {
 		this.geom.type = voyc.shape[shape].type
 		var depth = voyc.shape[shape].depth
+		this.geom.coordinates = [] 
 		if (depth==1) {
 			this.geom.coordinates = coords[0]
 		}
 		else if (depth==2) {
 			this.geom.coordinates = coords
-			this.return
-			this.geom.coordinates.push(coords)
 		}
 		else if (depth==3) {
 			this.geom.coordinates.push(coords)
-			return
-			this.geom.coordinates.push(Array())
-			this.geom.coordinates[0].push(coords)
 		}
 		else if (depth==4) {
 			this.geom.coordinates.push(Array())
 			this.geom.coordinates[0].push(coords)
-			return
-			this.geom.coordinates[0].push(Array())
-			this.geom.coordinates[0][0].push(coords)
 		}
 	},
 
@@ -97,6 +90,21 @@ voyc.SketchPad.prototype = {
 		var distance = voyc.length(pt,this.ptPrev)
 		if ((distance > 20) || !this.ptPrev) {
 			var co = voyc.geosketch.world.projection.invert(pt)
+//			if (this.geom.type.indexOf('Polygon') > -1) {
+//				if (this.coords.length > 1)
+//					this.coords.pop()
+//				this.coords.push(co)
+//				if (this.coords.length > 1)
+//					this.coords.push(this.coords[0])
+//			}
+//			else {
+//				this.coords.push(co)
+//			}
+//			if (this.shape == 'poly') {
+//				this.open()
+//				this.coords.push(co)
+//				this.close()
+//			}
 			this.coords.push(co)
 			this.draw()
 			this.ptPrev = pt
@@ -109,9 +117,11 @@ voyc.SketchPad.prototype = {
 
 	closePoly: function() {
 		// close the polygon by duplicating the first point as the last point
-		// note: there is no need to close point or line objects
-		var firstCo = this.coords[0][0][0]
+		var firstCo = this.coords[0]
 		this.coords.push(firstCo)
+	},
+	openPoly: function() {
+		this.coords.pop()
 	},
 
 	draw: function (pt) {

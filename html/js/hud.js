@@ -421,7 +421,7 @@ voyc.Hud.prototype.attachMouseHandlers = function() {
 	this.elem.addEventListener('wheel',     function(evt) {self.onwheel(evt)    , false})
 	this.dragPrev = false
 	this.mousebuttondown = false
-	this.mousemoved = true
+	this.mousemoved = false
 }
 
 voyc.Hud.prototype.getMousePt = function(evt) { 
@@ -477,7 +477,7 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 		if (s)
 			this.showLabel(pt,s)
 	}
-	else if (this.tool == 'sketch')
+	if (this.tool == 'sketch')
 		if (click)
 			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
 	this.dragPrev = false
