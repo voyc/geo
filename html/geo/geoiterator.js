@@ -676,13 +676,13 @@ voyc.GeoIteratorSketch.prototype.drawPoint = function(pt, within, ndx) {
 	// choose fill based on ndx
 	this.ctx.fillStyle = palette.ptFill		// default: black
 
-	if (this.shape != 'point') {
-		var len = this.line.length || this.polygon[0].length
-		if (ndx == 0)
-			this.ctx.fillStyle = '#00ff00'		// first point: green go
-		if (ndx == (len-1))
-			this.ctx.fillStyle = '#ff0000'		// last point:red stop
-	}
+	if (((this.shape == 'line') && (ndx == (this.line.length-1))) ||
+			((this.shape == 'poly') && (ndx == (this.polygon.length[0]-1))))
+		this.ctx.fillStyle = '#ff0000'		// last point:red stop
+
+	if (ndx == 0 && this.shape != 'point')
+		this.ctx.fillStyle = '#00ff00'		// first point: green go
+
 	if (ndx >= 0)					// next point: hollow point
 		this.ctx.fill()
 	
@@ -736,6 +736,7 @@ voyc.GeoIteratorCustom.prototype.drawPoint = function(pt, within, ndx) {
 	this.ctx.strokeStyle = palette.ptStroke
 	this.ctx.fillStyle = palette.ptFill
 	if (palette.ptStroke) this.ctx.stroke()
+	if (palette.ptFill) this.ctx.fill()
 	this.ctx.beginPath()
 	return true
 }
@@ -753,6 +754,7 @@ voyc.GeoIteratorCustom.prototype.polygonEnd = function() {
 	this.ctx.lineWidth = palette.pen
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.fillStyle = palette.fill
+	this.ctx.closePath()
 	if (palette.stroke) this.ctx.stroke()
 	if (palette.fill) this.ctx.fill()
 	this.ctx.beginPath()

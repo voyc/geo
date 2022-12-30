@@ -20,6 +20,11 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 }
 
 voyc.SketchPad.prototype = {
+	setup: function() {
+		this.observer = new voyc.Observer()
+		var self = this
+		this.observer.subscribe('saveshape-submitted'           ,'sketchpad' ,function(note) { self.onSave           (note) })
+	},
 
 	// ---- public
 
@@ -41,13 +46,15 @@ voyc.SketchPad.prototype = {
 	},
 
 	finish: function() {
-		console.log('finish line')
-		this.newGeom()
 	},
 
-	save: function(w) {
-		// popup a dialog to get name of object
-		console.log('save sketch')
+	onSave: function(w) {
+		var movegeom = voyc.clone(this.geom)
+		voyc.data.custom01.geometries.push(movegeom)
+		this.newGeom()
+		this.draw()
+		voyc.geosketch.world.drawCustom()
+		voyc.geosketch.hud.closeModal()
 	},
 
 	cancel: function() {
@@ -90,21 +97,6 @@ voyc.SketchPad.prototype = {
 		var distance = voyc.length(pt,this.ptPrev)
 		if ((distance > 20) || !this.ptPrev) {
 			var co = voyc.geosketch.world.projection.invert(pt)
-//			if (this.geom.type.indexOf('Polygon') > -1) {
-//				if (this.coords.length > 1)
-//					this.coords.pop()
-//				this.coords.push(co)
-//				if (this.coords.length > 1)
-//					this.coords.push(this.coords[0])
-//			}
-//			else {
-//				this.coords.push(co)
-//			}
-//			if (this.shape == 'poly') {
-//				this.open()
-//				this.coords.push(co)
-//				this.close()
-//			}
 			this.coords.push(co)
 			this.draw()
 			this.ptPrev = pt

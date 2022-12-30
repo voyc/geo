@@ -280,6 +280,9 @@ voyc.DualProjection.prototype.project = function(co) {
 
 	if (this.mix != voyc.Projection.mercator && this.mix != voyc.Projection.orthographic) {
 		// in-between, mix
+		var mixpct = .4
+		x = xm + ((xo - xm) * mixpct)
+		y = ym + ((yo - ym) * mixpct)
 	}
 	return [x,y];
 }

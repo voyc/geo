@@ -97,6 +97,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 
 	// setup sketch layer
 	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));
+	this.sketch.setup()
 
 	this.world.moved = true
 	this.world.setScale() // to set the zoomer, forces a render

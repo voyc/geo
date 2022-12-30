@@ -45,6 +45,10 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.setupEditBar()
 }
 
+voyc.Hud.prototype.closeModal = function(note) {
+	voyc.closePopup();
+}
+
 // -------- Part 1.  Event handlers for buttons and sliders, children of the HUD element
 
 voyc.Hud.prototype.populateLayerMenu = function() {

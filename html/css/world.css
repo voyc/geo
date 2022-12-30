@@ -15,9 +15,6 @@ html, body {
 	top:0;
 	left:0;
 }
-#empire {
-	opacity:.4;
-}
 /* river styles */
 .river {
 	stroke:#00f;
