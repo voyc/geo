@@ -16,7 +16,8 @@ voyc.World = function() {
 	this.moved = true;
 	this.dragging = false;
 	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains']
-	
+	this.hitlayers = ['custom01','rivers','lakes','deserts','mountains','empire']
+
 	this.scale = {}
 
 	this.animation = []
@@ -507,13 +508,20 @@ voyc.World.prototype.stepFrame = function() {
 
 voyc.World.prototype.testHit = function(pt) {
 	var ret = false
-	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
-	if (!geom)
-		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
-	if (!geom)
-		geom =  this.iterator['hittest'].iterateCollection(voyc.data.lakes, this.projection, pt);
-	if (!geom)
-		geom =  this.iterator['hittest'].iterateCollection(voyc.data.mountains, this.projection, pt);
+	var geom = false
+	var id = false
+	var i = 0
+	while (i++<this.hitlayers.length && (!geom))
+		geom =  this.iterator['hittest'].iterateCollection(this.layer[this.hitlayers[i]].data, this.projection, pt)
+
+//	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
+//	if (!geom)
+//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
+//	if (!geom)
+//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.lakes, this.projection, pt);
+//	if (!geom)
+//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.mountains, this.projection, pt);
+
 	if (geom)
 		this.drawHilite(geom)
 		ret = geom.name

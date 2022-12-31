@@ -485,7 +485,7 @@ voyc.GeoIteratorHitTest.prototype.doPoint = function(co, within, ndx) {
 	var match = false
 	if (pt) {
 		if (within == 'point') 
-			match = this.pointInRect(pt,this.rect)
+			match = this.pointInRect(pt,this.mouserect)
 	
 		if (within == 'poly')
 			; //never gets here, hit test done in polygonStart()
