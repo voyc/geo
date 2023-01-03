@@ -298,8 +298,8 @@ voyc.Hud.prototype.showWhereami = function (pt) {
 	var co = voyc.geosketch.world.projection.invert(pt)
 	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
 	latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
-	lng = Math.abs(Math.round(co[0]))
-	lat = Math.abs(Math.round(co[1]))
+	lng = Math.abs(co[0].toFixed(2))
+	lat = Math.abs(co[1].toFixed(2))
 	s = lat + latd + lng + lngd
 	voyc.$('whereami').innerHTML = s
 }

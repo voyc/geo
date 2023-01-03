@@ -144,7 +144,8 @@ voyc.World.prototype.setupScale = function(w,h,scalefactor) {
 	var halfwid = Math.round(Math.min(w, h) / 2)
 	this.scale = {}
 	this.scale.min = halfwid * voyc.defaultScale.minScaleFactor   // small number, zoomed out
-	this.scale.max = halfwid * voyc.defaultScale.maxScaleFactor   // large number, zoomed in
+	var maxscale = voyc.geosketch.options.maxscale || voyc.defaultScale.maxScaleFactor
+	this.scale.max = halfwid * maxscale                           // large number, zoomed in
 	this.scale.factor = scalefactor
 	this.scale.now = Math.round(halfwid * scalefactor)
 }
@@ -314,9 +315,44 @@ voyc.World.prototype.setupData = function() {
 		{type:'Point',b:-2560,e:-2560,score:1000,cap:0,id:14444,name:'Great Pyramid of Giza',coordinates:[31.134,29.979]},
 		{type:'MultiPoint',b:-2600,e:-1900,score:1000,cap:0,id:1447774,name:'Harappa, Mohenjo Daro',coordinates:[[72.868,30.631],[68.136,27.324]]},
 		{type:'LineString',scalerank:1,featureclass:'Parallel',name:'Equator',coordinates:[[-180,0],[-170,0],[-160,0],[-150,0],[-140,0],[-130,0],[-120,0],[-110,0],[-100,0],[-90,0],[-80,0],[-70,0],[-60,0],[-50,0],[-40,0],[-30,0],[-20,0],[-10,0],[0,0],[10,0],[20,0],[30,0],[40,0],[50,0],[60,0],[70,0],[80,0],[90,0],[100,0],[110,0],[120,0],[130,0],[140,0],[150,0],[160,0],[170,0],[180,0]]},
-		{type:'MultiLineString',id:109,name:'Albert Nile',coordinates:[[[32.015855,3.613656],[31.935343,3.528002],[31.885114,3.508391],[31.838501,3.526271],[31.784655,3.522989],[31.72378,3.498598],[31.623838,3.363283],[31.484828,3.117019],[31.404316,2.950725],[31.382095,2.864322],[31.387573,2.804015],[31.420646,2.769702],[31.433772,2.718749],[31.42695,2.651208],[31.449895,2.588318],[31.502501,2.530078],[31.515317,2.475922],[31.474803,2.400732]]]},
 		{type:'Polygon',id:1,name:'Mesopotamia',b:-4000,e:-1950,fb:0,c:5,coordinates:[[[41.904411,27.702338],[41.805987,29.078789],[43.001109,29.761618],[44.359202,29.393941],[45.174058,28.606062],[44.956763,27.555557],[44.087583,26.820204],[42.512195,26.662628],[41.904411,27.702338]]], },
-	//	{type:'MultiPolygon',id:18843,name:'Egypt',b:-1560,e:-1070,fb:3,c:2,coordinates:[[[[26.502052,29.016168],[26.502052,31.136625],[28.955884,30.82472],[32.11083,31.130038],[32.92501,29.705223],[32.92501,28.992816],[33.840962,27.873319],[34.451597,26.143187],[35.475377,24.143486],[34.179207,23.993073],[33.549932,23.390302],[33.298222,22.78753],[33.235295,21.314089],[32.794802,20.175521],[32.731875,18.501156],[32.35431,17.697461],[31.85089,17.362588],[29.963065,17.295613],[29.145007,18.501156],[29.145007,22.385683],[29.33379,22.92148],[29.207935,24.260971],[27.005472,27.073904],[26.502052,29.016168]]],[[[32.57655,30.841031],[32.799517,31.119739],[33.356934,31.286965],[34.025835,31.119739],[34.360286,31.286965],[34.896775,32.136976],[34.997264,32.030024],[35.154583,31.360278],[35.060192,30.958431],[33.073997,29.497922],[32.57655,30.841031]]]],},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 1',coordinates:[
+[67.8599719583393,23.9026756863339],[67.9251876158159,24.0007575545176]]},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 2',coordinates:[
+[67.6458248225576, 23.919883938493],
+[67.7111955096651, 23.956625881879],
+[67.7138310079947, 24.0008609073051],
+[67.7134175959454, 24.0663866240435],
+]},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 3',coordinates:[
+[67.9251876158159, 24.0007575545176],
+[67.9995500017312, 24.0071137558951],
+[68.0166032242594, 23.990680650092],
+[68.0245097183489, 23.9336815450673],
+[68.0424414409198, 23.8916686059215],
+[68.0370154155291, 23.8482604027954],
+]},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 4',coordinates:[
+[67.9251876158159, 24.0007575545176],
+[67.9241540870415, 24.055947984412],
+[67.8007507670343, 24.0585059674765],
+[67.7601330909694, 24.052847398089],
+[67.7134175959454, 24.0663866240435],
+]},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 5',coordinates:[
+[67.7134175959454, 24.0663866240435],
+[67.660759311593, 24.1048597272946],
+]},
+
+{type:'LineString',scalerank:1,featureclass:'river',name:'Indus 6',coordinates:[
+[79.734595982019, 32.4439372824797],
+[79.4298083841497, 32.7449783388793]
+]},
 	]}
 
 	// highlight
@@ -509,18 +545,12 @@ voyc.World.prototype.stepFrame = function() {
 voyc.World.prototype.testHit = function(pt) {
 	var ret = false
 	var geom = false
-	var id = false
-	var i = 0
-	while (i++<this.hitlayers.length && (!geom))
-		geom =  this.iterator['hittest'].iterateCollection(this.layer[this.hitlayers[i]].data, this.projection, pt)
-
-//	var geom =  this.iterator['hittest'].iterateCollection(voyc.data.grid, this.projection, pt);
-//	if (!geom)
-//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.rivers, this.projection, pt);
-//	if (!geom)
-//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.lakes, this.projection, pt);
-//	if (!geom)
-//		geom =  this.iterator['hittest'].iterateCollection(voyc.data.mountains, this.projection, pt);
+	for (i=0; i<this.hitlayers.length; i++) {
+		var layer = this.layer[this.hitlayers[i]]
+		geom =  this.iterator['hittest'].iterateCollection(layer.data, this.projection, pt)
+		if (geom)
+			break
+	}
 
 	if (geom)
 		this.drawHilite(geom)
@@ -782,12 +812,12 @@ voyc.defaultPalette = {
 		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	rivers: [
-		{scale: 242, stroke:[  0,  0,255], pen:5 , fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 531, stroke:[  0,  0,255], pen:4 , fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 897, stroke:[  0,  0,255], pen:3 , fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1329, stroke:[  0,  0,255], pen:2 , fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1969, stroke:[  0,  0,255], pen:1 , fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:2904, stroke:[  0,  0,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 242, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 531, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 897, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:1329, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:1969, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:2904, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	lakes: [{scale:5000, stroke:false,         pen:2 , fill:[  0,  0,255]},],
        deserts:[{scale:5000, stroke:false,         pen:2 , fill:[ 96, 96,  0], pat:false, patfile:'deserts'     ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
