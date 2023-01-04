@@ -43,13 +43,19 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.setupProjectBtn()
 	this.setupToolBar()
 	this.setupEditBar()
+	this.attachButtons()
+	this.attachMapZoomer()
+	this.attachTimeSlider()
+	this.attachKeyboard()
+	this.attachTouch()
+	this.attachMouse()
 }
 
 voyc.Hud.prototype.closeModal = function(note) {
 	voyc.closePopup();
 }
 
-// -------- Part 1.  Event handlers for buttons and sliders, children of the HUD element
+// -------- buttons
 
 voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
@@ -82,9 +88,8 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 	})
 }
 
-voyc.Hud.prototype.attach = function() {
-	// ----- attach button handlers
-
+voyc.Hud.prototype.attachButtons = function() {
+	var self = this
 	document.getElementById('aboutbtn').addEventListener('click', function(evt) {
 		self.announce('about screen')
 	}, false);
@@ -115,29 +120,10 @@ voyc.Hud.prototype.attach = function() {
 		voyc.geosketch.setOption( 'fps', fps)
 		voyc.geosketch.game.maxfps = fps
 	}, false)
+}
 	
-	// -------- attach map zoomer handlers
-	
-	this.mapzoomer = document.getElementById('mapzoomer');
-	this.mapzoomer.min = voyc.geosketch.world.scale.min;
-	this.mapzoomer.max = voyc.geosketch.world.scale.max;
+voyc.Hud.prototype.attachTimeSlider = function() {
 	var self = this
-	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false);
-	this.mapzoomer.addEventListener('touchstart', function(evt) {self.mapZoomerDown(evt)}, false);
-	this.mapzoomer.addEventListener('input', function(evt) {self.mapZoomerMove(evt)}, false);
-	this.mapzoomer.addEventListener('mousemove', function(evt) {self.mapZoomerMove(evt)}, false);
-	this.mapzoomer.addEventListener('touchend', function(evt) {self.mapZoomerUp(evt)}, false);
-	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false);
-
-	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.spin.IN)	
-	}, false);
-	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.spin.OUT)	
-	}, false);
-
-	// -------- time slider handlers
-	
 	voyc.$('timeforwardbtn').addEventListener('click', function(evt) {
 		voyc.geosketch.world.stepTime(true)
 	}, false)	
@@ -161,12 +147,9 @@ voyc.Hud.prototype.attach = function() {
 	this.timeslider.addEventListener('mouseup', function(evt) {
 		self.timeSliderUp(evt)
 	}, false);
+}
 
-	this.attachTouchHandlers()
-	this.attachMouseHandlers()
-
-// -------- Part 2.  Event handlers for keyboard events, attached to the window element
-
+voyc.Hud.prototype.attachKeyboard = function() {
 	window.addEventListener('keydown', function(evt) {
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
 			return
@@ -314,7 +297,7 @@ voyc.Hud.prototype.showLabel = function (pt,s) {
 	voyc.show(e, (pt))
 }
 
-// -------- time handlers
+// -------- time slider
 
 voyc.Hud.prototype.setTime = function(time) {
 	var era = (time < 0) ? ' BCE' : ' CE'
@@ -339,7 +322,31 @@ voyc.Hud.prototype.timeSliderUp = function (evt) {
 	voyc.geosketch.world.dropTime(evt)
 }
 
-// -------- mapzoomer handlers
+// -------- map zoomer
+
+voyc.Hud.prototype.attachMapZoomer = function() {
+	this.mapzoomer = document.getElementById('mapzoomer')
+	this.mapzoomer.min = voyc.geosketch.world.scale.min
+	this.mapzoomer.max = voyc.geosketch.world.scale.max
+
+	var self = this
+	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false)
+	this.mapzoomer.addEventListener('touchstart', function(evt) {self.mapZoomerDown(evt)}, false)
+	this.mapzoomer.addEventListener('input', function(evt) {self.mapZoomerMove(evt)}, false)
+	this.mapzoomer.addEventListener('mousemove', function(evt) {self.mapZoomerMove(evt)}, false)
+	this.mapzoomer.addEventListener('touchend', function(evt) {self.mapZoomerUp(evt)}, false)
+	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false)
+
+	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.spin.IN)	
+	}, false)
+	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
+		voyc.geosketch.world.zoom(voyc.spin.OUT)	
+	}, false)
+
+	if (voyc.isMobile())
+		voyc.show(voyc.$('mapzoom'), false)
+}
 
 // five ways to zoom, to call world.setScale()
 //   1. mouse wheel
@@ -374,7 +381,7 @@ voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	voyc.geosketch.world.zoom(spin,pt)	
 }
 
-// -------- ?
+// -------- public
 
 voyc.Hud.prototype.fade = function(elem, boo) {
 	if (boo)
@@ -409,14 +416,9 @@ voyc.Hud.prototype.setCo = function(co,gamma) {
 	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma
 }
 
-// -------- Part 3.  Event handlers for mouse and touch on the HUD element
+// -------- mouse
 
-// Every event can have one of four different operations, 
-//	depending on the tool selected, and optionally overridden by the shift or ctrl key.
-
-// -------- mouse handlers
-
-voyc.Hud.prototype.attachMouseHandlers = function() {
+voyc.Hud.prototype.attachMouse = function() {
 	var self = this
 	this.elem.addEventListener('mousedown', function(evt) {self.onmousedown(evt), false})
 	this.elem.addEventListener('mousemove', function(evt) {self.onmousemove(evt), false})
@@ -507,9 +509,9 @@ voyc.Hud.prototype.onwheel = function(evt) {
 	this.mapZoomWheel(evt)
 }
 
-// -------- touch handlers
+// -------- touch
 
-voyc.Hud.prototype.attachTouchHandlers = function() {
+voyc.Hud.prototype.attachTouch = function() {
 	var self = this
 	this.elem.addEventListener('touchmove', function(evt) {self.ontouchmove(evt), false})
 	this.elem.addEventListener('touchstart',function(evt) {self.ontouchstart(evt), false})
@@ -569,6 +571,16 @@ voyc.Hud.prototype.ptTouch = function(evt) {
 		Math.round(evt.targetTouches[0].pageY - evt.target.offsetTop)]
 }
 
+voyc.Hud.prototype.ontouchstart = function(evt) {
+	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
+	this.touchdown = true
+	var time = new Date()
+
+	this.timetouchstart = time
+	this.pttouchstart = this.ptTouch(evt)
+	this.ptPrev = this.pttouchstart
+}
+
 voyc.Hud.prototype.ontouchmove = function(evt) {
 	if (this.touchdown && evt.currentTarget == this.elem) ; else return
 	var time = new Date()
@@ -582,17 +594,6 @@ voyc.Hud.prototype.ontouchmove = function(evt) {
 	}
 
 	this.timetouchmove = time
-}
-
-voyc.Hud.prototype.ontouchstart = function(evt) {
-	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
-	this.touchdown = true
-	var time = new Date()
-
-
-	this.timetouchstart = time
-	this.pttouchstart = this.ptTouch(evt)
-	this.ptPrev = this.pttouchstart
 }
 
 voyc.Hud.prototype.ontouchend  = function(evt) {
@@ -622,18 +623,53 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	// window events: touchstart, touchend, touchmove
 	// geosketch events: tap, doubletap, onefingermove, twofingermove
-	if (name == 'tap') 
-		voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+	if (name == 'tap') {
+		if (this.tool == 'move')
+			voyc.geosketch.world.moveToPoint(pt)
+		else if (this.tool == 'point') {
+			var s = voyc.geosketch.world.testHit(pt)
+			if (s)
+				this.showLabel(pt,s)
+		}
+		else if (this.tool == 'sketch') 
+			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+		else if (this.tool == 'measure')
+			;
+	}
 	else if (name == 'doubletap') 
 		voyc.geosketch.sketch.finish()
-	else if (name == 'onefingermove') 
-		voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+	else if (name == 'onefingermove') {
+		if (this.tool == 'move') {
+			voyc.geosketch.world.drag(pt,this.ptPrev)
+			this.ptPrev = pt
+		}
+		else if (this.tool == 'point')
+			;
+		else if (this.tool == 'sketch')
+			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+		else if (this.tool == 'measure')
+			;
+	}
 	else if (name == 'twofingermove') {
 		voyc.geosketch.world.drag(pt,this.ptPrev)
 		this.ptPrev = pt
-		//voyc.geosketch.world.zoom(pinch)
+		if (pinch) {
+			if (pinch < -2)
+				voyc.geosketch.world.zoom(voyc.spin.OUT)
+			else if (pinch > 2)
+				voyc.geosketch.world.zoom(voyc.spin.IN)
+		}
+		voyc.$('whereami').innerHTML = twist
+		if (twist) {
+			if (twist < -2)
+				voyc.geosketch.world.spin(voyc.spin.CCW)
+			else if (twist > 2)
+				voyc.geosketch.world.spin(voyc.spin.CW)
+		}
 	}
 }
+
+// -------- global constants
 
 voyc.mouse = {
 	left: 0,

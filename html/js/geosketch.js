@@ -85,7 +85,6 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.hud = new voyc.Hud();
 	this.hud.buttons = [1]  // middle
 	this.hud.setup(document.getElementById('hud'))
-	this.hud.attach()
 
 	this.keyboard = new voyc.Keyboard();
 	this.keyboard.listenForEvents([
