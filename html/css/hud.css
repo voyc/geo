@@ -34,20 +34,27 @@ icon {
 #menubtn {
 	left:0;
 	top:0;
-	xmargin-left:.5rem;
-	xmargin-top:.5rem;
+}
+#userbtn {
+	position:fixed;
+	right:0;
+	top:0;
 }
 #layerbtn {
 	position:absolute;
 	left:0;
 	bottom:3rem;
-	xmargin-left:.5rem;
+}
+#layerbtn.mobile {
+	bottom:0rem;
+}
+#projectbtn.mobile {
+	right:0rem;
 }
 #projectbtn {
 	position:absolute;
 	bottom:0rem;
 	right:4rem;
-	xmargin-bottom:.5rem;
 }
 #layermenu {
 	display:table;
@@ -84,6 +91,9 @@ icon {
 #announcedone {
 	position:fixed;
 	bottom:5px;
+}
+#whereami.mobile {
+	display:none;
 }
 #whereami {
 	left:0;
@@ -126,6 +136,9 @@ icon {
     font-family: 'Glass Gauge';
     src: url('GlassGauge.ttf');
 }
+#mapzoom.mobile {
+	display:none;
+}
 #mapzoom {
 	right:0;
 	bottom:0;
@@ -138,7 +151,7 @@ icon {
 
 #chronometer {
 	bottom:0;
-	left:calc(50% - 5em);
+	left:calc(50% - 125px);
 	width:250px;
 }
 #time {
@@ -147,7 +160,9 @@ icon {
 	width:178px;
 }
 #timeslider {
-	width:100%;
+	width: calc(100% - 1rem);
+	position: absolute;
+	bottom: 0rem;
 }
 
 .fade {

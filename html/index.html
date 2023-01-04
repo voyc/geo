@@ -63,6 +63,7 @@
 		<div id='world' class='full'></div>
 		<div id='hud' class='full'>
 			<button g id='menubtn' open='main-menu'><img src='i/menu_black_24dp.png' title='menu'/></button>
+			<button g id='userbtn' open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
 
 			<div class='hud hidden' id='label'></div>
 
@@ -114,8 +115,6 @@
 			<div><button g id='cancel_btn' class='editbtn' title='Cancel sketch'><img src='i/xcancel_black_24.png'/></button></div> 
 		</nav>
 		<nav id='main-menu' initially hidden class='panel popup leftnav blu'>
-			<p><button open='user-dialog'><icon type='draw' name='user' class='bit'></icon></button>
-			   <button open='user-dialog' class='anchor'> User Account</button></p>
 			<p><button open='options-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			   <button open='options-dialog' class='anchor'> Settings</button></p>
 			<p><button id='aboutbtn' class='anchor'> About</button></p>
@@ -155,7 +154,7 @@
 				<button g id='sketchpalettebtn' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div> 
 			<div><span><button class='anchor' id='newlayer'>New...</a></span></div>
 		</nav>
-		<aside id='user-dialog' initially hidden class='panel popup leftnav blu'>
+		<aside id='user-dialog' initially hidden class='panel popup dropdown blu'>
 			<p><button close class='anchor' request='logout'        >Logout</button></p>
 			<p><button close class='anchor' request='forgotpassword'>Forgot Password</button></p>
 			<p><button close class='anchor' request='changeusername'>Change Username</button></p>

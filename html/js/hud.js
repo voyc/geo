@@ -345,7 +345,8 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	}, false)
 
 	if (voyc.isMobile())
-		voyc.show(voyc.$('mapzoom'), false)
+		for (var id of ['mapzoom','projectbtn', 'layerbtn','whereami'])
+			voyc.$(id).classList.add('mobile')
 }
 
 // five ways to zoom, to call world.setScale()
