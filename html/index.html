@@ -32,6 +32,7 @@
 		<script src='icon/lib/gear.js'></script>
 		<script src='icon/lib/user.js'></script>
 		<script src='icon/lib/spinner.js'></script>
+		<script src='icon/lib/help.js'></script>
 		<script src='jslib/utils.js'></script>
 		<script src='jslib/comm.js'></script>
 		<script src="jslib/observer.js"></script>
@@ -117,10 +118,13 @@
 			<div><button g id='cancel_btn' class='editbtn' title='Cancel sketch'><img src='i/xcancel_black_24.png'/></button></div> 
 		</nav>
 		<nav id='main-menu' initially hidden class='panel popup leftnav blu'>
+			<p><svg viewBox="0 0 550 200" xmlns="http://www.w3.org/2000/svg"><defs><mask id="cut-out"><rect id="bg" x="0" y="0" width="100%" height="100%" fill="#fff"/><rect x="0" y="0"   width="600" height="49" fill="#000" /><rect x="0" y="149" width="180" height="29" fill="#000" /><rect x="0" y="180" width="600" height="20" fill="#000" /><path d="M450 88 L520 88 L520 140" fill="#000" /></mask></defs><g stroke="#000" stroke-width="30" fill="none" mask="url(#cut-out)"><path d="M 50 40 L 85 160 M 79 150 L164 30"/><path d="M290 40 L330 149 M290 190 L410 30"/><ellipse cx="217" cy="100" rx="38" ry="36"/><ellipse cx="460" cy="100" rx="38" ry="36"/></g></svg></p>
+
 			<p><button open='options-dialog'><icon type='draw' name='gear' class='bit'></icon></button>
 			   <button open='options-dialog' class='anchor'> Settings</button></p>
-			<p><button id='aboutbtn' class='anchor'> About</button></p>
-			<p><a id='helpbtn' href='https://curriculum.voyc.com/doku.php?id=geosketch_user_guide' target='new' class='anchor'> User Guide</a></p>
+
+			<p><button ><img src='i/question_black_24.png' /></button>
+			   <a href='https://curriculum.voyc.com/doku.php?id=geosketch_user_guide' target='new' class='anchor'> User Guide</a></p>
 		</nav>
 		<aside id='options-dialog' initially hidden class='panel popup leftnav blu'>
 			<p><label for='option-showid'><input id='option-showid' type='checkbox' /> Show Ids</label></p>
