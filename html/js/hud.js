@@ -33,7 +33,7 @@ voyc.Hud = function() {
 	this.angle = false
 	this.pttouchstart = false
 
-	this.tool = 'move'
+	this.tool = 'point'
 }
 
 voyc.Hud.prototype.resize = function(w, h) {
@@ -232,16 +232,19 @@ voyc.Hud.prototype.setTool = function(newtool) {
 	voyc.$(this.tool + '_btn').classList.add('down')	
 
 	// change the cursor
-	var e = voyc.$('hud')
-	for (var tool of voyc.tools)
-		e.classList.remove(tool)
-	e.classList.add(this.tool)
+	this.setCursor(newtool)
 
 	// show/hide the edit bar
 	if (this.tool == 'sketch')
 		voyc.$('editbar').classList.remove('hidden')	
 	else
 		voyc.$('editbar').classList.add('hidden')	
+}
+voyc.Hud.prototype.setCursor = function(newcursor) {
+	var e = voyc.$('hud')
+	for (var cursor of voyc.cursors)
+		e.classList.remove(cursor)
+	e.classList.add(newcursor)
 }
 
 voyc.Hud.prototype.setupEditBar = function() {
@@ -448,13 +451,14 @@ voyc.Hud.prototype.getMousePt = function(evt) {
 	
 voyc.Hud.prototype.onmousedown = function(evt) {
 	if (hudlog) console.log(['hud','mousedown',evt.target.id,evt.currentTarget.id])
+	this.unHit()
 	if (evt.target.id != 'hud')
 		return (hudlog)&&console.log(['ignored','hud','mousedown',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 	this.dragPrev = this.getMousePt(evt)
 	this.mousebuttondown = evt.button
 	
-	if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
+	if ((this.tool == 'point') || (this.mousebuttondown == voyc.mouse.middle))
 		voyc.geosketch.world.grab()
 }
 
@@ -464,8 +468,10 @@ voyc.Hud.prototype.onmousemove = function(evt) {
 	var pt = this.getMousePt(evt)
 	this.showWhereami(pt)
 	if (this.dragPrev) {
-		if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
+		if ((this.tool == 'point') || (this.mousebuttondown == voyc.mouse.middle)) {
 			voyc.geosketch.world.drag(pt, this.dragPrev);
+			this.setCursor('move')
+		}
 		else if (this.tool == 'sketch')
 			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
 		this.dragPrev = pt
@@ -482,18 +488,19 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	evt.preventDefault(); evt.stopPropagation()
 	var pt = this.getMousePt(evt)
 	var click = !(this.mousemoved)
-	if ((this.tool == 'move') || (this.mousebuttondown == voyc.mouse.middle))
-		if (click)
-			voyc.geosketch.world.moveToPoint(pt)
-		voyc.geosketch.world.drop()
-	if (this.tool == 'point' || evt.shiftKey) {
-		var s = voyc.geosketch.world.testHit(pt)
-		if (s)
-			this.showLabel(pt,s)
+
+	//if ((this.tool == 'point') || evt.shiftKey) {
+	if (this.dragPrev) {
+		if (click) {
+			var s = voyc.geosketch.world.testHit(pt)
+			if (s) this.showLabel(pt,s)
+		}
 	}
+	voyc.geosketch.world.drop()
 	if (this.tool == 'sketch')
 		if (click)
 			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
+	this.setCursor('point')
 	this.dragPrev = false
 	this.mousebuttondown = false
 	this.mousemoved = false
@@ -685,8 +692,14 @@ voyc.mouse = {
 	right: 2,
 }
 
-voyc.tools = ['move','sketch','point','measure']
+voyc.cursors = ['point','move','sketch','point','measure']
+voyc.tools = ['point','sketch','measure']
 // this.tool
 // tool button id: move_btn, sketch_btn, etc
 // #hud.classname with cursor setting
+// move and point have been combined into one tool named 'point'
+
+//tool cursor
+//setTool('point', 'point')
+//setTool('point', 'move')
 

@@ -102,7 +102,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.world.setScale() // to set the zoomer, forces a render
 	this.hud.setCo(this.world.co, this.world.gamma)
 	this.hud.setTime(this.world.time.now)
-	this.hud.setTool('move')
+	this.hud.setTool('point')
 
 	if (this.options.animation)
 		this.game.start()

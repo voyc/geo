@@ -1,6 +1,6 @@
 #hud.move   { cursor:move; }
-#hud.sketch { cursor:default; }
 #hud.point  { cursor:pointer; }
+#hud.sketch { cursor:default; }
 #hud.measure{ cursor:ew-resize; }
 
 .toolbtn.down { background-color:yellow; }
