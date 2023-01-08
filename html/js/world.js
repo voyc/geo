@@ -15,8 +15,8 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains']
-	this.hitlayers = ['custom01','rivers','lakes','deserts','mountains','empire']
+	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities']
+	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
 	this.scale = {}
 
@@ -476,6 +476,8 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('rivers'    ,'Rivers'    ,'rivers'    ,false ,'scale'  ,false       ,6)
 	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
 	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
+	createLayerCanvas('cities'    ,'Cities'    ,'cities'    ,false ,'scale'  ,false       ,0)
+	createLayerCanvas('countries' ,'Countries' ,'countries' ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
@@ -604,6 +606,8 @@ voyc.World.prototype.drawWorld = function() {
 			this.drawLayer('mountains')
 			this.drawRiver()
 			this.drawLayer('lakes')
+			this.drawLayer('cities')
+			this.drawLayer('countries')
 			this.drawEmpire()
 		}
 	}
@@ -795,38 +799,47 @@ voyc.defaultScale = {
 	spinStep: 6,
 }
 voyc.defaultPalette = {
-	bkgrd: [{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,  0], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
-	water: [{scale:5000, stroke:false,         pen:.5, fill:[111,166,207], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
-	land:  [{scale:5000, stroke:false,         pen:.5, fill:[216,218,178], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+	bkgrd: [{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,  0], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+	water: [{scale:5000, stroke:false,         pen:.5, fill:[111,166,207], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+	land:  [{scale:5000, stroke:false,         pen:.5, fill:[216,218,178], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	grid:  [
-		{scale: 300, stroke:[255,255,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 900, stroke:[255,255,255], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 300, stroke:[255,255,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 900, stroke:[255,255,255], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	empire:[
-		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:.5, fill:[255,255,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,255,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	rivers: [
-		{scale: 242, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 531, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 897, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1329, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1969, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:2904, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 242, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 531, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 897, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:1329, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:1969, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:2904, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	lakes: [{scale:5000, stroke:false,         pen:2 , fill:[  0,  0,255]},],
-       deserts:[{scale:5000, stroke:false,         pen:2 , fill:[ 96, 96,  0], pat:false, patfile:'deserts'     ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+       deserts:[{scale:5000, stroke:false,         pen:2 , fill:[ 96, 96,  0], pat:false, patfile:'deserts'     ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	mountains:[
-		{scale: 300, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_1' ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_2' ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 300, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_1' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:1000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_2' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
-	hilite:[{scale:5000, stroke:[255,  0,  0], pen:10, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
-	custom:[{scale:5000, stroke:[255,  0,255], pen: 5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
-	sketch:[{scale:5000, stroke:[  0,  0,  0], pen: 1, fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen: 1, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,  0]},],
+	hilite:[{scale:5000, stroke:[255,  0,  0], pen:10, dash:false ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
+	custom:[{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
+	sketch:[{scale:5000, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen: 1, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,  0]},],
+     countries:[{scale:5000, stroke:[128,128,128], pen:.5, dash:[5,5] ,fill:false        , pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
+	cities:[
+		{scale: 242, stroke:[  0,  0,  0], pen: 3, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:6, ptStroke:[  0,  0,  0], ptPen: 3, ptFill:[  0,  0,128]},
+		{scale: 531, stroke:[  0,  0,  0], pen: 2, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 2, ptFill:[  0,  0,128]},
+		{scale: 897, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:4, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,280]},
+		{scale:1329, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:3, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+		{scale:1969, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:2, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+	],
 }

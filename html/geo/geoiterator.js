@@ -239,6 +239,7 @@ voyc.GeoIteratorClip.prototype.draw = function(paletteNdx) {
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.strokeStyle = palette.stroke
 	this.ctx.lineWidth = palette.pen
+	if (palette.dash) this.ctx.setLineDash(palette.dash)
 	if (palette.fill) this.ctx.fill()
 	if (palette.stroke) this.ctx.stroke()
 }
@@ -317,10 +318,21 @@ voyc.GeoIteratorClip.prototype.doPoint = function(co, within, ndx) {
 }
 
 voyc.GeoIteratorClip.prototype.drawPoint = function(pt, within, ndx) {
-	var palette = this.palette[0]
-	var radius = this.palette[0].ptRadius
-	this.ctx.arc(pt[0],pt[1], radius, 0, 2*Math.PI, false)
-	this.ctx.beginPath()
+	//var palette = this.palette[0]
+	//var radius = this.palette[0].ptRadius
+	//this.ctx.arc(pt[0],pt[1], radius, 0, 2*Math.PI, false)
+	//this.ctx.beginPath()
+
+	var palette = this.palette[this.paletteNdx]
+	this.ctx.moveTo(pt[0]+palette.ptRadius-1,pt[1]+palette.ptRadius-1)
+	this.ctx.arc(pt[0],pt[1], palette.ptRadius, 0, 2*Math.PI, false)
+	//this.ctx.lineWidth = palette.ptPen
+	//this.ctx.strokeStyle = palette.ptStroke
+	//this.ctx.fillStyle = palette.ptFill
+	//if (palette.ptStroke) this.ctx.stroke()
+	//if (palette.ptFill) this.ctx.fill()
+	//this.ctx.beginPath()
+	return true
 }
 voyc.GeoIteratorClip.prototype.findTangent = function(ob,oc,ctr,r) {
 	var dθ = oc.θ - ob.θ;
@@ -400,8 +412,20 @@ voyc.GeoIteratorScale.prototype.geometryStart = function(geometry) {
 		this.ctx.beginPath()
 	}
 	this.prevScaleRank = geometry.scalerank
+
+	this.paletteNdx = this.calcPaletteIndex(this.scalerank, geometry.scalerank, this.palette.length)
 	return true
 }
+
+voyc.GeoIteratorScale.prototype.calcPaletteIndex = function(zoomScaleRank, geomScaleRank, maxScaleRank) {
+		var paletteNdx = 0
+		if (geomScaleRank) {
+			var adj = maxScaleRank - zoomScaleRank   // value 5-0
+			var paletteLevel = geomScaleRank + adj  // 1-6
+			var paletteNdx = paletteLevel - 1  // 0-5
+		}
+		return paletteNdx
+	}
 
 voyc.GeoIteratorScale.prototype.draw = function(geomScaleRank) {
 	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {

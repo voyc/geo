@@ -216,8 +216,8 @@ voyc.GeoSketch.prototype.resize = function (evt) {
 	var w = document.body.clientWidth 
 	var h = document.body.clientHeight
 	voyc.$('option-dim').innerHTML = w+' x '+h
-	
 	this.world.resize(w,h)
+	this.hud.resize(w,h)
 }
 
 // -------- startup events

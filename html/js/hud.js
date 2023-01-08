@@ -36,6 +36,14 @@ voyc.Hud = function() {
 	this.tool = 'move'
 }
 
+voyc.Hud.prototype.resize = function(w, h) {
+	for (var id of ['mapzoom','projectbtn', 'layerbtn','whereami'])
+		if (w < 500)
+			voyc.$(id).classList.add('mobile')
+		else
+			voyc.$(id).classList.remove('mobile')
+}
+
 voyc.Hud.prototype.setup = function(elem) {
 	this.elem = elem;
 	this.menuIsOpen = false;
@@ -49,6 +57,9 @@ voyc.Hud.prototype.setup = function(elem) {
 	this.attachKeyboard()
 	this.attachTouch()
 	this.attachMouse()
+	var w = document.body.clientWidth 
+	var h = document.body.clientHeight
+	this.resize(w,h)
 }
 
 voyc.Hud.prototype.closeModal = function(note) {
@@ -343,10 +354,6 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
 		voyc.geosketch.world.zoom(voyc.spin.OUT)	
 	}, false)
-
-	if (voyc.isMobile())
-		for (var id of ['mapzoom','projectbtn', 'layerbtn','whereami'])
-			voyc.$(id).classList.add('mobile')
 }
 
 // five ways to zoom, to call world.setScale()
