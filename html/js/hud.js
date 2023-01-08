@@ -101,9 +101,9 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 
 voyc.Hud.prototype.attachButtons = function() {
 	var self = this
-//	document.getElementById('aboutbtn').addEventListener('click', function(evt) {
-//		self.announce('about screen')
-//	}, false);
+	document.getElementById('helpbtn').addEventListener('click', function(evt) {
+		voyc.$('helplnk').click()
+	}, false);
 
 	document.getElementById('announcedone').addEventListener('click', function(evt) {
 		evt.stopPropagation();
