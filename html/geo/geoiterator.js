@@ -453,7 +453,9 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 	this.ret = false
 	this.projection = add[0]
 	this.mousept = add[1]
-	var size = 15
+	this.time = add[2]
+	this.scalerank = add[3]
+	var size = 7
 	this.mouserect = {
 		w:this.mousept[0]-size,
 		e:this.mousept[0]+size,
@@ -468,9 +470,18 @@ voyc.GeoIteratorHitTest.prototype.collectionStart = function(collection, add) {
 }
 
 voyc.GeoIteratorHitTest.prototype.geometryStart = function(geometry) {
-	this.ptPrev = false
+	// qualify by scalerank
+	if (geometry.scalerank > this.scalerank)
+		return 0  // disqualified. skip this geom but keep going
+
 	if (!geometry.name) // don't hit anything that doesn't have a name, like grid lines
 		return 0
+	if (geometry.b)
+		if ((geometry.b < this.time) && (this.time < geometry.e))
+			;
+		else
+			return 0
+	this.ptPrev = false
 	return true 
 }
 voyc.GeoIteratorHitTest.prototype.lineStart = function(geometry) {
@@ -782,5 +793,19 @@ voyc.GeoIteratorCustom.prototype.polygonEnd = function() {
 	if (palette.stroke) this.ctx.stroke()
 	if (palette.fill) this.ctx.fill()
 	this.ctx.beginPath()
+}
+
+// -------- Hilite
+
+voyc.GeoIteratorHilite = function() {
+	voyc.GeoIteratorClip.call(this) // super
+}
+voyc.GeoIteratorHilite.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
+
+voyc.GeoIteratorHilite.prototype.drawPoint = function(pt, within, ndx) {
+	var palette = this.palette[0]
+	this.ctx.moveTo(pt[0]+palette.ptRadius-1,pt[1]+palette.ptRadius-1)
+	this.ctx.arc(pt[0],pt[1], palette.ptRadius, 0, 2*Math.PI, false)
+	return true
 }
 

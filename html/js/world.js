@@ -380,6 +380,7 @@ voyc.World.prototype.setupIterators = function() {
 	this.iterator['empire']  = new voyc.GeoIteratorEmpire()
 	this.iterator['sketch']  = new voyc.GeoIteratorSketch()
 	this.iterator['custom']  = new voyc.GeoIteratorCustom()
+	this.iterator['hilite']  = new voyc.GeoIteratorHilite()
 }
 
 voyc.World.prototype.setupLayers = function() {
@@ -478,7 +479,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
 	createLayerCanvas('cities'    ,'Cities'    ,'cities'    ,false ,'scale'  ,false       ,0)
 	createLayerCanvas('countries' ,'Countries' ,'countries' ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'hilite' ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
 
@@ -547,11 +548,17 @@ voyc.World.prototype.stepFrame = function() {
 voyc.World.prototype.testHit = function(pt) {
 	var ret = false
 	var geom = false
+
 	for (i=0; i<this.hitlayers.length; i++) {
-		var layer = this.layer[this.hitlayers[i]]
-		geom =  this.iterator['hittest'].iterateCollection(layer.data, this.projection, pt)
-		if (geom)
-			break
+		var id = this.hitlayers[i]
+		var layer = this.layer[id]
+		if (layer.enabled) {
+			// rivers, mountains and cities have scalerank, each with a different value
+			var zoomScaleRank = this.calcRank(id) 
+			geom =  this.iterator['hittest'].iterateCollection(layer.data, this.projection, pt, this.time.now, zoomScaleRank)
+			if (geom)
+				break
+		}
 	}
 
 	if (geom)
@@ -830,7 +837,7 @@ voyc.defaultPalette = {
 		{scale:1000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_2' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 		{scale:5000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
-	hilite:[{scale:5000, stroke:[255,  0,  0], pen:10, dash:false ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
+	hilite:[{scale:5000, stroke:[255,  0,  0], pen: 5, dash:false ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
 	custom:[{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 	sketch:[{scale:5000, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen: 1, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,  0]},],
      countries:[{scale:5000, stroke:[128,128,128], pen:.5, dash:[5,5] ,fill:false        , pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],

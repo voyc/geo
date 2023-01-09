@@ -161,7 +161,12 @@ voyc.Hud.prototype.attachTimeSlider = function() {
 }
 
 voyc.Hud.prototype.attachKeyboard = function() {
+	var self = this
 	window.addEventListener('keydown', function(evt) {
+		if (evt.keyCode == voyc.Key.ESC) {
+			self.unHit()
+			return
+		}
 		if (evt.keyCode == voyc.Key.C && evt.altKey) {
 			return
 		}
@@ -194,12 +199,12 @@ voyc.Hud.prototype.attachKeyboard = function() {
 			}
 		}
 		evt.preventDefault();
-		this.keyIsDown = true;
+		self.keyIsDown = true;
 	}, false);
 
 	window.addEventListener('keyup', function(evt) {
-		if (this.keyIsDown) {
-			this.keyIsDown = false;
+		if (self.keyIsDown) {
+			self.keyIsDown = false;
 			evt.preventDefault();
 		}
 	}, false);
