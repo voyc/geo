@@ -103,39 +103,36 @@ voyc.AccountView.prototype.closeModal = function(note) {
 // refresh the header and dialogs
 voyc.AccountView.prototype.refresh = function(note) {
 	this.uname = note.payload['uname'] || '';
-return
+
 	// refresh header
 	var x = voyc.getAuth();
+	console.log(['auth', x])
+
 	switch (x) {
 		case 'anonymous'   :
-			voyc.$('loggedinuser').innerHTML = '';
-			voyc.$('headeruser').style.display = 'table-cell';
-			voyc.$('headerlogin').style.display = 'inline-block';
+			voyc.$('loggedinuser').innerHTML = 'Welcome!';
+			voyc.$('headerlogin').style.display = 'block';
 			voyc.$('headerlogout').style.display = 'none';
 		break;
 		case 'registered'  :
 			voyc.$('loggedinuser').innerHTML = this.uname;
-			voyc.$('headeruser').style.display = 'table-cell';
 			voyc.$('headerlogin').style.display = 'none';
-			voyc.$('headerlogout').style.display = 'inline-block';
+			voyc.$('headerlogout').style.display = 'block';
 		break;
 		case 'resetpending':
 			voyc.$('loggedinuser').innerHTML = this.uname;
-			voyc.$('headeruser').style.display = 'table-cell';
 			voyc.$('headerlogin').style.display = 'none';
-			voyc.$('headerlogout').style.display = 'inline-block';
+			voyc.$('headerlogout').style.display = 'block';
 		break;
 		case 'verified'    :
 			voyc.$('loggedinuser').innerHTML = this.uname;
-			voyc.$('headeruser').style.display = 'table-cell';
 			voyc.$('headerlogin').style.display = 'none';
-			voyc.$('headerlogout').style.display = 'inline-block';
+			voyc.$('headerlogout').style.display = 'block';
 		break;
 		case 'emailpending':
 			voyc.$('loggedinuser').innerHTML = this.uname;
-			voyc.$('headeruser').style.display = 'table-cell';
 			voyc.$('headerlogin').style.display = 'none';
-			voyc.$('headerlogout').style.display = 'inline-block';
+			voyc.$('headerlogout').style.display = 'block';
 		break;
 	}
 	

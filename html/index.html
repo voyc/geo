@@ -76,8 +76,7 @@
 
 			<!-- <button g id='toolbtn' open='toolbar'><img src='i/wrench_black_24.png' title='layers'/></button> -->
 			<button g id='layerbtn' open='layermenu'><img src='i/layers_black_24.png' title='layers'/></button>
-			<div class='hud' id='whereami'>
-			</div>
+			<div class='hud' id='whereami'></div>
 
 			<div class='hud' id='chronometer'>
 				<input id='timeslider' type='range' />
@@ -168,12 +167,14 @@
 			<div><span><button class='anchor' id='newlayer'>New...</a></span></div>
 		</nav>
 		<aside id='user-dialog' initially hidden class='panel popup dropdown blu'>
-			<p><button close class='anchor' request='logout'        >Logout</button></p>
+			<p id='loggedinuser'></p>
+			<p id='headerlogin'><button close class='anchor' request='login'        >Login</button></p>
+			<p id='headerregister'><button close class='anchor' request='register'     >Register</button></p>
+			<p id='headerlogout'><button close class='anchor' request='logout'        >Logout</button></p>
 			<p><button close class='anchor' request='forgotpassword'>Forgot Password</button></p>
 			<p><button close class='anchor' request='changeusername'>Change Username</button></p>
 			<p><button close class='anchor' request='changepassword'>Change Password</button></p>
 			<p><button close class='anchor' request='changeemail'   >Change Email</button></p>
-			<p><button close class='anchor' nav='profile'  >User Profile</button></p>
 		</aside>
 
 		<!-- ===== modal dialog container and forms ================ -->
