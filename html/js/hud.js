@@ -644,12 +644,9 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	// window events: touchstart, touchend, touchmove
 	// geosketch events: tap, doubletap, onefingermove, twofingermove
 	if (name == 'tap') {
-		if (this.tool == 'move')
-			voyc.geosketch.world.moveToPoint(pt)
-		else if (this.tool == 'point') {
+		if (this.tool == 'point') {
 			var s = voyc.geosketch.world.testHit(pt)
-			if (s)
-				this.showLabel(pt,s)
+			if (s) this.showLabel(pt,s)
 		}
 		else if (this.tool == 'sketch') 
 			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
@@ -659,12 +656,10 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	else if (name == 'doubletap') 
 		voyc.geosketch.sketch.finish()
 	else if (name == 'onefingermove') {
-		if (this.tool == 'move') {
+		if (this.tool == 'point') {
 			voyc.geosketch.world.drag(pt,this.ptPrev)
 			this.ptPrev = pt
 		}
-		else if (this.tool == 'point')
-			;
 		else if (this.tool == 'sketch')
 			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
 		else if (this.tool == 'measure')
@@ -697,14 +692,10 @@ voyc.mouse = {
 	right: 2,
 }
 
-voyc.cursors = ['point','move','sketch','point','measure']
-voyc.tools = ['point','sketch','measure']
+voyc.cursors = ['point','move','sketch','measure']
+voyc.tools   = ['point'       ,'sketch','measure']
 // this.tool
 // tool button id: move_btn, sketch_btn, etc
 // #hud.classname with cursor setting
 // move and point have been combined into one tool named 'point'
-
-//tool cursor
-//setTool('point', 'point')
-//setTool('point', 'move')
 
