@@ -86,13 +86,13 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.hud.buttons = [1]  // middle
 	this.hud.setup(document.getElementById('hud'))
 
-	this.keyboard = new voyc.Keyboard();
-	this.keyboard.listenForEvents([
-		voyc.Key.LEFT, 
-		voyc.Key.RIGHT, 
-		voyc.Key.UP, 
-		voyc.Key.DOWN,
-	]);
+	//this.keyboard = new voyc.Keyboard();
+	//this.keyboard.listenForEvents([
+	//	voyc.Key.LEFT, 
+	//	voyc.Key.RIGHT, 
+	//	voyc.Key.UP, 
+	//	voyc.Key.DOWN,
+	//]);
 
 	// setup sketch layer
 	this.sketch = new voyc.SketchPad(document.getElementById('sketch'),document.getElementById('hud'));

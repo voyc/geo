@@ -163,6 +163,10 @@ voyc.Hud.prototype.attachTimeSlider = function() {
 voyc.Hud.prototype.attachKeyboard = function() {
 	var self = this
 	window.addEventListener('keydown', function(evt) {
+		for (var e of evt.path) {
+			if (e.classList && e.classList.contains('dialog')) 
+				return
+		}
 		if (evt.keyCode == voyc.Key.ESC) {
 			self.unHit()
 			return
@@ -202,6 +206,7 @@ voyc.Hud.prototype.attachKeyboard = function() {
 		self.keyIsDown = true;
 	}, false);
 
+	//voyc.$('hud').addEventListener('keyup', function(evt) {
 	window.addEventListener('keyup', function(evt) {
 		if (self.keyIsDown) {
 			self.keyIsDown = false;
