@@ -1,0 +1,29 @@
+
+population can be muni, urban, or metro
+html table, 81 largest cities
+https://en.wikipedia.org/wiki/List_of_largest_cities
+
+
+
+
+html table, 781 largest cities, 2023 pop, mix of metro and muni
+https://worldpopulationreview.com/world-cities
+
+csv file, 43000 largest cities, mix of urban and muni 
+includes lng/lat, currently in use in plunder db
+https://simplemaps.com/data/world-cities
+
+natural earth, populated places
+https://www.naturalearthdata.com/http//www.naturalearthdata.com/download/110m/cultural/ne_110m_populated_places.zip
+
+
+3 csv files, chandler, modelski, historical populations of cities
+https://urbanization.yale.edu/sites/default/files/data/historicalurbanpopulationdata_1.zip
+
+pdf, paper about above dataset
+https://urbanization.yale.edu/sites/default/files/sdata201634.pdf
+
+three sources: Ian Morris, George Modelski and Tertius Chandler
+https://en.wikipedia.org/wiki/List_of_largest_cities_throughout_history
+
+
