@@ -44,8 +44,9 @@ voyc.Hud.prototype.resize = function(w, h) {
 			voyc.$(id).classList.remove('mobile')
 }
 
-voyc.Hud.prototype.setup = function(elem) {
+voyc.Hud.prototype.setup = function(elem,comm) {
 	this.elem = elem;
+	this.comm = comm;
 	this.menuIsOpen = false;
 	this.populateLayerMenu()
 	this.setupProjectBtn()
@@ -131,6 +132,11 @@ voyc.Hud.prototype.attachButtons = function() {
 		voyc.geosketch.setOption( 'fps', fps)
 		voyc.geosketch.game.maxfps = fps
 	}, false)
+
+	document.getElementById('searchbtn').addEventListener('click', function(evt) {
+		var q = voyc.$('searchq').value
+		self.onSearch(q)
+	}, false)
 }
 	
 voyc.Hud.prototype.attachTimeSlider = function() {
@@ -213,6 +219,27 @@ voyc.Hud.prototype.attachKeyboard = function() {
 			evt.preventDefault();
 		}
 	}, false);
+}
+
+// -------- search
+
+voyc.Hud.prototype.onSearch = function(q) {
+	var svcname = 'search'
+	var data = {
+		si: voyc.getSessionId(),
+		q: q,
+	}
+	var self = this
+	this.comm.request(svcname, data, function(ok, response, xhr) {
+		if (!ok)
+			response = { 'status':'system-error'};
+		self.onSearchResults(response);
+	});
+	voyc.wait()
+}
+
+voyc.Hud.prototype.onSearchResults = function(response) {
+	console.log('search results')
 }
 
 // -------- tool bars
