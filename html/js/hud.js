@@ -223,11 +223,11 @@ voyc.Hud.prototype.attachKeyboard = function() {
 
 // -------- search
 
-voyc.Hud.prototype.onSearch = function(q) {
+voyc.Hud.prototype.onSearch = function(kw) {
 	var svcname = 'search'
 	var data = {
 		si: voyc.getSessionId(),
-		q: q,
+		kw: kw,
 	}
 	var self = this
 	this.comm.request(svcname, data, function(ok, response, xhr) {
@@ -240,6 +240,9 @@ voyc.Hud.prototype.onSearch = function(q) {
 
 voyc.Hud.prototype.onSearchResults = function(response) {
 	console.log('search results')
+
+	//hilite by id
+	//label the name and id
 }
 
 // -------- tool bars

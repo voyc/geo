@@ -13,6 +13,7 @@ require_once('account/lib/log.php');
 writeHeader();
 
 $supported_svcs = array(
+	'search',
 	'getprofile',
 	'setprofile'
 );
