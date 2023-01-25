@@ -103,6 +103,8 @@ voyc.GeoIterator.prototype.iterateGeometry = function(geometry) {
 		boo = false
 	else if (geostat === true) {   // process this geom
 		boo = true
+		if (!geometry)
+			debugger;
 		var coordinates = geometry['coordinates']
 		var len = coordinates.length
 		var i = -1

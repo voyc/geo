@@ -562,11 +562,7 @@ voyc.World.prototype.testHit = function(pt) {
 	}
 
 	if (geom)
-		this.drawHilite(geom)
-		ret = geom.name
-		if (voyc.geosketch.getOption('showid') && geom.id)
-			ret += ' ('+geom.id+')'
-	return ret
+		this.drawHilite(geom, pt)
 }
 
 // --------  drawing
@@ -705,10 +701,18 @@ voyc.World.prototype.drawRiver = function() {
 			i)
 }
 
-voyc.World.prototype.drawHilite = function(geom) {
+voyc.World.prototype.drawHilite = function(geom, pt) {
 	this.enableLayer('hilite', true)
 	voyc.data.hilite.geometries = [geom]
 	this.drawLayer('hilite')
+
+	var s = `${geom.name}, ${geom.fc}`
+	if (voyc.geosketch.getOption('showid') && geom.id)
+		s += ' ('+geom.id+')'
+
+	var pt = pt || this.projection.project([parseFloat(geom.lng), parseFloat(geom.lat)])
+
+	voyc.geosketch.hud.showLabel(pt, s)
 }
 voyc.World.prototype.clearHilite = function() {
 	this.enableLayer('hilite', false)
@@ -850,3 +854,47 @@ voyc.defaultPalette = {
 		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 	],
 }
+
+voyc.World.prototype.getGeom = function(id,fc) {
+	var layer = voyc.feature2layer[fc]
+	if (!layer)
+		return false
+	for (var geom of voyc.data[layer].geometries)
+		if (geom.id == id)
+			return geom
+	return false 
+}
+
+voyc.feature2layer = {
+	'alkaline lake'   : 'lakes',
+	'basin'           : '',
+	'canal'           : 'rivers',
+	'coast'           : '',
+	'continent'       : '',
+	'delta'           : 'lakes',
+	'depression'      : '',
+	'desert'          : 'deserts',
+	'drangons-be-here': '',
+	'empire'          : 'empire',
+	'foothills'       : '',
+	'geoarea'         : '',
+	'gorge'           : '',
+	'island'          : '',
+	'island group'    : '',
+	'isthmus'         : '',
+	'lake'            : 'lakes',
+	'lake centerline' : 'rivers',
+	'lowland'         : '',
+	'pen/cape'        : '',
+	'peninsula'       : '',
+	'plain'           : '',
+	'plateau'         : '',
+	'range/mtn'       : 'mountains',
+	'reservoir'       : '',
+	'river'           : 'rivers',
+	'treasure'        : '',
+	'tundra'          : '',
+	'valley'          : '',
+	'wetlands'        : '',
+}
+

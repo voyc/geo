@@ -20,14 +20,18 @@ function search() {
 		return $a;
 	}
 
-	// read profile for logged-in user
+	// search, build layer of results
 	$id = '';
 	$name = '';
 	$pid = '';
 	$qname = 'query-search';
-	//$sql = "select id, name, pid, fc from plunder.names where lower(name) like $1;";
-	$sql = "select id, name, featureclass, scalerank, timebegin, timeend ";
-	$sql .= "from plunder.plunder where lower(name) like $1;";
+
+	$sql = 'select id, name, featureclass, scalerank, timebegin, timeend, ';
+	$sql .= 'substring(st_geometrytype(geom) from 4) as type, ';
+	$sql .= "substring(trim(both '{}' from st_asgeojson(geom,5)) from length(geometrytype(geom))+25) as coords, ";
+	$sql .= 'st_x(st_centroid(geom)) as lng, st_y(st_centroid(geom)) as lat ';
+	$sql .= 'from plunder.plunder where lower(name) like $1;';
+
 	$params = array($kw.'%');
 	$result = execSql($conn, $qname, $sql, $params, false);
 	if ($result) {
@@ -40,8 +44,13 @@ function search() {
 			$match['name']= $row['name'];
 			$match['fc']  = $row['featureclass'];
 			$match['sr']  = $row['scalerank'];
+			$match['c']   = $row['c'];
 			$match['b']   = $row['timebegin'];
 			$match['e']   = $row['timeend'];
+			$match['type']   = $row['type'];
+			$match['coordinates'] = $row['coords'];
+			$match['lng'] = $row['lng'];
+			$match['lat'] = $row['lat'];
 			$matches[] = $match;
 		}
 	}

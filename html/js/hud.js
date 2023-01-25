@@ -240,10 +240,68 @@ voyc.Hud.prototype.onSearch = function(kw) {
 
 voyc.Hud.prototype.onSearchResults = function(response) {
 	console.log('search results')
+	voyc.closePopup()
 
-	//hilite by id
-	//label the name and id
+	for (geom of response.matches)
+		geom.coordinates = JSON.parse(geom.coordinates)
+
+	if (response.matches.length > 1)
+		this.onMultiMatch(response.matches)
+	else 
+		voyc.geosketch.world.drawHilite(response.matches[0])
 }
+
+voyc.Hud.prototype.onMultiMatch = function(matches) {
+	voyc.data.search = matches
+	voyc.openPopup('multimatch')
+	//set headline n objects matching 'ku...'
+	var emenu = voyc.$('matchmenu')
+	var s = ''
+	for (var match of matches) {
+		s += `<p><input id='${match.id}-${match.fc}' type='button' value='${match.name}, ${match.fc} (${match.id})' class='anchor'/></p>`
+	}
+	emenu.innerHTML = s
+	var self = this
+	for (var e of emenu.childNodes) {
+		e.addEventListener('click', function(evt) {
+			function geomNdx(id) {
+				var n = 0
+				for (g of voyc.data.search) {
+					if (g.id == id)
+						return n
+					n += 1
+				}
+				return false
+			}
+			voyc.closePopup()
+			var a = evt.target.id.split('-')
+			var id = parseInt(a[0])
+			var fc = a[1]
+			//self.hiLite(id, fc)
+			var x = geomNdx(id)
+			voyc.geosketch.world.drawHilite(voyc.data.search[geomNdx(id)])
+		}, false)
+	}
+}
+
+voyc.Hud.prototype.goto = function(geom) {
+	//spin, scale as necessary to bring geom onscreen
+}
+
+//voyc.Hud.prototype.hiLite = function(inp, fc) {
+//	var geom = inp
+//	console.log(`hilite ${geom}`)
+//	if (Number.isInteger(inp))
+//		geom = voyc.geosketch.world.getGeom(inp, fc)
+//	console.log(`geom ${geom.name}`)
+//
+//	//if (!isOnScreen(geom))
+//	//	this.goto(geom)
+//
+//
+//	//hilite by id
+//	//label the name and id
+//}
 
 // -------- tool bars
 
@@ -532,8 +590,8 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	//if ((this.tool == 'point') || evt.shiftKey) {
 	if (this.dragPrev) {
 		if (click) {
-			var s = voyc.geosketch.world.testHit(pt)
-			if (s) this.showLabel(pt,s)
+			var geom = voyc.geosketch.world.testHit(pt)
+			//if (s) this.showLabel(pt,s)
 		}
 	}
 	voyc.geosketch.world.drop()
@@ -681,7 +739,7 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	if (name == 'tap') {
 		if (this.tool == 'point') {
 			var s = voyc.geosketch.world.testHit(pt)
-			if (s) this.showLabel(pt,s)
+//			if (s) this.showLabel(pt,s)
 		}
 		else if (this.tool == 'sketch') 
 			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)

@@ -173,3 +173,7 @@ icon {
   opacity: 1;
   transition: opacity .5s linear;
 }
+#matchmenu p {
+	margin-top:0;
+	margin-bottom:0;
+}
