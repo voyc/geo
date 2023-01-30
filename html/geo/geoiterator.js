@@ -811,3 +811,43 @@ voyc.GeoIteratorHilite.prototype.drawPoint = function(pt, within, ndx) {
 	return true
 }
 
+// -------- Hires    texture map
+
+voyc.GeoIteratorHires = function() {
+	voyc.GeoIteratorClip.call(this) // super
+}
+voyc.GeoIteratorHires.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
+
+
+voyc.GeoIteratorHires.prototype.draw = function(paletteNdx) {
+	console.log('draw hires')
+
+}
+
+//	if (voyc.plunder.getOption(voyc.option.HIRES)) {
+//		var ctx = this.getLayer(voyc.layer.SLOWBACKA).ctx;
+//		ctx.clearRect(0, 0, this.w, this.h);
+//		var dst = {w:this.w, h:this.h, projection:this.projection, ctx:this.getLayer(voyc.layer.SLOWBACKA).ctx, imageData:this.getLayer(voyc.layer.SLOWBACKA).imageData};
+//		voyc.Geo.drawTexture(dst, voyc.plunder.texture);
+//	}
+
+
+//voyc.GeoIteratorHires.prototype.drawTile = function(paletteNdx) {
+//	// not in use at this time
+//	var pt = this.polygon[0]
+//	var lng = pt[0]
+//	var lat = pt[1]
+//        var slng = 'm' ? (lng < 0) : 'p'
+//        var slat = 'm' ? (lat < 0) : 'p'
+//        var alng = Math.abs(lng)
+//        var alat = Math.abs(lat)
+//	var path = 'assets/tiles/'
+//	var filename = `{path}/{slng}{alng:03d}{slat}{alat:02d}.png`
+//
+//	var img = new Image()
+//	img.onload = function() {
+//		ctx.drawImage(img,x,y,w,l)
+//	}
+//	img.src = filename 
+//}
+

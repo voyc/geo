@@ -1,0 +1,89 @@
+<!doctype html>
+<html>
+<head>
+<title>Tile Grid</title>
+<style>
+canvas {
+	position:absolute;
+	top:0;
+	left:0;
+	width:10800;
+	height:5400;
+}
+</style>
+<script>
+/**
+	Draw a grid on top of an image, 
+	before cutting it into tiles.
+*/
+
+/* google maps india tiles
+var filename = '../../../../../../media/data/other/india/india.png';
+var w = 1152;
+var h = 768;
+var tilesize = 32;
+*/
+
+/* natural earth tiles
+*/
+var filename = '../../../../media/data/natural_earth_data/raster/NE2_50M_SR_W.png';
+var w = 10800;
+var h = 5400;
+var tilesize = 300;
+
+window.addEventListener('load', function(evt) {
+	var image = document.getElementById('image');
+	var ictx = image.getContext('2d');
+	var img = new Image();
+	img.onload = function() {
+		ictx.drawImage(img, 0, 0);
+	};
+	img.src = filename;
+
+	var canvi = document.querySelectorAll('canvas');
+	for (var i=0; i<canvi.length; i++ ) {
+		canvi[i].setAttribute('width', w);
+		canvi[i].setAttribute('height', h);
+	}
+
+	var tiles = document.getElementById('tiles');
+	var ctx = tiles.getContext('2d');
+	ctx.lineWidth = .5;
+	ctx.strokeStyle = '#000';
+	drawGrid(ctx, w, h, tilesize);
+}, false);
+
+drawGrid = function(ctx, w, h, g) {
+	ctx.beginPath();
+
+	// verticals
+	for (var x = 0.5; x < w; x += g) {
+		ctx.moveTo(x, 0);
+		ctx.lineTo(x, h);
+	}
+
+	// horizontals
+	for (var y = 0.5; y < h; y += g) {
+		ctx.moveTo(0, y);
+		ctx.lineTo(w, y);
+	}
+
+	ctx.stroke();
+
+	// labels
+	ctx.font = "30px Arial";
+	var label = '';
+	for (var x=0.5,c=0; x<w; x+=g,c++) {
+		for (var y=0.5,r=0; y<h; y+=g,r++) {
+			label = 'R'+r+' C'+c;
+			ctx.fillText(label,x+(g*.4),y+(g*.4));
+		}
+	}
+}
+</script>
+</head>
+<body>
+<canvas id=image></canvas>
+<canvas id=tiles></canvas>
+</body>
+</html>

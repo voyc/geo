@@ -15,7 +15,7 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities']
+	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires']
 	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
 	this.scale = {}
@@ -32,6 +32,8 @@ voyc.World = function() {
 		sliding: false,
 		speed: 10 // years per second	
 	}
+
+	this.texture = {}
 }
 
 voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
@@ -62,6 +64,10 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
 	this.projection.scale(this.scale.now);                  // size of the circle in pixels
+
+	this.texture = new voyc.Texture()
+	//this.texture.setup('../../../../media/data/natural_earth_data/raster/NE2_50M_SR_W.png')
+	this.texture.setup('assets/texture/50mtex.png')
 }
 
 // --------  public options
@@ -274,6 +280,14 @@ voyc.World.prototype.setupData = function() {
 		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
 	}
 
+	voyc.data.hires = {
+		name: 'hires',
+		type: 'GeometryCollection',
+		geometries: [
+			{ type: 'Polygon', sr: 2, fc: 'Tile', name: 'Himalaya', coordinates: [[[80,30],[90,30],[90,20],[80,20],[80,30]]]},
+		]
+	}
+
 	// graticule
 	voyc.data.grid = {
 		'name': 'grid',
@@ -381,6 +395,7 @@ voyc.World.prototype.setupIterators = function() {
 	this.iterator['sketch']  = new voyc.GeoIteratorSketch()
 	this.iterator['custom']  = new voyc.GeoIteratorCustom()
 	this.iterator['hilite']  = new voyc.GeoIteratorHilite()
+	//this.iterator['hires' ]  = new voyc.GeoIteratorHires()
 }
 
 voyc.World.prototype.setupLayers = function() {
@@ -408,7 +423,8 @@ voyc.World.prototype.setupLayers = function() {
 		a.data = voyc.data[dataid]
 		a.palette = self.palette[dataid]  //[0]
 		a.ctx = a.e.getContext("2d")
-		if (useImageData) a.ctx.createImageData(self.w, self.h)
+		if (useImageData) 
+			a.imageData = a.ctx.createImageData(self.w, self.h);
 		self.layer[id] = a
 		if (offset) {
 			a.overlays = createLayerAnimation( id, offset)
@@ -471,6 +487,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
 	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('hires'     ,'Hi Res'    ,false       ,true  ,false    ,false       ,0)
 	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
 	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'clip'   ,false       ,0)
@@ -581,14 +598,16 @@ voyc.World.prototype.resize = function(w, h) {
 			a.ctx.canvas.height = this.h;
 			a.ctx.canvas.style.width =  this.w + 'px';
 			a.ctx.canvas.style.height = this.h + 'px';
-			//if (useImageData)
-			//	a.imageData = a.ctx.createImageData(this.w, this.h);
+			if (a.imageData) {
+				a.imageData = a.ctx.createImageData(this.w, this.h);
+			}
 		}
 		else if (a.type == 'div') {
 			a.e.style.width =  this.w + 'px';
 			a.e.style.height = this.h + 'px';
 		}
 	}
+
 	this.moved = true
 	voyc.geosketch.render(0)
 }
@@ -612,6 +631,7 @@ voyc.World.prototype.drawWorld = function() {
 			this.drawLayer('cities')
 			this.drawLayer('countries')
 			this.drawEmpire()
+			this.drawHires()
 		}
 	}
 	else if (this.time.moved)
@@ -638,6 +658,8 @@ voyc.World.prototype.drawLayer = function(id) {
 voyc.World.prototype.calcRank = function(id) {
 	// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
 	var table = this.palette[id]
+	if (!table)
+		debugger;
 	var scale = this.scale.now 
 	var rank = table.length
 	for (var r=0; r<table.length; r++) {
@@ -699,6 +721,19 @@ voyc.World.prototype.drawRiver = function() {
 			layer.palette,
 			zoomScaleRank,
 			i)
+}
+
+voyc.World.prototype.drawHires = function() {
+	console.log('draw hires')
+	layer = this.layer.hires
+	var dst = {
+		projection: this.projection,
+		imageData: layer.imageData, 
+		ctx: layer.ctx,
+		w: this.w,
+		h: this.h,
+	}
+	this.texture.draw(dst)
 }
 
 voyc.World.prototype.drawHilite = function(geom, pt) {
@@ -853,6 +888,7 @@ voyc.defaultPalette = {
 		{scale:1969, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:2, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 	],
+	hires: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:'p080m30'     ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 }
 
 voyc.World.prototype.getGeom = function(id,fc) {

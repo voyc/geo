@@ -1,0 +1,176 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test tile</title>
+
+		<style>
+			html,body {
+				padding:0;
+				margin:0;
+			}
+		</style>
+		<script>
+			var img = 'a' 
+			function drawPoly(ctx, poly) {
+				ctx.moveTo(poly[0][0], poly[0][1])
+				for (var i=1; i<poly.length; i++)
+					ctx.lineTo(poly[i][0], poly[i][1])
+				ctx.stroke()
+			}
+		//	function distortImage(ctx,img,sx,sy,sw,sh,dx,dy,dw,dl) {
+		//		// divide into discrete strips, with 1 pixel diff
+		//		
+		//		// draw from bottom to top
+
+		//		// transform horizontal scale and horizontal translateo\
+
+		//		// draw n lines
+
+
+		//		// image is square
+		//		// first transform scale both w and h 
+		//		// delta w = delta h
+
+
+		//		diffw = dw - 				
+		//		
+		//		ctx.drawImage()
+		//	}
+			function draw() {
+				// context
+				var c = document.getElementById('c')
+				c.width = 1000
+				c.height = 1000
+				var ctx = c.getContext("2d")
+
+
+	
+				//var x = 100
+				//var y = 100
+				//var w = 300
+				//var h = 300
+  
+				// transformation matrix
+				//    a  c  e
+				//  [ b  d  f ]
+				//    0  0  1 
+
+				// a1
+				ctx.transform(
+					1	, // horizontal scale, pct
+					0	, // horzontal skew, pct
+					0	, // vertical skew, pct
+					1	, // vertical scale, pct
+					100	, // horizontal translate, pixels
+					100	, // vertical translate, pixels
+				)
+				ctx.drawImage(img,0,0)
+				ctx.resetTransform()
+
+				ctx.getImageData(0,0,100,100)
+				// a2
+				ctx.transform(
+					1	, // horizontal scale, pct
+					0	, // horzontal skew, pct
+					-0.2	, // vertical skew, pct
+					1	, // vertical scale, pct
+					(500*1.1)	, // horizontal translate, pixels
+					100	, // vertical translate, pixels
+				)
+				ctx.drawImage(img,0,0)
+				ctx.resetTransform()
+
+				// b2
+				ctx.transform(
+					1	, // horizontal scale, pct
+					0	, // horzontal skew, pct
+					0	, // vertical skew, pct
+					1	, // vertical scale, pct
+					500	, // horizontal translate, pixels
+					500	, // vertical translate, pixels
+				)
+				ctx.drawImage(img,0,0)
+				ctx.resetTransform()
+
+				// b1
+				ctx.transform(
+					1	, // horizontal scale, pct
+					0	, // horzontal skew, pct
+					0	, // vertical skew, pct
+					1	, // vertical scale, pct
+					100	, // horizontal translate, pixels
+					500	, // vertical translate, pixels
+				)
+				ctx.drawImage(img,0,0)
+				ctx.resetTransform()
+
+				//transformations
+				//rotate
+				//translate
+				//scale
+				//skew
+				//? squeeze one side
+
+				// test polygons
+				var a1 = [[100,100],[400,100],[400,400],[100,400],[100,100]]
+				var a2 = [[550,100],[750,100],[800,400],[500,400],[550,100]]
+				var b1 = [[100,500],[400,500],[400,800],[100,800],[100,500]]
+				var b2 = [[570,470],[770,530],[780,830],[480,770],[570,470]]
+				drawPoly(ctx, a1)
+				drawPoly(ctx, a2)
+				drawPoly(ctx, b1)
+				drawPoly(ctx, b2)
+			}	
+		//	src = 
+
+		//	dst = {
+		//		ctx = canvas.ctx,
+		//		data = ctx.imagedata,
+		//		wid = canvas.width,
+		//		ht =  canvas.height,
+		//	}
+		//	function distortImage(ctx,src)
+		//		var src = {
+		//			img = new Image(),
+		//			lng = 80,
+		//			lat = 30,
+		//			wd = 10,
+		//			wp = 300,
+		//		}
+		//		var inc = src.wd / src.wp
+		//		for (var lng=src.lng; lng<(src.lng+src.wd); lng+=inc) {
+		//			for (var lat=src.lat; lat<src.lat+src.wd; lat+=inc) {
+		//				startlng + sc * 						
+		//				pt = [lng,lat]
+		//				co = invert(pt)
+		//				drawCoord(co)
+		//			}
+		//		}
+		//	}
+				
+			window.addEventListener('load', function(e) {
+				// source image filename
+				var lng = 80//this.polygon[0][0][0]
+				var lat = -30//this.polygon[0][0][1]
+				var slng = (lng < 0) ? 'm' : 'p'
+				var slat = (lat < 0) ? 'm' : 'p'
+				var alng = Math.abs(lng)
+				if (String(alng).length < 3) 
+					alng = '0'+String(alng)
+				var alat = Math.abs(lat)
+				var path = 'assets/tiles/'
+				var filename = `${path}${slng}${alng}${slat}${alat}.png`
+				console.log(filename)
+
+				img = new Image()
+				img.onload = draw
+				img.src = filename 
+			}, false)	
+		</script>
+	</head>
+	<body>
+		<canvas id='c'></canvas>
+	</body>
+</html>

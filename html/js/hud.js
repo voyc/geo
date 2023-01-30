@@ -391,6 +391,10 @@ voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
 
 voyc.Hud.prototype.showWhereami = function (pt) {
 	var co = voyc.geosketch.world.projection.invert(pt)
+	if (!co) {
+		voyc.$('whereami').innerHTML = ''
+		return
+	}
 	lngd = (co[0]<=0) ? '&deg;W'  : '&deg;E'
 	latd = (co[1]<=0) ? '&deg;S,&nbsp;': '&deg;N,&nbsp;'
 	lng = Math.abs(co[0].toFixed(2))

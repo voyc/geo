@@ -198,6 +198,25 @@ voyc.DualProjection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
 }
 
+voyc.DualProjection.prototype.isPointVisibleInvert = function(λ, φ) {
+	if ((Math.cos(λ) * Math.cos(φ)) > this.cr)   // cr 6.12323395736766e-17
+		return true
+
+	if (this.δφ > 0)  // equator is bowed up, southern hemisphere dominant
+	if (this.δφ < 0)  // equator is bowed down, northern hemisphere dominant 
+
+	//if (!((Math.cos(λ) * Math.cos(φ)) < 0-this.cr))
+	//	return false
+	return false
+}
+
+voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
+	var xc = this.wd/2
+	var yc = this.ht/2
+	var r = this.k
+	return (((x-xc)**2) + ((y-yc)**2) <= r**2)
+}
+
 /**
 	[x,y] = project([lng,lat])
 	project a geo coordinate onto the screen
@@ -295,8 +314,13 @@ voyc.DualProjection.prototype.project = function(co) {
 	Returns an array [longitude, latitude] given the input array [x, y]. 
 */
 voyc.DualProjection.prototype.invert = function(pt) {
-	latm = lato = 0;
-	lngm = lngo = 0;
+	if (!this.isPointInCircle(pt[0],pt[1]))
+		return false
+
+	var latm = 0
+	var lato = 0
+	var lngm = 0
+	var lngo = 0
 
 	if (this.mix != voyc.Projection.orthographic) {
 		x = pt[0] - this.pt[0]
@@ -328,8 +352,13 @@ voyc.DualProjection.prototype.invert = function(pt) {
 		λ = Math.atan2(yy * this.cosδγ + zz * this.sinδγ, xx * this.cosδφ + k * this.sinδφ); 
 		φ = this.asin(k * this.cosδφ - xx * this.sinδφ);
 	
-		var test1 = (λ > voyc.Geo.π)
-		var test2 = (λ < -voyc.Geo.π)
+		// clip to small circle
+		//var boo = this.isPointVisibleInvert(λ,φ)
+		//if (!boo) 
+		//	return false
+
+		//var test1 = (λ > voyc.Geo.π)
+		//var test2 = (λ < -voyc.Geo.π)
 		
 		λ -= this.δλ;  // δλ = -1.3962634015954636
 		λ = (λ > voyc.Geo.π) ? λ - voyc.Geo.τ : (λ < -voyc.Geo.π) ? λ + voyc.Geo.τ : λ;
