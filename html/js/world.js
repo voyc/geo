@@ -888,7 +888,7 @@ voyc.defaultPalette = {
 		{scale:1969, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:2, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 	],
-	hires: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:'p080m30'     ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
+	hires: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 }
 
 voyc.World.prototype.getGeom = function(id,fc) {

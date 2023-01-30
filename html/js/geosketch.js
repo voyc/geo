@@ -54,7 +54,7 @@ voyc.GeoSketch.prototype.setup = function () {
 		{key:'mountains_2'   ,path:path+'images/mountains_2b.png'},
 		{key:'mountains_3'   ,path:path+'images/mountains_3b.png'},
 		{key:'deserts'         ,path:path+'images/deserts.png'},
-		{key:'p080m30'         ,path:path+'tiles/p080m30.png'},
+		//{key:'p080m30'         ,path:path+'tiles/p080m30.png'},
 		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];
 	this.asset = new voyc.Asset();
