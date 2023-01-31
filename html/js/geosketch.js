@@ -42,9 +42,6 @@ voyc.GeoSketch.prototype.setup = function () {
 	// images assets
 	var path = 'assets/';
 	var list = [
-		//{key:'hero'    ,path:path+'sprites/survivor-walk-16.png'},
-		//{key:'explode' ,path:path+'sprites/explosion-1.png'},
-		{key:'tileset' ,path:path+'images/tiles.png'},
 		{key:'reddot'  ,path:path+'images/reddot.png'},
 		{key:'crosshair',path:path+'images/crosshair.png'},
 		{key:'redxbox' ,path:path+'images/red-xbox.png'},
@@ -54,7 +51,6 @@ voyc.GeoSketch.prototype.setup = function () {
 		{key:'mountains_2'   ,path:path+'images/mountains_2b.png'},
 		{key:'mountains_3'   ,path:path+'images/mountains_3b.png'},
 		{key:'deserts'         ,path:path+'images/deserts.png'},
-		//{key:'p080m30'         ,path:path+'tiles/p080m30.png'},
 		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];
 	this.asset = new voyc.Asset();
