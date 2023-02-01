@@ -1,7 +1,7 @@
 '''
   1. use soft links to point to actual media files
-	ln -s ../media/data/natural_earth_data/raster/NE2_50M_SR_W.png ../html/assets/texture/50mtex.png
-	ln -s ../media/data/natural_earth_data/raster/tiles ../html/assets/tiles
+	ln -s ~/media/data/natural_earth_data/raster/NE2_50M_SR_W.png ../html/assets/texture/50mtex.png
+	ln -s ~/media/data/natural_earth_data/raster/tiles ../html/assets/tiles
 
   2. run imageMagick program to cut the big png into tiles  
 	convert -crop 300x300 ../html/assets/texture/50mtex.png ../html/assets/tiles/tile%03d.png
@@ -13,7 +13,7 @@ import os
 path = '../html/assets/tiles'
 minlng = -180
 maxlng = +180
-minlat = -90  // north is negative
+minlat = -90  # north is negative
 maxlat = +90
 
 lng = minlng
