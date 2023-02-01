@@ -345,23 +345,52 @@ voyc.Texture.prototype.draw = function(dst) {
 //	}
 //	return list;
 
-//voyc.Texture.prototype.listTiles = function(co) {
-var listTiles = function(co) {
+voyc.Texture.prototype.composeFilename = function(lng, lat) {
+	function lzf(n,flen) {
+		var s = n.toFixed()
+		while (s.length < flen) 
+			s = '0'+s
+		return s
+	}
+	var slng = (lng < 0) ? 'm' : 'p'
+	var slat = (lat < 0) ? 'm' : 'p'
+	var alat = Math.abs(lat)
+	var alng = Math.abs(lng)
+	var name = `${slng}${lzf(alng,3)}${slat}${lzf(alat,2)}.png`
+	return name
+}
+
+voyc.Texture.prototype.loadTiles = function(list) {
+	this.path = 'assets/tiles/'
+	for (tile of list) {
+		tile.img = new Image()
+		var self = this
+		tile.img.onload = self.tileLoaded
+		tile.img.src = this.path + tile.fname
+	}
+}
+voyc.Texture.prototype.tileLoaded = function(evt) {
+	console.log(['loaded',evt,evt.path.img.currentSrc])
+}
+
+voyc.Texture.prototype.listTiles = function(co) {
 	var cc = co[0]
 	var rr = co[1]
 	var distance = 0
 	var list = []
 	for (var c=-180; c<+180; c+=10) {
-		for (var r=90; r<-90; r-=10) {
+		for (var r=-90; r<+90; r+=10) {
 			distance = Math.pow((((c-cc)**2) + ((r-rr)**2)),.5)
 			list.push({
 				distance: distance,
 				lng: c,
 				lat: r,
 				state: 'queued',
+				fname: this.composeFilename(c,r),
 			})
 		}
 	}
+	list = list.sort(function(a,b) { return a.distance - b.distance }) 
 	return list
 }
 

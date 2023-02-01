@@ -1,0 +1,67 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test tile</title>
+
+		<style>
+			html,body {
+				padding:0;
+				margin:0;
+			}
+			#a {
+				overflow:scroll;
+				overflow-anchor: none;
+			}
+			#b {
+				width:calc(36 * 22px) ;
+				height:calc(18 * 22px);
+				position:absolute;
+				left:100px;
+				top:100px;
+				border: 1px solid black;
+			}
+		</style>
+		<script>
+			var voyc = {}
+			var delay = 1
+			var tilesize = 22
+			var ul = 0
+			window.addEventListener('load', function(e) {
+				var texmap = new voyc.Texture()
+				var list = texmap.listTiles([80,30])
+				//texmap.loadTiles(list)
+				
+
+				var path = 'assets/tiles/'
+				var b = document.getElementById('b')
+				var n = 0
+				function xlng(lng) { return ((((lng+180)/10) * tilesize) + ul) }
+				function ylat(lat) { return ((((lat+ 90)/10) * tilesize) + ul) }
+				function drawDot() {
+					var row = list[n]
+					if (!row) return
+					var dot = document.createElement('img')
+					dot.style.position = 'absolute'
+					dot.style.left = (xlng(row.lng)) + 'px'
+					dot.style.top =  (ylat(row.lat)) + 'px'
+					dot.style.width = '22px'
+					dot.style.height = '22px'
+					//dot.src = 'i/yellow-dot-lg-n.gif'
+					dot.src = path + row.fname
+					b.appendChild(dot)	
+					a.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}<br/>`
+					n += 1
+					setTimeout(drawDot, delay)
+				}
+				setTimeout(drawDot, delay)
+			}, false)
+		</script>
+		<script src='js/texture.js'></script>
+	</head>
+	<body>
+		<div id='b'></div>
+		<div id='a'></div>
+	</body>
+</html>

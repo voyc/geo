@@ -13,7 +13,7 @@ import os
 path = '../html/assets/tiles'
 minlng = -180
 maxlng = +180
-minlat = -90
+minlat = -90  // north is negative
 maxlat = +90
 
 lng = minlng
