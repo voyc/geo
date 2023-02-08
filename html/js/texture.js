@@ -11,19 +11,23 @@
 	to create tiles of an image, see python/renametiles.py
 */
 
-var log = true
+var log = false 
 
 voyc.Texture = function() {
-	this.filename = ''
+	// input constants
 	this.method = '' // whole, tiled
+	this.filename = ''
+	this.w = 0
+	this.h = 0
+	this.tilesize = 0
+	this.co = [0,0]  // centerpoint on screen, tile loading spirals out from here
 	this.cb = function(){}
-
+	
+	// outputs
 	this.ready = false
-	this.projection = {}
 
-	this.imgdata = {} // this is the texture map
-	this.w = 10800
-	this.h =  5400
+	// working variables
+	this.imgdata = {}  // this is the texture map
 
 	// used to load whole image
 	this.image = {}
@@ -31,18 +35,9 @@ voyc.Texture = function() {
 	this.ctx = {}
 
 	// used to load square tiles
-	this.tilesize = 300
 	this.list = []
-	this.co = [0,0]  // centerpoint on screen, tile loading spirals out from here
-	this.numTiles = 648  // = (10800*5400) / (300**2)
 	this.numLoaded = 0
-}
-
-voyc.Texture.prototype.setup = function(filename, method, co, cb) {
-	this.filename = filename
-	this.method = method
-	this.co = co
-	this.cb = cb
+	this.numTiles = 0
 
 	this.projection = {
 		w:	this.w,
@@ -73,11 +68,27 @@ voyc.Texture.prototype.setup = function(filename, method, co, cb) {
 			return [Math.round(x),Math.round(y)]
 		}
 	}
-	
-	if (this.method == 'whole')
-		this.loadImage()
-	else if (this.method == 'tiled')
+}
+
+voyc.Texture.prototype.load = function(method, co, cb) {
+	this.method = method
+	this.co = co
+	this.cb = cb
+
+	if (this.method == 'tiled') {
+		this.filename = 'assets/texture/tiles/'
+		this.projection.w = this.w = 10800
+		this.projection.h = this.h =  5400
+		this.tilesize = 300
+		this.numTiles = (this.w * this.h) / (this.tilesize**2)
 		this.loadTiles(this.co)
+	}
+	else if (this.method == 'whole') {
+		this.filename = 'assets/texture/NE2_LR_SR_W.png'
+		this.projection.w = this.w = 2700
+		this.projection.h = this.h = 1350
+		this.loadImage()
+	}
 }
 
 // -------- whole image
@@ -92,10 +103,10 @@ voyc.Texture.prototype.loadImage = function() {
 }
 voyc.Texture.prototype.onImageLoaded = function() {
 	console.log(voyc.timer()+'whole image load complete')
-	this.w = this.image.width
-	this.h = this.image.height
-	this.projection.w = this.w
-	this.projection.h = this.h
+	//this.w = this.image.width
+	//this.h = this.image.height
+	//this.projection.w = this.w
+	//this.projection.h = this.h
 
 	// create canvas
 	this.canvas = document.createElement('canvas')
@@ -125,7 +136,8 @@ voyc.Texture.prototype.onImageLoaded = function() {
 // -------- tiled
 
 // alternative: Loading Images with Web Workers
-//https://dev.to/trezy/loading-images-with-web-workers-49ap
+// https://dev.to/trezy/loading-images-with-web-workers-49ap
+// this.ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
 
 voyc.Texture.prototype.composeTilename = function(lng, lat) {
 	function lzf(n,flen) {
@@ -168,32 +180,31 @@ voyc.Texture.prototype.loadTiles = function(co) {
 	this.imgdata = new ImageData(this.w,this.h)
 	this.ready = true
 	this.list = this.listTiles(co)
-	this.path = 'assets/tiles/'
-	var self = this
+	this.path = this.filename
+	this.loadGroup(10)
+}
+
+voyc.Texture.prototype.loadGroup = function(groupsize) {
 	var num = 0
+	this.numLoading = 0
+	var self = this
 	for (tile of this.list) {
-		tile.img = new Image()
+		if (tile.state == 'queued') {
+			tile = this.list[num]
+			tile.img = new Image()
+			tile.img.id = num+1
+			tile.img.onload = function(evt) {self.onTileLoaded(evt)}
+			tile.img.src = this.path + tile.fname
+			tile.state = 'loading'
+			this.numLoading += 1
+			if (this.numLoading >= groupsize) 
+				break
+		}
 		num += 1
-		tile.img.id = num
-		tile.img.onload = function(evt) {self.onTileLoaded(evt)}
-		tile.img.src = this.path + tile.fname
-		tile.state = 'loading'
-		//if (num >= 27) break;
 	}
-	console.log(voyc.timer()+'tiled image load all tiles in progress')
+	console.log(voyc.timer()+`${this.numLoaded} tiles loaded`)
 }
 	
-
-
-//	this.projection.w = this.w
-//	this.projection.h = this.h
-//	this.canvas = document.createElement('canvas')
-//	this.canvas.width = this.w
-//	this.canvas.height = this.h
-//	this.canvas.style.width  = this.w + 'px'
-//	this.canvas.style.height = this.h + 'px'
-//	this.ctx = this.canvas.getContext("2d")
-
 voyc.Texture.prototype.onTileLoaded = function(evt) {
 	var tile = this.list[parseInt(evt.target.id)-1]
 	log&&console.log(voyc.timer()+`tile ${evt.target.id} ${tile.lng} ${tile.lat} loaded`)
@@ -214,27 +225,14 @@ voyc.Texture.prototype.onTileLoaded = function(evt) {
 	tile.imgdata = tile.ctx.getImageData(0,0, this.tilesize, this.tilesize)
 
 	// copy directly onto the ImageData 
-
-	if (false) {
-		console.log(voyc.timer()+'begin draw tile')
-		this.ctx.drawImage(tile.img, 0,0, this.tilesize,this.tilesize, pt[0],pt[1], this.tilesize,this.tilesize)
-		console.log(voyc.timer()+'tile drawn')
-		if (!(tile.pct % 10))
-			this.imageData = this.ctx.getImageData(0, 0, this.w, this.h)
-	}
-	else {
-		//var pt = this.projection.project([tile.lng, tile.lat])
-		this.copyTile(tile.imgdata, this.imgdata, tile.pt, this.tilesize)
-		if (tile.pct == 100)
-			console.log(voyc.timer()+`tiled image load complete`)
-		//this.ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
-	}
-
+	this.copyTile(tile.imgdata, this.imgdata, tile.pt, this.tilesize)
+	if (tile.pct == 100)
+		console.log(voyc.timer()+`tiled image load complete`)
 	if (this.cb)
 		this.cb(tile)
-
-	//this.geosketch.world.moved = true
-	//send event to whoever to trigger redraw of texturemap canvas to screen element
+	this.numLoading -= 1
+	if (this.numLoading == 0 && (this.numLoaded < this.numTiles))
+		this.loadGroup(20)
 }
 
 // -------- draw texturemap onto a destination canvas

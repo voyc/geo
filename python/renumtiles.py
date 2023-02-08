@@ -1,7 +1,6 @@
 '''
-  1. use soft links to point to actual media files
-	ln -s ../media/data/natural_earth_data/raster/NE2_50M_SR_W.png ../html/assets/texture/50mtex.png
-	ln -s ../media/data/natural_earth_data/raster/tiles ../html/assets/tiles
+  1. use soft link to point to actual media files
+	ln -s ~/media/data/natural_earth_data/raster ../html/assets/texture
 
   2. run imageMagick program to cut the big png into tiles  
 	convert -crop 300x300 ../html/assets/texture/50mtex.png ../html/assets/tiles/tile%03d.png

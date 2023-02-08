@@ -15,7 +15,7 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires']
+	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires','lores']
 	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
 	this.scale = {}
@@ -33,7 +33,8 @@ voyc.World = function() {
 		speed: 10 // years per second	
 	}
 
-	this.texture = {}
+	this.texlo = {}
+	this.texhi = {}
 }
 
 voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
@@ -65,15 +66,17 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
 	this.projection.scale(this.scale.now);                  // size of the circle in pixels
 
-	this.texture = new voyc.Texture()
+	this.texhi = new voyc.Texture()
+	this.texlo = new voyc.Texture()
 	var self = this
-	this.texture.setup('assets/texture/50mtex.png', 'tiled', this.co, function(row) {
-		//elema.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}  ${row.state}  ${row.pct}<br/>`
-		voyc.$('loadpct').innerHTML = `${row.pct}`
-		if (!(self.texture.numLoaded % 10) || row.pct == 100) {
-			self.moved = true
-			voyc.geosketch.render(0)
-		}
+	this.texlo.load('whole', this.co, function(row) {
+		self.texhi.load('tiled', this.co, function(row) {
+			voyc.$('loadpct').innerHTML = `${row.pct}`
+			if (!(self.texhi.numLoaded % 10) || row.pct == 100) {
+				self.moved = true
+				voyc.geosketch.render(0)
+			}
+		})
 	})
 }
 
@@ -495,6 +498,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
 	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('lores'     ,'Lo Res'    ,false       ,true  ,false    ,false       ,0)
 	createLayerCanvas('hires'     ,'Hi Res'    ,false       ,true  ,false    ,false       ,0)
 	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
@@ -639,7 +643,7 @@ voyc.World.prototype.drawWorld = function() {
 			this.drawLayer('cities')
 			this.drawLayer('countries')
 			this.drawEmpire()
-			this.drawHires()
+			this.drawTexture()
 		}
 	}
 	else if (this.time.moved)
@@ -731,17 +735,24 @@ voyc.World.prototype.drawRiver = function() {
 			i)
 }
 
-voyc.World.prototype.drawHires = function() {
-	console.log('draw hires')
-	layer = this.layer.hires
-	var dst = {
-		projection: this.projection,
-		imageData: layer.imageData, 
-		ctx: layer.ctx,
-		w: this.w,
-		h: this.h,
-	}
-	this.texture.draw(dst)
+voyc.World.prototype.drawTexture = function() {
+	if (this.layer.hires.enabled && (this.scale.now >= 2.4))
+		this.texhi.draw({
+			projection: this.projection,
+			imageData: this.layer.hires.imageData, 
+			ctx: this.layer.hires.ctx,
+			w: this.w,
+			h: this.h,
+		})
+
+	if (this.layer.lores.enabled)
+		this.texlo.draw({
+			projection: this.projection,
+			imageData: this.layer.lores.imageData, 
+			ctx: this.layer.lores.ctx,
+			w: this.w,
+			h: this.h,
+		})
 }
 
 voyc.World.prototype.drawHilite = function(geom, pt) {
@@ -897,6 +908,7 @@ voyc.defaultPalette = {
 		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 	],
 	hires: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
+	lores: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 }
 
 voyc.World.prototype.getGeom = function(id,fc) {

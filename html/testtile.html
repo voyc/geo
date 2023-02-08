@@ -29,17 +29,6 @@
 			}
 		</style>
 		<script>
-			var voyc = {}
-			var delay = 1
-			var tilesize = 22
-			var ul = 0
-			var filename = 'assets/texture/50mtex.png'
-			var method =  'tiled'
-			var co = [81,34]
-			var path = 'assets/tiles/'
-			var n = 0
-			function xlng(lng) { return ((((lng+180)/10) * tilesize) + ul) }
-			function ylat(lat) { return ((((lat+ 90)/10) * tilesize) + ul) }
 
 			window.addEventListener('load', function(e) {
 				var elema = document.getElementById('a')     // text log
@@ -67,11 +56,12 @@
 				projection.scale(w/4);                  // size of the circle in pixels
 
 				var texmap = {}
+				var loadco = [81,34]
 				var onetime = 0
 
 				document.getElementById('wholebtn').addEventListener('click', function(evt) {
 					texmap = new voyc.Texture()
-					texmap.setup(filename, 'whole', co, function(row) {
+					texmap.load('whole', loadco, function(row) {
 						elema.innerHTML += 'image loaded'
 						elempct.innerHTML = `${row.pct}`
 						elemc.appendChild(texmap.canvas)
@@ -79,7 +69,7 @@
 				}, false)
 				document.getElementById('tiledbtn').addEventListener('click', function(evt) {
 					texmap = new voyc.Texture()
-					texmap.setup(filename, 'tiled', co, function(row) {
+					texmap.load('tiled', loadco, function(row) {
 						//elema.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}  ${row.state}  ${row.pct}<br/>`
 						elempct.innerHTML = `${row.pct}`
 						document.getElementById('drawbtn').click()
@@ -97,11 +87,20 @@
 					}
 					texmap.draw(dst)
 				}, false)
+
+				var delay = 1
+				var tilesize = 22
+				var ul = 0
+				function xlng(lng) { return ((((lng+180)/10) * tilesize) + ul) }
+				function ylat(lat) { return (((((0-lat)+ 90)/10) * tilesize) + ul) }
+				var filename = 'assets/texture/NE2_50M_SR_W.png'
+				var path = 'assets/texture/tiles/'
+				var n = 0
 				document.getElementById('drawtilesbtn').addEventListener('click', function(evt) {
 					var elemb = document.getElementById('b')
 					var texmap = new voyc.Texture()
-					texmap.setup(filename, 'none', co)
-					var list = texmap.listTiles(co)
+					texmap.load('none', loadco, null)
+					var list = texmap.listTiles(loadco)
 					function drawDot() {
 						var row = list[n]
 						if (!row) return
@@ -121,6 +120,8 @@
 					setTimeout(drawDot, delay)
 				}, false)
 			}, false)
+
+			var voyc = {}
 		</script>
 		<script src='js/texture.js'></script>
 		<script src='geo/geo.js'></script>
