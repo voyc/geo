@@ -102,6 +102,16 @@ icon {
 	width:5.5em;
 	text-align:center;
 }
+#loading.off {
+	display:none;
+}
+#loading {
+	left:2.5rem;
+	top:0;
+	height:1rem;
+	width:6rem;
+	text-align:left;
+}
 #hudspeed {
 	float:right;
 }

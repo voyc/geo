@@ -66,8 +66,15 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	this.projection.scale(this.scale.now);                  // size of the circle in pixels
 
 	this.texture = new voyc.Texture()
-	//this.texture.setup('../../../../media/data/natural_earth_data/raster/NE2_50M_SR_W.png')
-	this.texture.setup('assets/texture/50mtex.png')
+	var self = this
+	this.texture.setup('assets/texture/50mtex.png', 'tiled', this.co, function(row) {
+		//elema.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}  ${row.state}  ${row.pct}<br/>`
+		voyc.$('loadpct').innerHTML = `${row.pct}`
+		if (!(self.texture.numLoaded % 10) || row.pct == 100) {
+			self.moved = true
+			voyc.geosketch.render(0)
+		}
+	})
 }
 
 // --------  public options
@@ -253,7 +260,8 @@ voyc.World.prototype.drop = function() {
 
 voyc.World.prototype.moveToPoint = function(pt) {
 	var co = this.projection.invert(pt)
-	this.moveToCoord(co)
+	if (co[2])
+		this.moveToCoord(co)
 }
 voyc.World.prototype.moveToCoord = function(co) {
 	this.co = co
@@ -571,7 +579,7 @@ voyc.World.prototype.testHit = function(pt) {
 		var layer = this.layer[id]
 		if (layer.enabled) {
 			// rivers, mountains and cities have scalerank, each with a different value
-			var zoomScaleRank = this.calcRank(id) 
+			var zoomScaleRank = 6 //this.calcRank(id) 
 			geom =  this.iterator['hittest'].iterateCollection(layer.data, this.projection, pt, this.time.now, zoomScaleRank)
 			if (geom)
 				break
@@ -847,7 +855,7 @@ voyc.defaultScale = {
 voyc.defaultPalette = {
 	bkgrd: [{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,  0], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	water: [{scale:5000, stroke:false,         pen:.5, fill:[111,166,207], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
-	land:  [{scale:5000, stroke:false,         pen:.5, fill:[216,218,178], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+	land:  [{scale:5000, stroke:false,         pen:.5, fill:[237,220,203], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	grid:  [
 		{scale: 300, stroke:[255,255,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 		{scale: 900, stroke:[255,255,255], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },

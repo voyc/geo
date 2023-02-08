@@ -22,46 +22,119 @@
 				top:100px;
 				border: 1px solid black;
 			}
+			#c {
+				position:absolute;
+				left:100px;
+				top:500px;
+			}
 		</style>
 		<script>
 			var voyc = {}
 			var delay = 1
 			var tilesize = 22
 			var ul = 0
-			window.addEventListener('load', function(e) {
-				var texmap = new voyc.Texture()
-				var list = texmap.listTiles([80,30])
-				//texmap.loadTiles(list)
-				
+			var filename = 'assets/texture/50mtex.png'
+			var method =  'tiled'
+			var co = [81,34]
+			var path = 'assets/tiles/'
+			var n = 0
+			function xlng(lng) { return ((((lng+180)/10) * tilesize) + ul) }
+			function ylat(lat) { return ((((lat+ 90)/10) * tilesize) + ul) }
 
-				var path = 'assets/tiles/'
-				var b = document.getElementById('b')
-				var n = 0
-				function xlng(lng) { return ((((lng+180)/10) * tilesize) + ul) }
-				function ylat(lat) { return ((((lat+ 90)/10) * tilesize) + ul) }
-				function drawDot() {
-					var row = list[n]
-					if (!row) return
-					var dot = document.createElement('img')
-					dot.style.position = 'absolute'
-					dot.style.left = (xlng(row.lng)) + 'px'
-					dot.style.top =  (ylat(row.lat)) + 'px'
-					dot.style.width = '22px'
-					dot.style.height = '22px'
-					//dot.src = 'i/yellow-dot-lg-n.gif'
-					dot.src = path + row.fname
-					b.appendChild(dot)	
-					a.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}<br/>`
-					n += 1
+			window.addEventListener('load', function(e) {
+				var elema = document.getElementById('a')     // text log
+				var elempct = document.getElementById('pct') // pct loaded
+				var elemc = document.getElementById('c') // texturemap, normally hidden
+
+				var elemb = document.getElementById('b')  // final display
+				var w = elemb.offsetWidth
+				var h = elemb.offsetHeight
+				var cvs = document.createElement('canvas')
+				elemb.appendChild(cvs)
+				cvs.width = w
+				cvs.height= h
+				cvs.style.width = w
+				cvs.style.height= h
+				var ctx = cvs.getContext('2d')
+				var imageData = ctx.createImageData(w,h)
+
+				var co = [0,0]
+				var gamma = 0
+				var projection = new voyc.DualProjection()
+				projection.mix = voyc.Projection.mercator
+				projection.rotate([0-co[0], 0-co[1], 0-gamma]);
+				projection.translate([w/2, h/2]);  // position the circle within the canvas (centered) in pixels
+				projection.scale(w/4);                  // size of the circle in pixels
+
+				var texmap = {}
+				var onetime = 0
+
+				document.getElementById('wholebtn').addEventListener('click', function(evt) {
+					texmap = new voyc.Texture()
+					texmap.setup(filename, 'whole', co, function(row) {
+						elema.innerHTML += 'image loaded'
+						elempct.innerHTML = `${row.pct}`
+						elemc.appendChild(texmap.canvas)
+					})
+				}, false)
+				document.getElementById('tiledbtn').addEventListener('click', function(evt) {
+					texmap = new voyc.Texture()
+					texmap.setup(filename, 'tiled', co, function(row) {
+						//elema.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}  ${row.state}  ${row.pct}<br/>`
+						elempct.innerHTML = `${row.pct}`
+						document.getElementById('drawbtn').click()
+					})
+				}, false)
+				document.getElementById('drawbtn').addEventListener('click', function(evt) {
+					//ctx.drawImage( texmap.canvas,0,0,10500,5400,0,0,w,h)
+					//return
+					var dst = {
+						projection: projection,
+						imageData: imageData,
+						ctx: ctx,
+						w: w,
+						h: h,
+					}
+					texmap.draw(dst)
+				}, false)
+				document.getElementById('drawtilesbtn').addEventListener('click', function(evt) {
+					var elemb = document.getElementById('b')
+					var texmap = new voyc.Texture()
+					texmap.setup(filename, 'none', co)
+					var list = texmap.listTiles(co)
+					function drawDot() {
+						var row = list[n]
+						if (!row) return
+						var dot = document.createElement('img')
+						dot.style.position = 'absolute'
+						dot.style.left = (xlng(row.lng)) + 'px'
+						dot.style.top =  (ylat(row.lat)) + 'px'
+						dot.style.width = '22px'
+						dot.style.height = '22px'
+						//dot.src = 'i/yellow-dot-lg-n.gif'
+						dot.src = path + row.fname
+						elemb.appendChild(dot)	
+						a.innerHTML += `${row.lng}  ${row.lat}  ${row.distance.toFixed()}  ${row.fname}<br/>`
+						n += 1
+						setTimeout(drawDot, delay)
+					}
 					setTimeout(drawDot, delay)
-				}
-				setTimeout(drawDot, delay)
+				}, false)
 			}, false)
 		</script>
 		<script src='js/texture.js'></script>
+		<script src='geo/geo.js'></script>
+		<script src='geo/dualprojection.js'></script>
+		<script src='jslib/utils.js'></script>
 	</head>
 	<body>
-		<div id='b'></div>
+		<button id='drawtilesbtn'>Draw Tiles</button>
+		<button id='wholebtn'>Load Whole</button>
+		<button id='tiledbtn'>Load Tiled</button>
+		<button id='drawbtn'>Draw Texture</button>
+		loaded: <span id='pct'>0</span>%
 		<div id='a'></div>
+		<div id='b'></div>
+		<div id='c'></div>
 	</body>
 </html>

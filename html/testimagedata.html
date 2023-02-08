@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv=Content-Type content="text/html; charset=UTF-8">
+		<meta name='viewport' content='width=device-width, initial-scale=1, maximum-scale=1'>
+		<title>test imagedata</title>
+
+		<style>
+			body {background-color:gray;}
+		</style>
+		<script>
+			window.addEventListener('load', function(evt) {
+				var c = document.getElementById('c')
+				var ctx = c.getContext("2d")
+				var imgdat = ctx.getImageData(10,10,100,100)
+				
+				var n = 0
+				for (var i=0; i<100; i++) {
+					n = ((i*100)+i) * 4	
+					imgdat.data[n+0] = 255
+					imgdat.data[n+1] = 0
+					imgdat.data[n+2] = 0
+					imgdat.data[n+3] = 255
+				}
+				ctx.putImageData(imgdat,10,10)
+
+			}, false)	
+
+		</script>
+	</head>
+	<body>
+		<canvas id='c'></canvas>
+	</body>
+</html>

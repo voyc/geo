@@ -2,46 +2,85 @@
 	class Texture
 	singleton
 	represents a hidden background canvas containing a texture map
-	@constructor 
+
+	to test local, start browser from command line
+		brave-browser --allow-file-access-from-files  
+
+	two methods to load a texture map: whole and tiled
+
+	to create tiles of an image, see python/renametiles.py
 */
+
+var log = true
+
 voyc.Texture = function() {
-	this.filename = '';
-	this.image = {};
-	this.w = 0;   // dimensions of texturemap image
-	this.h = 0;
-	this.canvas = {};
-	this.ctx = {};
-	this.projection = {}
+	this.filename = ''
+	this.method = '' // whole, tiled
+	this.cb = function(){}
+
 	this.ready = false
+	this.projection = {}
+
+	this.imgdata = {} // this is the texture map
+	this.w = 10800
+	this.h =  5400
+
+	// used to load whole image
+	this.image = {}
+	this.canvas = {}
+	this.ctx = {}
+
+	// used to load square tiles
+	this.tilesize = 300
+	this.list = []
+	this.co = [0,0]  // centerpoint on screen, tile loading spirals out from here
+	this.numTiles = 648  // = (10800*5400) / (300**2)
+	this.numLoaded = 0
 }
 
-voyc.Texture.prototype.setup = function(filename) {
-	this.filename = filename;
-	this.loadImage()
+voyc.Texture.prototype.setup = function(filename, method, co, cb) {
+	this.filename = filename
+	this.method = method
+	this.co = co
+	this.cb = cb
+
 	this.projection = {
-		w:	0,
-		h:	0,
+		w:	this.w,
+		h:	this.h,
 		project: function(co) {
-			var lng = co[0]
-			var lat = 0 - co[1]
+			// in stored data, N is positive
+			// in the raster texture map tiles, N is negative
+			// in the projection object, N is negative
+			// in xy screen points, y values go down the screen starting at 0
+
+			//var lng = co[0]
+			//var lat = 0-co[1]  // flip latitude
+
+			//var imin = -180
+			//var imax = +180
+			//var omin = 0
+			//var omax = this.w
+			//var x = (((lng-imin)/(imax-imin)) * (omax-omin)) + omin
+			var x = ((co[0]+180)/360) * this.w
 		
-			var imin = -180
-			var imax = +180
-			var omin = 0
-			var omax = this.w
-			var x = (((lng-imin)/(imax-imin)) * (omax-omin)) + omin
+			//imin = -90
+			//imax = +90
+			//omin = 0
+			//omax = this.h
+			//var y = (((lat-imin)/(imax-imin)) * (omax-omin)) + omin
+			var y = (((90-co[1]))/180) * this.h
 		
-		
-			imin = -90
-			imax = +90
-			omin = 0
-			omax = this.h
-			var y = (((lat-imin)/(imax-imin)) * (omax-omin)) + omin
-		
-			return [x,y]
+			return [Math.round(x),Math.round(y)]
 		}
 	}
+	
+	if (this.method == 'whole')
+		this.loadImage()
+	else if (this.method == 'tiled')
+		this.loadTiles(this.co)
 }
+
+// -------- whole image
 
 voyc.Texture.prototype.loadImage = function() {
 	this.image = new Image()
@@ -49,10 +88,10 @@ voyc.Texture.prototype.loadImage = function() {
 	this.image.onload = function() {self.onImageLoaded()}
 	this.image.crossOrigin = 'Anonymous'
 	this.image.src = this.filename
-	console.log('texture file load start')
+	console.log(voyc.timer()+'whole image load start')
 }
 voyc.Texture.prototype.onImageLoaded = function() {
-	console.log('texture file load complete')
+	console.log(voyc.timer()+'whole image load complete')
 	this.w = this.image.width
 	this.h = this.image.height
 	this.projection.w = this.w
@@ -68,284 +107,27 @@ voyc.Texture.prototype.onImageLoaded = function() {
 
 	// copy the image onto the canvas
 	this.ctx.drawImage(this.image, 0, 0)
-	this.imageData = this.ctx.getImageData(0, 0, this.w, this.h)
+	console.log(voyc.timer()+'whole image drawn')
+	this.imgdata = this.ctx.getImageData(0, 0, this.w, this.h)
+	console.log(voyc.timer()+'whole image imgdata acquired')
 	this.ready = true
-	console.log('image data acquired')
+	if (this.cb)
+		this.cb({
+			distance: 0,
+			lng: 0,
+			lat: 0,
+			state: 'loaded',
+			fname: this.filename,
+			pct:100,
+		})
 }
 
+// -------- tiled
 
-/** 
-	draw a bitmap from src to dst
-	each of src and dst is an object with these properties:
-		projection
-		imageData
-		ctx
-		w
-		h
-		
-dst is a layer
-src is this here
-*/
-voyc.Texture.prototype.draw = function(dst) {
-	if (!this.ready)
-		return
-	// loop thru every pixel in the dst
-	var co = [];
-	var pt = [];
-	var wn = 0;
-	var tn = 0;
-	var src = this
-//	src.projection.w = this.w
-//	src.projection.h = this.h
-	console.log('texture data copy start')
-	for (var x=0; x<(dst.w); x++) {
-		for (var y=0; y<(dst.h); y++) {
-			co = dst.projection.invert([x,y]);
-			if (!(isNaN(co[0]) || isNaN(co[1]))) {
-				pt = src.projection.project(co);
-				//pt = [300,300]; 
-				
-				// copy 4 bytes for each pixel
-				wn = (y * dst.w + x) * 4;
-				tn = (Math.floor(pt[1]) * src.w + Math.floor(pt[0])) * 4;
-				dst.imageData.data[wn + 0] = src.imageData.data[tn + 0];
-				dst.imageData.data[wn + 1] = src.imageData.data[tn + 1];
-				dst.imageData.data[wn + 2] = src.imageData.data[tn + 2];
-				//if (src.imageData[wn + 0] + src.imageData[wn + 1] + src.imageData[wn + 2]) {
-					dst.imageData.data[wn + 3] = 255;
-				//}
-			}
-			else {
-				// copy 4 bytes for each pixel
-				wn = (y * dst.w + x) * 4;
-				dst.imageData.data[wn + 0] = 0
-				dst.imageData.data[wn + 1] = 0
-				dst.imageData.data[wn + 2] = 0
-				//if (src.imageData[wn + 0] + src.imageData[wn + 1] + src.imageData[wn + 2]) {
-					dst.imageData.data[wn + 3] = 255;
-				//}
-			}
-		}
-	}
-	console.log('texture data copy complete');
-	console.log('texture data put start');
-	dst.ctx.putImageData(dst.imageData, 0, 0);
-	console.log('texture data put complete');
-}
+// alternative: Loading Images with Web Workers
+//https://dev.to/trezy/loading-images-with-web-workers-49ap
 
-
-//// load tiles
-//voyc.Texture.prototype.loadTiles = function(pass,cb) {
-//	this.cb = cb;
-//	var self = this;
-//	if (pass == 'initial') {
-//		this.list = this.makeList();
-//		this.asset = new voyc.Asset();
-//		//log&&console.log(voyc.timer()+'texture tile asset load start');
-//		setTimeout(function() {
-//			self.asset.load(self.list['initial'], function(success, key) { self.assetLoaded(success, key)});
-//		}, 50);
-//	}
-//	else if (pass == 'remainder') {
-//		//log&&console.log(voyc.timer()+'texture tile asset load start');
-//		setTimeout(function() {
-//			self.asset.load(self.list['remainder'], function(success, key) { self.assetLoaded(success, key)});
-//		}, 50);
-//	}
-//}
-//
-//voyc.Texture.prototype.assetLoaded = function(isSuccess, key) {
-//	if (!isSuccess) {
-//		this.cb(false, key);
-//		return;
-//	}
-//	if (!key) {
-//		//log&&console.log(voyc.timer()+'texture get imagedata start');
-//		this.imageData = this.ctx.getImageData(0, 0, this.w, this.h);
-//		//log&&console.log(voyc.timer()+'texture get imagedata complete');
-//		//log&&console.log(voyc.timer()+'texture tile asset load complete');
-//		this.cb(true, '');
-//		return;
-//	}
-//
-//	//this.cb(true, key);  //for counting loaded assets
-//
-//	var keypattern = /c(.*)_r(.*)/;
-//	var a = keypattern.exec(key);
-//	var col = a[1];
-//	var row = a[2];
-//
-//	var tilesize = 300;
-//	var x = col * tilesize;
-//	var y = row * tilesize;
-//	image = this.asset.get(key);
-//	this.ctx.drawImage(image, 
-//		0, 0, tilesize, tilesize, // source
-//		x, y, tilesize, tilesize  // dest
-//	);
-//}
-//
-///*
-//	make two lists of tiles to load, 
-//	in order, 
-//	spiraling around the starting point
-//*/
-//voyc.Texture.prototype.makeList = function() {
-//	// given
-//	var rows = 18;
-//	var cols = 36;
-//	var tilesize = 300;
-//	var keypattern = 'c$x_r$y';
-//	var pathpattern = 'assets/tiles/ne2_$key.png';
-//	
-//	var list = {      // build and return two lists
-//		initial: [],
-//		remainder: []
-//	};
-//	var whichlist = 'initial';
-//	var n = 0;
-//	var j = 0;
-//	var m = rows*cols;
-//	var keys={};
-//
-//	// local function to add key/path to list
-//	function pokeList(col,row) {
-//		var key = keypattern.replace('$x', col).replace('$y', row);
-//		j++;
-//		if (!(key in keys)) {
-//			keys[key] = 1;
-//			var path = pathpattern.replace('$key', key);
-//			list[whichlist].push({key:key, path:path});
-//			n++;
-//		}
-//	}
-//
-//	// calculate the four corners on screen
-//	var ptNW = [0,0];
-//	var ptSE = [voyc.plunder.world.w, voyc.plunder.world.h];
-//	var coNW = voyc.plunder.world.projection.invert(ptNW);
-//	var coSE = voyc.plunder.world.projection.invert(ptSE);
-//	var ptTL = this.projection.project(coNW);
-//	var ptBR = this.projection.project(coSE);
-//	var collo = Math.floor(ptTL[0] / tilesize);
-//	var colhi = Math.floor(ptBR[0] / tilesize);
-//	var rowlo = Math.floor(ptTL[1] / tilesize);
-//	var rowhi = Math.floor(ptBR[1] / tilesize);
-//
-//	// first list, initially visible tiles
-//	for (var c=collo; c<=colhi; c++) {
-//		for (var r=rowlo; r<=rowhi; r++) {
-//			pokeList(c,r);
-//		}
-//	}
-//
-//	// now the second list, continue spiraling outward
-//	whichlist = 'remainder';
-//	while (n < m) {
-//		rowlo = Math.max(rowlo-1,0);
-//		rowhi = Math.min(rowhi+1,rows-1);
-//		collo = Math.max(collo-1,0);
-//		colhi = Math.min(colhi+1,cols-1);
-//
-//		for (var c=collo; c<=colhi; c++) {
-//			pokeList(c,rowlo);
-//			pokeList(c,rowhi);
-//		}
-//		for (var r=rowlo; r<=rowhi; r++) {
-//			pokeList(collo,r);
-//			pokeList(colhi,r);
-//		}
-//	}
-//	return list;
-//}
-//
-//	var nrows = 18
-//	var ncols = 36
-//	var tot = nrows * ncols
-//	cnt = 0
-//	list = []
-//
-//	// start at center tile
-//	ctr = w/2, h/2
-//	co = projection.invert(ctr)
-//	lng = ((co[1] / 10) * 10)
-//	lat = (co[1] / 10) * 10 + 10
-//	list.push({
-//		cnt: cnt+=1,
-//		lng: lng,
-//		lat: lat,
-//		state: 'queued',
-//	})
-//
-//	// spiral outward
-//	while (cnt < tot
-//	for (var i in [1,3,5,7,9,11,13,15,17]
-//
-//		left
-//			xy, x+1,y x-1,y
-//			y+1
-//		right
-//		top
-//		bottom
-//
-//		lng
-//		lat
-//
-//		list.push({
-//			cnt: cnt+=1,
-//			lng: lng,
-//			lat: lat,
-//			state: 'queued',
-//		})
-//	}
-//
-//	// acol = [-180,-170,-160,-150,-140,-130,-120 ...
-//
-//	acol[]
-//	for (var i=-180; i<+180; i+=10) acol.push(i)
-//	arow[]
-//	for (var i=90; i<-90; i-=10) arow.push(i)
-//
-//	cc = 80
-//	rc = 30
-//
-//	distance = Math.pow((((c-cc)**2) + ((r-rr)**2)),.5)
-//
-//
-//	cd[]
-//	ccol
-//	ctrco = [80,30]
-//	ctrpt = [x,y]
-//	ctrcol, ctrrow
-//	ctrcol = 8
-//	ctrrow = 3
-//
-//	col = 1 thru 36
-//
-//	for (var c=ctrcol;col
-//	cd.push(coldegr[c]
-//
-//
-//
-//
-//	while (n < m) {
-//		rowlo = Math.max(rowlo-1,0);
-//		rowhi = Math.min(rowhi+1,rows-1);
-//		collo = Math.max(collo-1,0);
-//		colhi = Math.min(colhi+1,cols-1);
-//
-//		for (var c=collo; c<=colhi; c++) {
-//			pokeList(c,rowlo);
-//			pokeList(c,rowhi);
-//		}
-//		for (var r=rowlo; r<=rowhi; r++) {
-//			pokeList(collo,r);
-//			pokeList(colhi,r);
-//		}
-//	}
-//	return list;
-
-voyc.Texture.prototype.composeFilename = function(lng, lat) {
+voyc.Texture.prototype.composeTilename = function(lng, lat) {
 	function lzf(n,flen) {
 		var s = n.toFixed()
 		while (s.length < flen) 
@@ -360,41 +142,175 @@ voyc.Texture.prototype.composeFilename = function(lng, lat) {
 	return name
 }
 
-voyc.Texture.prototype.loadTiles = function(list) {
-	this.path = 'assets/tiles/'
-	for (tile of list) {
-		tile.img = new Image()
-		var self = this
-		tile.img.onload = self.tileLoaded
-		tile.img.src = this.path + tile.fname
-	}
-}
-voyc.Texture.prototype.tileLoaded = function(evt) {
-	console.log(['loaded',evt,evt.path.img.currentSrc])
-}
-
 voyc.Texture.prototype.listTiles = function(co) {
 	var cc = co[0]
 	var rr = co[1]
 	var distance = 0
 	var list = []
-	for (var c=-180; c<+180; c+=10) {
-		for (var r=-90; r<+90; r+=10) {
+	for (var r=+90; r>-90; r-=10) {
+		for (var c=-180; c<+180; c+=10) {
 			distance = Math.pow((((c-cc)**2) + ((r-rr)**2)),.5)
 			list.push({
-				distance: distance,
+				distance: voyc.round(distance,2),
 				lng: c,
 				lat: r,
 				state: 'queued',
-				fname: this.composeFilename(c,r),
+				fname: this.composeTilename(c,r),
 			})
 		}
 	}
-	list = list.sort(function(a,b) { return a.distance - b.distance }) 
+	list.sort(function(a,b) { return a.distance - b.distance }) 
 	return list
 }
 
-//Loading Images with Web Workers
-//https://dev.to/trezy/loading-images-with-web-workers-49ap
+voyc.Texture.prototype.loadTiles = function(co) {
+	console.log(voyc.timer()+'tiled image load started')
+	this.imgdata = new ImageData(this.w,this.h)
+	this.ready = true
+	this.list = this.listTiles(co)
+	this.path = 'assets/tiles/'
+	var self = this
+	var num = 0
+	for (tile of this.list) {
+		tile.img = new Image()
+		num += 1
+		tile.img.id = num
+		tile.img.onload = function(evt) {self.onTileLoaded(evt)}
+		tile.img.src = this.path + tile.fname
+		tile.state = 'loading'
+		//if (num >= 27) break;
+	}
+	console.log(voyc.timer()+'tiled image load all tiles in progress')
+}
+	
 
 
+//	this.projection.w = this.w
+//	this.projection.h = this.h
+//	this.canvas = document.createElement('canvas')
+//	this.canvas.width = this.w
+//	this.canvas.height = this.h
+//	this.canvas.style.width  = this.w + 'px'
+//	this.canvas.style.height = this.h + 'px'
+//	this.ctx = this.canvas.getContext("2d")
+
+voyc.Texture.prototype.onTileLoaded = function(evt) {
+	var tile = this.list[parseInt(evt.target.id)-1]
+	log&&console.log(voyc.timer()+`tile ${evt.target.id} ${tile.lng} ${tile.lat} loaded`)
+	tile.state = 'loaded'
+	this.numLoaded += 1
+	tile.pct = Math.floor((this.numLoaded / this.numTiles) * 100)
+
+	// copy the image onto the canvas
+	tile.pt = this.projection.project([tile.lng,tile.lat])  // hello
+
+	// evidently, the only way to get the data out of an image is to draw it onto a canvas,
+	// 	and then do a getImageData from the canvas
+	tile.cvs = document.createElement('canvas')
+	tile.cvs.width = this.tilesize
+	tile.cvs.height= this.tilesize
+	tile.ctx = tile.cvs.getContext('2d')
+	tile.ctx.drawImage(tile.img, 0,0, this.tilesize,this.tilesize, 0,0, this.tilesize,this.tilesize)
+	tile.imgdata = tile.ctx.getImageData(0,0, this.tilesize, this.tilesize)
+
+	// copy directly onto the ImageData 
+
+	if (false) {
+		console.log(voyc.timer()+'begin draw tile')
+		this.ctx.drawImage(tile.img, 0,0, this.tilesize,this.tilesize, pt[0],pt[1], this.tilesize,this.tilesize)
+		console.log(voyc.timer()+'tile drawn')
+		if (!(tile.pct % 10))
+			this.imageData = this.ctx.getImageData(0, 0, this.w, this.h)
+	}
+	else {
+		//var pt = this.projection.project([tile.lng, tile.lat])
+		this.copyTile(tile.imgdata, this.imgdata, tile.pt, this.tilesize)
+		if (tile.pct == 100)
+			console.log(voyc.timer()+`tiled image load complete`)
+		//this.ctx.putImageData(imageData, dx, dy, dirtyX, dirtyY, dirtyWidth, dirtyHeight)
+	}
+
+	if (this.cb)
+		this.cb(tile)
+
+	//this.geosketch.world.moved = true
+	//send event to whoever to trigger redraw of texturemap canvas to screen element
+}
+
+// -------- draw texturemap onto a destination canvas
+
+voyc.Texture.prototype.draw = function(dst) {
+	if (!this.ready)
+		return
+	// loop thru every pixel in the destination dst
+	// dst is a layer object with these properties: projection, imageData, ctx, w, h
+	var co = [];
+	var pt = [];
+	var wn = 0;
+	var tn = 0;
+	//console.log(voyc.timer()+'texture data copy start')  // 0027ms
+	for (var y=0; y<(dst.h); y++) {
+		for (var x=0; x<(dst.w); x++) {
+			co = dst.projection.invert([x,y]);
+			//if (!(isNaN(co[0]) || isNaN(co[1]))) {
+			if (co[2]) {
+				pt = this.projection.project(co)   // hello
+				wn = (y * dst.w + x) * 4;
+				tn = (Math.floor(pt[1]) * this.w + Math.floor(pt[0])) * 4;
+				dst.imageData.data[wn + 0] = this.imgdata.data[tn + 0];
+				dst.imageData.data[wn + 1] = this.imgdata.data[tn + 1];
+				dst.imageData.data[wn + 2] = this.imgdata.data[tn + 2];
+				if (!(this.imgdata.data[tn]+this.imgdata.data[tn+1]+this.imgdata.data[tn+3]))	
+					dst.imageData.data[wn + 3] = 0
+				else
+					dst.imageData.data[wn + 3] = 255
+			}
+			else {
+				wn = (y * dst.w + x) * 4;
+				dst.imageData.data[wn + 3] = 0
+			}
+		}
+	}
+	//console.log(voyc.timer()+'texture data copy complete');  // 0015ms
+	dst.ctx.putImageData(dst.imageData, 0, 0);
+	//console.log(voyc.timer()+'texture data put complete');   // 0001ms
+}
+
+// copy a square tile imageData to a point in a destination imageData
+voyc.Texture.prototype.copyTile = function(tile, dst, pt, sz) {
+	var tn, dn, lng, lat
+	for (var y=0; y<sz; y++) {
+		lat = pt[1] + y
+		for (var x=0; x<sz; x++) {
+			lng = pt[0] + x
+			dn = ((lat * this.w) + lng) * 4
+
+			tn = ((y * sz) + x) * 4
+			dst.data[dn+0] = tile.data[tn+0]
+			dst.data[dn+1] = tile.data[tn+1]
+			dst.data[dn+2] = tile.data[tn+2]
+			dst.data[dn+3] = tile.data[tn+2]
+		}
+	}
+}
+
+// usage: console.log(voyc.timer()+'thing happened');
+voyc.timer = function() {
+	var leftfill = function(s,n) {
+		var t = s.toString();
+		while (t.length < n) {
+			t = '0'+t;
+		}
+		return t;
+	}
+	if (!voyc.timer.starttime) {
+		voyc.timer.timestamp = new Date();
+		voyc.timer.starttime = voyc.timer.timestamp;
+	}
+	var tm = new Date();
+	var elapsed = tm - voyc.timer.timestamp;
+	voyc.timer.timestamp = tm;
+	return voyc.timer.timestamp - voyc.timer.starttime + 'ms, ' + leftfill(elapsed,4) + 'ms ';
+}
+voyc.timer.starttime = 0
+voyc.timer.timestamp = 0

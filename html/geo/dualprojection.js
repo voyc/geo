@@ -198,17 +198,17 @@ voyc.DualProjection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
 }
 
-voyc.DualProjection.prototype.isPointVisibleInvert = function(λ, φ) {
-	if ((Math.cos(λ) * Math.cos(φ)) > this.cr)   // cr 6.12323395736766e-17
-		return true
-
-	if (this.δφ > 0)  // equator is bowed up, southern hemisphere dominant
-	if (this.δφ < 0)  // equator is bowed down, northern hemisphere dominant 
-
-	//if (!((Math.cos(λ) * Math.cos(φ)) < 0-this.cr))
-	//	return false
-	return false
-}
+//voyc.DualProjection.prototype.isPointVisibleInvert = function(λ, φ) {
+//	if ((Math.cos(λ) * Math.cos(φ)) > this.cr)   // cr 6.12323395736766e-17
+//		return true
+//
+//	if (this.δφ > 0)  // equator is bowed up, southern hemisphere dominant
+//	if (this.δφ < 0)  // equator is bowed down, northern hemisphere dominant 
+//
+//	//if (!((Math.cos(λ) * Math.cos(φ)) < 0-this.cr))
+//	//	return false
+//	return false
+//}
 
 voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 	var xc = this.wd/2
@@ -314,13 +314,11 @@ voyc.DualProjection.prototype.project = function(co) {
 	Returns an array [longitude, latitude] given the input array [x, y]. 
 */
 voyc.DualProjection.prototype.invert = function(pt) {
-	if (!this.isPointInCircle(pt[0],pt[1]))
-		return false
-
 	var latm = 0
 	var lato = 0
 	var lngm = 0
 	var lngo = 0
+	var visible = true
 
 	if (this.mix != voyc.Projection.orthographic) {
 		x = pt[0] - this.pt[0]
@@ -334,6 +332,8 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	}
 
 	if (this.mix != voyc.Projection.mercator) {
+		var visible = this.isPointInCircle(pt[0],pt[1])
+
 		var x = (pt[0] - this.δx) / this.k;
 		var y = (this.δy - pt[1]) / this.k;
 	
@@ -371,7 +371,7 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	var lat = latm || lato
 	if (this.mix != voyc.Projection.mercator && this.mix != voyc.Projection.orthographic) {
 	}
-	return [lng,lat];
+	return [lng,lat,visible];
 }
 
 // constrain within pos or neg half pi

@@ -391,7 +391,7 @@ voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
 
 voyc.Hud.prototype.showWhereami = function (pt) {
 	var co = voyc.geosketch.world.projection.invert(pt)
-	if (!co) {
+	if (!co[2]) {
 		voyc.$('whereami').innerHTML = ''
 		return
 	}
