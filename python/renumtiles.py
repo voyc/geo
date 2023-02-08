@@ -3,16 +3,17 @@
 	ln -s ~/media/data/natural_earth_data/raster ../html/assets/texture
 
   2. run imageMagick program to cut the big png into tiles  
-	convert -crop 300x300 ../html/assets/texture/50mtex.png ../html/assets/tiles/tile%03d.png
+	convert -crop 300x300 ../html/assets/texture/NE2_50M_SR_W.png ../html/assets/tiles/tile%03d.png
 
   3. run this python program to rename the tiles  
+	python3 renumtiles.png
 
 Cut the map into 10x10 degree square tiles, starting at top-left, north-west.
 Natural Earth data is all north positive.
 '''
 import os
 
-path = '../html/assets/tiles'
+path = '../html/assets/texture/tiles'
 w = -180
 e = +180
 s = -90
