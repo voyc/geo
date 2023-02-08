@@ -42,28 +42,3 @@ for i in range(648):
 	if lng >= e:
 		lng = w
 		lat -= inc
- 
-
-# for (var lat=n; lat>s; lat-=inc) // north to south	
-# 	for (var lng=w; lng<e; lng+=inc) // west to east
-
-# for i in range(648):
-# 
-# 	slat = 'm' if lat < 0 else 'p'
-# 	slng = 'm' if lng < 0 else 'p'
-# 
-# 	alat = abs(lat)
-# 	alng = abs(lng)
-# 
-# 	oldname = f'{path}/tile{i:03d}.png'
-# 
-# 	newname = f'{path}/{slng}{alng:03d}{slat}{alat:02d}.png'
-# 
-# 	print(f'{oldname}   {newname}')
-# 
-# 	os.rename(oldname, newname)
-# 
-# 	lng += 10
-# 	if lng >= maxlng:
-# 		lng = minlng
-# 		lat += inc
