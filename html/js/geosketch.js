@@ -10,7 +10,7 @@ voyc.GeoSketch = function () {
 	this.options = {}
 	this.defaultOptions = {
 		showid:true,
-		maxscale:6,
+		maxzoom:4,
 		animation:true,
 		fps:20,
 	}
@@ -76,7 +76,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 		[140,20],  // start position: india 80E 20N
 		divworld.clientWidth,
 		divworld.clientHeight,
-		1	// starting scale factor
+		0	// starting zoom
 	)
 
 	this.hud = new voyc.Hud();
@@ -96,7 +96,7 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	this.sketch.setup()
 
 	this.world.moved = true
-	this.world.setScale() // to set the zoomer, forces a render
+	this.world.setZoom() // to set the zoomer, forces a render
 	this.hud.setCo(this.world.co, this.world.gamma)
 	this.hud.setTime(this.world.time.now)
 	this.hud.setTool('point')
@@ -114,7 +114,7 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 	localStorage.setItem( 'options', JSON.stringify(this.options));
 
 	voyc.$('option-showid').checked = this.options.showid
-	voyc.$('option-maxscale').value = this.options.maxscale
+	voyc.$('option-maxzoom').value = this.options.maxzoom
 	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
 	voyc.$('option-animation').checked = this.options.animation
 	voyc.$('option-fps').value = this.options.fps

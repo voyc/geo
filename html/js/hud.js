@@ -114,8 +114,8 @@ voyc.Hud.prototype.attachButtons = function() {
 	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
 
 	
-	document.getElementById('option-maxscale').addEventListener('change', function(evt) {
-		voyc.geosketch.setOption( 'maxscale', parseFloat(evt.target.value))
+	document.getElementById('option-maxzoom').addEventListener('change', function(evt) {
+		voyc.geosketch.setOption( 'maxzoom', parseFloat(evt.target.value))
 	}, false)
 
 	document.getElementById('option-showid').addEventListener('change',  function(evt) {
@@ -371,21 +371,31 @@ voyc.Hud.prototype.setupEditBar = function() {
 // -------- project button
 
 voyc.Hud.prototype.setupProjectBtn = function() {
-	var id = (voyc.geosketch.world.projection.mix == voyc.Projection.orthographic) ? 'globeimg' : 'mercimg'
-	voyc.show(voyc.$(id),false)
+	voyc.$('projectbtn').setAttribute('projtype', 'equirectangular')
+	//var id = (voyc.geosketch.world.projection.projtype == 'orthographic') ? 'globeimg' : 'mercimg'
+	//voyc.show(voyc.$(id),false)
 }
 voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
 	if (hudlog) console.log(['projectbtn','click',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
-	if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
-		voyc.show(voyc.$('mercimg'),false)
-		voyc.show(voyc.$('globeimg'),true)
-		voyc.geosketch.world.mercator()
+	//for (var p in ['globeimg', 'mercimg', 'equimg'])
+	//	voyc.show(voyc.$('mercimg'),false)
+	//if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
+	//	voyc.show(voyc.$('equimg'),true)
+	//	voyc.geosketch.world.setProjType('mercator')
+	//}
+	
+	if (evt.target.id == 'equimg') {
+		voyc.$('projectbtn').setAttribute('projtype', 'equirectangular')
+		voyc.geosketch.world.setProjType('equirectangular')
+	}
+	else if (evt.target.id == 'mercimg') {
+		voyc.$('projectbtn').setAttribute('projtype', 'mercator')
+		voyc.geosketch.world.setProjType('mercator')
 	}
 	else {
-		voyc.show( voyc.$('mercimg'),true)
-		voyc.show( voyc.$('globeimg'),false)
-		voyc.geosketch.world.orthographic()
+		voyc.$('projectbtn').setAttribute('projtype', 'orthographic')
+		voyc.geosketch.world.setProjType('orthographic')
 	}
 }
 
@@ -442,8 +452,11 @@ voyc.Hud.prototype.timeSliderUp = function (evt) {
 
 voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer = document.getElementById('mapzoomer')
-	this.mapzoomer.min = voyc.geosketch.world.scale.min
-	this.mapzoomer.max = voyc.geosketch.world.scale.max
+	var zoom = voyc.geosketch.world.zoom
+	this.mapzoomer.min   = zoom.min
+	this.mapzoomer.max   = zoom.max
+	this.mapzoomer.value = zoom.now
+	this.mapzoomer.step  = zoom.step
 
 	var self = this
 	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false)
@@ -454,14 +467,14 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false)
 
 	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.spin.IN)	
+		voyc.geosketch.world.stepZoom(voyc.spin.IN)	
 	}, false)
 	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.zoom(voyc.spin.OUT)	
+		voyc.geosketch.world.stepZoom(voyc.spin.OUT)	
 	}, false)
 }
 
-// five ways to zoom, to call world.setScale()
+// five ways to zoom, to call world.setZoom()
 //   1. mouse wheel
 //   2. click plus or minus
 //   3. drag zoom slider
@@ -479,7 +492,7 @@ voyc.Hud.prototype.mapZoomerDown = function (evt) {
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
 	evt.stopPropagation();
 	if (this.mapzoomerIsHot)
-		voyc.geosketch.world.setScale(parseInt(evt.target.value,10));
+		voyc.geosketch.world.setZoom(evt.target.value)
 }
 
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
@@ -491,7 +504,7 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	var spin = (evt.deltaY > 0) ? voyc.spin.OUT : voyc.spin.IN
 	pt = this.getMousePt(evt)
-	voyc.geosketch.world.zoom(spin,pt)	
+	voyc.geosketch.world.stepZoom(spin,pt)	
 }
 
 // -------- public
@@ -518,11 +531,11 @@ voyc.Hud.prototype.closeAnnouncement = function() {
 	this.fade(document.getElementById('announce'), false);
 }
 
-voyc.Hud.prototype.setZoom = function(newvalue, newfactor) {
+voyc.Hud.prototype.setZoomer = function(newvalue) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = newvalue;
 	}
-	voyc.$('option-scale').innerHTML = 'scale: ' + newvalue + ', ' + newfactor
+	voyc.$('option-zoom').innerHTML = 'zoom: ' + newvalue
 }
 
 voyc.Hud.prototype.setCo = function(co,gamma) {

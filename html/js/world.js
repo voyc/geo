@@ -18,7 +18,7 @@ voyc.World = function() {
 	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires','lores']
 	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
-	this.scale = {}
+	this.zoom = voyc.defaultZoom
 
 	this.animation = []
 	this.counter = 0
@@ -37,14 +37,19 @@ voyc.World = function() {
 	this.texhi = {}
 }
 
-voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
+voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.elem = elem;
 	this.w = w;
 	this.h = h;
 	this.co = JSON.parse(localStorage.getItem('co')) || co
 	this.gamma = localStorage.getItem('gamma') || 0
-	var scalefactor = localStorage.getItem('scalefactor') || scalefactor 
 	this.time.now = localStorage.getItem('timenow') || this.time.now 
+
+	var startzoom = localStorage.getItem('zoom') 
+	if (startzoom === 'null')
+		startzoom = zoom
+	startzoom = Number(startzoom)
+	this.setupZoom(startzoom)
 
 	this.palette = JSON.parse(localStorage.getItem('palette'))
 	if (!this.palette) {
@@ -53,18 +58,17 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 	}
 	this.setupPalette()
 
-	this.setupScale(w,h,scalefactor)
 	this.setupData()
 	this.setupIterators()
 
 	this.setupLayers()
 
-	this.projection = new voyc.DualProjection();
-	this.projection.mix = localStorage.getItem('pro') || voyc.Projection.orthographic;
+	this.projection = new voyc.DualProjection()
+	this.projection.projtype = localStorage.getItem('pro') || 'orthographic'
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
-	this.projection.scale(this.scale.now);                  // size of the circle in pixels
+	this.projection.scale(this.zoom.now)              // zoom level, .25-6 (corresponding to google's 0-20)
 
 	this.texhi = new voyc.Texture()
 	this.texlo = new voyc.Texture()
@@ -84,15 +88,8 @@ voyc.World.prototype.setup = function(elem, co, w, h, scalefactor) {
 
 voyc.World.prototype.showHiRes = function(boo) {}
 
-voyc.World.prototype.mercator = function() {
-	this.projection.mix = voyc.Projection.mercator
-	this.moved = true
-	voyc.geosketch.render(0)
-	this.stoPro()
-}
-
-voyc.World.prototype.orthographic = function() {
-	this.projection.mix = voyc.Projection.orthographic
+voyc.World.prototype.setProjType = function(projtype) {
+	this.projection.projtype = projtype
 	this.moved = true
 	voyc.geosketch.render(0)
 	this.stoPro()
@@ -101,15 +98,15 @@ voyc.World.prototype.orthographic = function() {
 // --------  localStorage
 
 voyc.World.prototype.stoPro = function() {
-	localStorage.setItem('pro',this.projection.mix)
+	localStorage.setItem('pro',this.projection.projtype)
 }
 voyc.World.prototype.stoCo = function() {
 	localStorage.setItem('co', JSON.stringify(this.co))
 	localStorage.setItem('gamma',this.gamma)
 	voyc.geosketch.hud.setCo(this.co,this.gamma)
 }
-voyc.World.prototype.stoScale = function() {
-	localStorage.setItem('scalefactor',this.scale.factor)
+voyc.World.prototype.stoZoom = function() {
+	localStorage.setItem('zoom',this.zoom.now)
 }
 voyc.World.prototype.stoTime = function() {
 	localStorage.setItem('timenow',this.time.now)
@@ -152,22 +149,17 @@ voyc.World.prototype.dropTime = function(evt) {
 	this.time.sliding = false 
 }
 
-// --------  scale
+// --------  zoom
 
 // called at startup
-voyc.World.prototype.setupScale = function(w,h,scalefactor) {
-	// scale = number of pixels to display the radius of the globe
-	var halfwid = Math.round(Math.min(w, h) / 2)
-	this.scale = {}
-	this.scale.min = halfwid * voyc.defaultScale.minScaleFactor   // small number, zoomed out
-	var maxscale = voyc.geosketch.options.maxscale || voyc.defaultScale.maxScaleFactor
-	this.scale.max = halfwid * maxscale                           // large number, zoomed in
-	this.scale.factor = scalefactor
-	this.scale.now = Math.round(halfwid * scalefactor)
+voyc.World.prototype.setupZoom = function(startzoom) {
+	this.zoom.now = startzoom
+	if (typeof(voyc.geosketch.options.maxzoom == 'defined'))
+		this.zoom.max = voyc.geosketch.options.maxzoom
 }
 
 // public zoom by increment, as with key arrow or mouse wheel
-voyc.World.prototype.zoom = function(dir,pt) {
+voyc.World.prototype.stepZoom = function(dir,pt) {
 	pt = pt || false // if mousewheel, zoom centered on the mouse point
 	var coOld = (pt) ? this.projection.invert(pt) : false
 	var x = 0;
@@ -175,9 +167,9 @@ voyc.World.prototype.zoom = function(dir,pt) {
 		case voyc.spin.IN: x = 1; break;
 		case voyc.spin.OUT: x = -1; break;
 	}
-	var newscale = Math.round(this.scale.now + (this.scale.now * x * voyc.defaultScale.scaleStepPct))
-	newscale = voyc.clamp(newscale, this.scale.min, this.scale.max);
-	this.setScale(newscale);
+	var newzoom = this.zoom.now + (x * this.zoom.step)
+	newzoom = voyc.clamp(newzoom, this.zoom.min, this.zoom.max)
+	this.setZoom(newzoom)
 	if (pt) {
 		var coNew = this.projection.invert(pt) // same point, new coord
 		var rotation = voyc.subtractArray(coNew,coOld)
@@ -187,16 +179,14 @@ voyc.World.prototype.zoom = function(dir,pt) {
 	}
 }
 
-// public zoom to a specific scale, as with slider or setup
-voyc.World.prototype.setScale = function(newscale) {
-	this.scale.now = newscale || this.scale.now
-	this.projection.scale(this.scale.now);
+// public zoom to a specific zoom level, as with slider or setup
+voyc.World.prototype.setZoom = function(newzoom) {
+	if (typeof(newzoom) != 'undefined')
+		this.zoom.now = newzoom
+	this.projection.scale(this.zoom.now)
 	
-	//this.scale.factor = Math.round(this.scale.now / (Math.min(this.w,this.h) /2))
-	this.scale.factor = parseFloat((this.scale.now / (Math.min(this.w,this.h) /2)).toFixed(2))
-
-	voyc.geosketch.hud.setZoom(this.scale.now, this.scale.factor)
-	this.stoScale()
+	voyc.geosketch.hud.setZoomer(this.zoom.now)
+	this.stoZoom()
 	this.moved = true;
 	voyc.geosketch.render(0)
 }
@@ -223,12 +213,12 @@ voyc.World.prototype.clampGamma = function(gamma) {
 
 voyc.World.prototype.spin = function(dir) {
 	switch(dir) {
-		case voyc.spin.LEFT : this.co[0] += voyc.defaultScale.spinStep; break;
-		case voyc.spin.RIGHT: this.co[0] -= voyc.defaultScale.spinStep; break;
-		case voyc.spin.UP   : this.co[1] += voyc.defaultScale.spinStep; break;
-		case voyc.spin.DOWN : this.co[1] -= voyc.defaultScale.spinStep; break;
-		case voyc.spin.CW   : this.gamma += voyc.defaultScale.spinStep; break;
-		case voyc.spin.CCW  : this.gamma -= voyc.defaultScale.spinStep; break;
+		case voyc.spin.LEFT : this.co[0] += voyc.defaultSpin.step; break;
+		case voyc.spin.RIGHT: this.co[0] -= voyc.defaultSpin.step; break;
+		case voyc.spin.UP   : this.co[1] += voyc.defaultSpin.step; break;
+		case voyc.spin.DOWN : this.co[1] -= voyc.defaultSpin.step; break;
+		case voyc.spin.CW   : this.gamma += voyc.defaultSpin.step; break;
+		case voyc.spin.CCW  : this.gamma -= voyc.defaultSpin.step; break;
 	}
 	this.co = this.clampCoord(this.co)
 	this.gamma = this.clampGamma(this.gamma)
@@ -290,6 +280,7 @@ voyc.World.prototype.setupData = function() {
 		'type':'GeometryCollection',
 		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
 	}
+	voyc.data.land.geometries.push({type:'Polygon',coordinates:[[[-180,-84],[180,-84],[180,-90],[-180,-90],[-180,-84]]]})
 
 	voyc.data.hires = {
 		name: 'hires',
@@ -304,12 +295,12 @@ voyc.World.prototype.setupData = function() {
 		'name': 'grid',
 		'type': 'GeometryCollection',
 		'geometries': [
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
+		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
+		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
+		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
+		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
 			
 			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel([0])},
 			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian([0],true)},
@@ -322,7 +313,7 @@ voyc.World.prototype.setupData = function() {
 	for (var lat=-80; lat<=80; lat+=10)
 		if (lat != 0)
 			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 3, 
+				'type': "LineString", 'scalerank': 1, 
 				'featureclass': "Parallel",
 				'name': '', //String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
 				'coordinates': voyc.Geo.drawParallel(lat),
@@ -330,7 +321,7 @@ voyc.World.prototype.setupData = function() {
 	for (var lng=-170; lng<=170; lng+=10)
 		if (lng != 90 && lng != -90 && lng != 0)
 			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 3, 
+				'type': "LineString", 'scalerank': 1, 
 				'featureclass': "Meridian",
 				'name': '', //String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
 				'coordinates': voyc.Geo.drawMeridian(lng),
@@ -600,8 +591,8 @@ voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
 	this.projection.translate([this.w/2, this.h/2]);
-	var newscale = Math.round(this.scale.factor * (Math.min(this.w,this.h) /2))
-	this.setScale(newscale)
+	//var newscale = Math.round(this.scale.factor * (Math.min(this.w,this.h) /2))
+	//this.setScale(newscale)
 
 	for (var id in this.layer) {
 		a = this.layer[id];
@@ -672,7 +663,7 @@ voyc.World.prototype.calcRank = function(id) {
 	var table = this.palette[id]
 	if (!table)
 		debugger;
-	var scale = this.scale.now 
+	var scale = this.zoom.now 
 	var rank = table.length
 	for (var r=0; r<table.length; r++) {
 		if (scale < table[r].scale) {
@@ -700,11 +691,11 @@ voyc.World.prototype.drawWater = function() {
 	var palette = this.palette['water'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
-	if (this.projection.mix == voyc.Projection.orthographic) // sphere
+	if (this.projection.projtype == 'orthographic') // sphere
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
 	else { // mercator rectangle
-		nw = this.projection.project([-180,85])
-		se = this.projection.project([180,-85])
+		nw = this.projection.project([-180,90])
+		se = this.projection.project([180,-90])
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
 	}
 	ctx.fillStyle = palette.fill
@@ -736,7 +727,7 @@ voyc.World.prototype.drawRiver = function() {
 }
 
 voyc.World.prototype.drawTexture = function() {
-	if (this.layer.hires.enabled && (this.scale.now >= 2.4))
+	if (this.layer.hires.enabled && (this.zoom.now >= 2.4))
 		this.texhi.draw({
 			projection: this.projection,
 			imageData: this.layer.hires.imageData, 
@@ -857,20 +848,29 @@ voyc.spin = {
 	DOWN:8,
 }		
 
-voyc.defaultScale = {
-	minScaleFactor: .5,  // small number, zoomed out
-	maxScaleFactor: 6,   // large number, zoomed in
-	scaleStepPct: .14,
-	spinStep: 6,
+voyc.defaultZoom = {
+	min: -2,  // small number, zoomed out
+	max: 4,    // large number, zoomed in
+	step: .5,
+	now: 0,
 }
+voyc.defaultSpin = {
+	step: 6,
+}
+
 voyc.defaultPalette = {
 	bkgrd: [{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,  0], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	water: [{scale:5000, stroke:false,         pen:.5, fill:[111,166,207], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	land:  [{scale:5000, stroke:false,         pen:.5, fill:[237,220,203], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
+	//grid:  [
+	//	{scale: 300, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+	//	{scale: 900, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+	//	{scale:5000, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+	//],
 	grid:  [
-		{scale: 300, stroke:[255,255,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 900, stroke:[255,255,255], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 300, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 900, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 300, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	empire:[
 		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },

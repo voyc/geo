@@ -5,24 +5,82 @@
 <title>geo test</title>
 <script>voyc = {}</script>
 <script src='geo.js'></script>
+<script src='dualprojection.js'></script>
+<script src='../jslib/utils.js'></script>
 <script>
+window.addEventListener('load', function() {test()}, false)
+function test() {
+	var coNY = [ -74.00594, -40.71278]
+	var coLA = [-118.24368, -34.05223]
+	var nyla  = voyc.Geo.distanceKm(coNY, coLA)
+	console.log([nyla,'3944 km'])
+	
+	var nylad3  = voyc.Geo.distanced3(coNY, coLA) * voyc.Geo.radiusKm
+	console.log([nylad3,'3944 km'])
+	
+	var coLondon = [0, 51.5]
+	var coArlington = [-77.1, 38.8]
+	var londonarlington = voyc.Geo.distanceKm(coLondon, coArlington)
+	console.log([londonarlington, '5918 km'])
+	
+	var coZero = [0,0]
+	var zero = voyc.Geo.distanceKm(coZero,coZero)
+	console.log([zero, '0 km'])
+	
+	var w = window.innerWidth
+	var h = window.innerHeight
+	var co = [0,0]
+	var gamma = 0
 
-var coNY = [ -74.00594, -40.71278]
-var coLA = [-118.24368, -34.05223]
-var nyla  = voyc.Geo.distanceKm(coNY, coLA)
-console.log([nyla,'3944 km'])
+	var proj = new voyc.DualProjection()
+	proj.wd = window.innerWidth
+	proj.ht = window.innerHeight
+	proj.projtype = 'mercator'
+	proj.rotate([0-co[0], 0-co[1], 0-gamma])
+	proj.translate([w/2, h/2])  // position the circle within the canvas (centered) in pixels
+	proj.scale(w/2)                  // size of the circle in pixels
+	
+	console.log(coNY)
+	var ptNY = proj.project(coNY)
+	console.log(ptNY)
+	var coNY2 = proj.invert(ptNY)
+	console.log(coNY2)
 
-var nylad3  = voyc.Geo.distanced3(coNY, coLA) * voyc.Geo.radiusKm
-console.log([nylad3,'3944 km'])
+	//console.log([ 0, secant( 0)])
+	//console.log([30, secant(30)])
+	//console.log([45, secant(45)])
+	//console.log([60, secant(60)])
+	//console.log([85, secant(85)])
 
-var coLondon = [0, 51.5]
-var coArlington = [-77.1, 38.8]
-var londonarlington = voyc.Geo.distanceKm(coLondon, coArlington)
-console.log([londonarlington, '5918 km'])
-
-var coZero = [0,0]
-var zero = voyc.Geo.distanceKm(coZero,coZero)
-console.log([zero, '0 km'])
+	for (var zoom=1; zoom<23; zoom++)
+		console.log(Math.pow(2,zoom))
+	
+	//console.log('interpolate points')
+	//for (var p=0; p<90; p+=10) {
+	//	var pt = [42,p]
+	//	var mf = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.ht, 1, 2)
+	//	console.log(mf)	
+	//}
+	//console.log('interpolate coordinates')
+	//for (var c=0; c<90; c+=10) {
+	//	var co = [42,c]
+	//	var mf = voyc.interpolate(Math.abs(co[1]), 0, +90, 1, 2)
+	//	console.log(mf)	
+	//}
+	//console.log('secant coordinates')
+	for (var c=0; c<90; c+=10) {
+		var pt = [42,c]
+		var co = [42,c]
+		var mfpti = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.ht, 1, 2)
+		var mfcoi = voyc.interpolate(Math.abs(co[1]), 0, +90, 1, 2)
+		var mfcos = voyc.secant(Math.abs(co[1]))
+		console.log([mfpti,mfcoi,mfcos])	
+	}
+	var pt = [40,40]
+	var co = proj.project(pt)
+	var ps = proj.invert(co)
+	console.log([pt,co,ps])
+}
 
 </script>
 </head>

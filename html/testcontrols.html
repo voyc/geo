@@ -12,11 +12,13 @@
 		</style>
 		<script>
 			window.addEventListener('load', function(evt) {
-				const rangeInput = document.getElementById('year');
-				const output = document.querySelector('yearout');
+				var rangeInput = document.getElementById('year')
+				var output = document.getElementById('yearout')
+				output.min = -2
+				output.max = 6
 				
 				rangeInput.addEventListener('change', function() {
-				  output.innerHTML += this.value;
+					output.innerHTML = parseInt(this.value)
 				}, false);
 			}, false);
 		</script>

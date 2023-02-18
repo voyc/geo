@@ -96,6 +96,7 @@
 			</div>
 			<button g id='projectbtn'>
 				<img id='globeimg' src='i/globe_black_24.png' title='globe'/>
+				<img id='equimg'   src='i/ruler_black_24.png' title='equirectangular'/>
 				<img id='mercimg'  src='i/mercator_black_24.png' title='mercator'/>
 			</button>
 		</div>
@@ -130,11 +131,11 @@
 			<p><button id='socialbtn'><img src='i/twitter_black_24.png' /></button>
 			   <a id='sociallnk' href='https://twitter.com/SamVoyc' target='new' class='anchor'>Social</a></p>
 		</nav>
-		<aside id='options-dialog' initially hidden class='panel popup leftnav blu dialog'>
+		<aside id='options-dialog' initially hidden stay class='panel popup leftnav blu dialog'>
 			<p><label for='option-showid'><input id='option-showid' type='checkbox' /> Show Ids</label></p>
-			<p>Max Scale <label for='option-maxscale'><input id='option-maxscale' type='number' autofocus /></label></p>
+			<p>Max Zoom <label for='option-maxzoom'><input id='option-maxzoom' type='number' autofocus /></label></p>
 			<p id='option-dim'>x pxl dim: 894 x 894</p>
-			<p id='option-scale'>x scale: 246/1</p>
+			<p id='option-zoom'>x zoom: 1</p>
 			<p id='option-co'>x 45.23, -175.84, 0</p>
 			<p><label for='option-animation'><input id='option-animation' type='checkbox' /> Animation</label></p>
 			<p>FPS <label for='option-fps'><input id='option-fps' type='number' /></label></p>

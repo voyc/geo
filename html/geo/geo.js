@@ -19,6 +19,11 @@ voyc.Geo.to_degrees = 180 / voyc.Geo.π;
 voyc.Geo.radiusKm = 6371             // radius of planet earth in km
 voyc.Geo.circumferenceKm = 40000     // circumference of planet earth in km
 
+
+voyc.radians = function(x) { return x * (Math.PI / 180) }
+voyc.degrees = function(x) { return x * (180 / Math.PI) }
+voyc.secant = function(x) { return 1/Math.cos(voyc.radians(x))} // reciprocal cosine, a ratio 
+
 voyc.Geo.distanced3 = function(a, b) { // original d3 function
 	var Δλ = (b[0] - a[0]) * voyc.Geo.to_radians, φ0 = a[1] * voyc.Geo.to_radians, φ1 = b[1] * voyc.Geo.to_radians, sinΔλ = Math.sin(Δλ), cosΔλ = Math.cos(Δλ), sinφ0 = Math.sin(φ0), cosφ0 = Math.cos(φ0), sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1), t;
 	return Math.atan2(Math.sqrt((t = cosφ1 * sinΔλ) * t + (t = cosφ0 * sinφ1 - sinφ0 * cosφ1 * cosΔλ) * t), sinφ0 * sinφ1 + cosφ0 * cosφ1 * cosΔλ);
@@ -81,49 +86,49 @@ voyc.Geo.calcAngle = function(ptStart, ptEnd) {
 	return theta;
 }
 
-/** 
-	draw a bitmap from src to dst
-	each of src and dst is an object with these properties:
-		projection
-		imageData
-		ctx
-		w
-		h
-		
-*/
-voyc.Geo.drawTexture = function(dst,src) {
-	// loop thru every pixel in the dst
-	var co = [];
-	var pt = [];
-	var wn = 0;
-	var tn = 0;
-	//log&&console.log(voyc.timer()+'texture data copy start');
-	for (var x=0; x<(dst.w); x++) {
-		for (var y=0; y<(dst.h); y++) {
-			co = dst.projection.invert([x,y]);
-			//co = [-20, -80];
-
-			if (!(isNaN(co[0]) || isNaN(co[1]))) {
-				pt = src.projection(co);
-				//pt = [300,300]; 
-				
-				// copy 4 bytes for each pixel
-				wn = (y * dst.w + x) * 4;
-				tn = (Math.floor(pt[1]) * src.w + Math.floor(pt[0])) * 4;
-				dst.imageData.data[wn + 0] = src.imageData.data[tn + 0];
-				dst.imageData.data[wn + 1] = src.imageData.data[tn + 1];
-				dst.imageData.data[wn + 2] = src.imageData.data[tn + 2];
-				if (src.imageData.data[wn + 0] + src.imageData.data[wn + 1] + src.imageData.data[wn + 2]) {
-					dst.imageData.data[wn + 3] = 255;
-				}
-			}
-		}
-	}
-	//log&&console.log(voyc.timer()+'texture data copy complete');
-	//log&&console.log(voyc.timer()+'texture data put start');
-	dst.ctx.putImageData(dst.imageData, 0, 0);
-	//log&&console.log(voyc.timer()+'texture data put complete');
-}
+///** 
+//	draw a bitmap from src to dst
+//	each of src and dst is an object with these properties:
+//		projection
+//		imageData
+//		ctx
+//		w
+//		h
+//		
+//*/
+//voyc.Geo.drawTexture = function(dst,src) {
+//	// loop thru every pixel in the dst
+//	var co = [];
+//	var pt = [];
+//	var wn = 0;
+//	var tn = 0;
+//	//log&&console.log(voyc.timer()+'texture data copy start');
+//	for (var x=0; x<(dst.w); x++) {
+//		for (var y=0; y<(dst.h); y++) {
+//			co = dst.projection.invert([x,y]);
+//			//co = [-20, -80];
+//
+//			if (!(isNaN(co[0]) || isNaN(co[1]))) {
+//				pt = src.projection(co);
+//				//pt = [300,300]; 
+//				
+//				// copy 4 bytes for each pixel
+//				wn = (y * dst.w + x) * 4;
+//				tn = (Math.floor(pt[1]) * src.w + Math.floor(pt[0])) * 4;
+//				dst.imageData.data[wn + 0] = src.imageData.data[tn + 0];
+//				dst.imageData.data[wn + 1] = src.imageData.data[tn + 1];
+//				dst.imageData.data[wn + 2] = src.imageData.data[tn + 2];
+//				if (src.imageData.data[wn + 0] + src.imageData.data[wn + 1] + src.imageData.data[wn + 2]) {
+//					dst.imageData.data[wn + 3] = 255;
+//				}
+//			}
+//		}
+//	}
+//	//log&&console.log(voyc.timer()+'texture data copy complete');
+//	//log&&console.log(voyc.timer()+'texture data put start');
+//	dst.ctx.putImageData(dst.imageData, 0, 0);
+//	//log&&console.log(voyc.timer()+'texture data put complete');
+//}
 
 voyc.Geo.drawMeridian = function(lng,goalltheway) {
 	var goalltheway = goalltheway || false

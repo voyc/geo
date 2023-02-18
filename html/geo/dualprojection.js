@@ -41,29 +41,32 @@
 		
 */
 voyc.DualProjection = function() {
-	this.mix = 0;
+	this.projtype = 'orthographic'  // orthographic, equirectangular, mercator, mix
+	this.mix = 0
 
 	// rotate
-	this.δλ = 0;  // delta lambda, horizontal angle in radians
-	this.δφ = 0;  // delta phi, vertical angle in radians
-	this.δγ = 0;  // delta gamma, z-axis angle in radians
-	this.cosδφ = 0;
-	this.sinδφ = 0;
-	this.cosδγ = 0;
-	this.sinδγ = 0;
+	this.δλ = 0  // delta lambda, horizontal angle in radians
+	this.δφ = 0  // delta phi, vertical angle in radians
+	this.δγ = 0  // delta gamma, z-axis angle in radians
+	this.cosδφ = 0
+	this.sinδφ = 0
+	this.cosδγ = 0
+	this.sinδγ = 0
 
 	// translate
-	this.pt = []; // centerpoint in pixels
-	this.δx = 0;  // delta x in pixels
-	this.δy = 0;  // delta y in pixels
+	this.pt = [] // centerpoint in pixels
+	this.δx = 0  // delta x in pixels
+	this.δy = 0  // delta y in pixels
 
 	// new stuff added for mercator
-	this.wd = 0;
-	this.ht = 0;
-	this.co = [];    // center [lng,lat]  E and S are positive (opposite of world.co)
+	this.wd = 0
+	this.ht = 0
+	this.co = []    // center [lng,lat]  E and S are positive (opposite of world.co)
+	this.pt = []    // center [x,y]
+	this.ptNullIsland = []   // pt projected from co [0,0]
 
 	// scale
-	this.k = 0;  // scale in pixels.  In orthographic projection, scale = radius of the globe.
+	this.k = 0  // orthographic: radius of the globe
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
@@ -105,6 +108,8 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	this.sinδφ = Math.sin(this.δφ);
 	this.cosδγ = Math.cos(this.δγ);
 	this.sinδγ = Math.sin(this.δγ);
+
+	this.ptNullIsland = this.project([0,0]) 
 }
 
 /**
@@ -115,12 +120,25 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 
 	Called by World.zoom()
 */
-voyc.DualProjection.prototype.scale = function(k) {
-	// for orthographic, set the scale amount, k
-	this.k = k;
+voyc.DualProjection.prototype.scale = function(zoom) {
+	// for mercator, zoom level between 0 and 20
+	this.zoom = zoom
 
-	// for mercator, also set the ratio
-	this.pxlPerDgr = (k * 4) / 360
+	// for orthographic, k = radius of earth in pixels
+	var halfwid = Math.min(this.wd, this.ht)
+	this.k = (2**zoom) * (halfwid/Math.PI)
+
+	// for equirectangular, a fixed ratio of pixels to degrees
+	this.pxlPerDgr = (this.k * 4) / 360
+	this.halfwid = this.k * (Math.PI/2)
+	this.pxlPerDgr = (this.halfwid * 4) / 360
+	//this.pxlPerDgr = (halfwid * Math.PI) / 360
+
+	this.ptNullIsland = this.project([0,0]) 
+
+	//var zoom = -.5
+	//var halfwid = Math.min(this.wd,this.ht)/2
+	//this.mercfact =(halfwid/Math.PI) * (2**zoom)
 }
 
 ///**
@@ -158,6 +176,8 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	// for mercator, calc screen boundaries in pixels
 	this.wd = this.pt[0] * 2
 	this.ht = this.pt[1] * 2
+
+	this.ptNullIsland = this.project([0,0]) 
 }
 
 /**
@@ -236,10 +256,10 @@ voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 		clip to the rectangle extent of the viewport (not implemented)
 */
 voyc.DualProjection.prototype.project = function(co) {
-	xm = xo = 0
-	ym = yo = 0
+	var xm = xo = 0
+	var ym = yo = 0
 
-	if (this.mix != voyc.Projection.orthographic) {
+	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
 		// rotate
 		lng = co[0]     - this.co[0]
 		lat = (0-co[1]) - this.co[1]
@@ -248,14 +268,64 @@ voyc.DualProjection.prototype.project = function(co) {
 		xm = lng * this.pxlPerDgr
 		ym = lat * this.pxlPerDgr
 
-		ym *= 1.2 // difference between equirectangular and mercator
+		// translate
+		xm += this.pt[0]
+		ym += this.pt[1]
+	}
+
+	if (this.projtype == 'mercator' || this.projtype == 'mix') {
+
+		// calculate a mercator factor, increasing with distance from equator
+		var mf = voyc.interpolate(Math.abs(co[1]), 0, 90, .8, 1.8)
+		this.mf = mf
+		//var mf = voyc.secant(Math.abs(co[1]))
+	
+		// rotate
+		lng = co[0] - this.co[0]
+		lat = 0-co[1]
+		lat = lat * mf  // apply mercator factor to the nominal latitude BEFORE rotate
+		lat = lat - this.co[1]    
+
+		// scale
+		xm = lng * this.pxlPerDgr
+		ym = lat
+		ym = lat * this.pxlPerDgr
 
 		// translate
 		xm += this.pt[0]
 		ym += this.pt[1]
 	}
 
-	if (this.mix != voyc.Projection.mercator) {
+	if (this.projtype == 'webmercator' || this.projtype == 'mix') {
+		//https://en.wikipedia.org/wiki/Web_Mercator_projection
+		//https://gist.github.com/shiffman/a0d2fde31f571163c730ba0da4a01c82
+		//https://developer.tomtom.com/blog/decoded/understanding-map-tile-grids-and-zoom-levels
+
+		// mercator uses ellipsoid model, has time-consuming calculation
+		// webmercator uses spheroid model, introduces "zoom level", and simplifies the calculation
+		// a sphere is a subset of an ellipsoid object
+
+		// rotate
+		lng = co[0] - this.co[0]
+		lat = (0-co[1]) - this.co[1]
+		lat = co[1]
+
+		// scale
+		//var zoom = -2
+		var halfwid = Math.min(this.wd,this.ht)/2
+		xm = (halfwid/Math.PI) * (2**this.zoom) * (voyc.radians(lng)+Math.PI)
+		ym = (halfwid/Math.PI) * (2**this.zoom) * ((Math.PI - Math.log(Math.tan((Math.PI/4) + (voyc.radians(lat)/2)))) - voyc.radians(this.co[1]))
+		//ym = (halfwid/Math.PI) * (2**zoom) * (voyc.radians(lat)+Math.PI)
+
+		xm = Math.round(xm)
+		ym = Math.round(ym)
+
+		// translate
+		xm += this.pt[0]
+		//ym += this.pt[1]
+	}
+
+	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
 		// convert degrees to radians
 		var λ = co[0] * voyc.Geo.to_radians;  // lambda (small)
 		var φ = co[1] * voyc.Geo.to_radians;  // phi (small)
@@ -297,7 +367,7 @@ voyc.DualProjection.prototype.project = function(co) {
 	var x = xm || xo
 	var y = ym || yo
 
-	if (this.mix != voyc.Projection.mercator && this.mix != voyc.Projection.orthographic) {
+	if (this.projtype == 'mix') {
 		// in-between, mix
 		var mixpct = .4
 		x = xm + ((xo - xm) * mixpct)
@@ -320,7 +390,7 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	var lngo = 0
 	var visible = true
 
-	if (this.mix != voyc.Projection.orthographic) {
+	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 
@@ -331,7 +401,41 @@ voyc.DualProjection.prototype.invert = function(pt) {
 		latm -= this.co[1]
 	}
 
-	if (this.mix != voyc.Projection.mercator) {
+	if (this.projtype == 'mercator' || this.projtype == 'mix') {
+
+		// calculate a mercator factor, increasing with distance from equator
+		var mfp= voyc.interpolate(Math.abs(pt[1]-this.ptNullIsland[1]), 0, this.halfwid, .8, 1.8)
+		//var mf = voyc.secant(Math.abs(pt[1]-this.ptNullIsland[1]))
+	
+		x = pt[0] - this.pt[0]
+		y = pt[1] - this.pt[1]
+
+		lngm = x / this.pxlPerDgr
+		latm = y / this.pxlPerDgr
+
+		lngm += this.co[0]
+		latm += this.co[1]
+		var mfc= voyc.interpolate(Math.abs(latm), 0, 90, .8, 1.8)
+		//console.log(['mf', mfp,mfc, this.mf])
+		latm /= mfp  //this.mf //mfp
+		latm = (0-latm)
+	}
+
+	if (this.projtype == 'webmercator' || this.projtype == 'mix') {
+		x = pt[0] - this.pt[0]
+		y = pt[1] - this.pt[1]
+		y = pt[1]
+
+		var halfwid = Math.min(this.wd,this.ht)/2
+
+		lngm = voyc.degrees(                            (x / ((halfwid / Math.PI) * Math.pow(2, this.zoom)))   - Math.PI)
+		latm = voyc.degrees((Math.atan(Math.exp(Math.PI-(y / ((halfwid / Math.PI) * Math.pow(2, this.zoom))))) - (Math.PI / 4))*2)
+
+		lngm += this.co[0]
+		latm -= this.co[1]
+	}
+
+	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
 		var visible = this.isPointInCircle(pt[0],pt[1])
 
 		var x = (pt[0] - this.δx) / this.k;
@@ -369,8 +473,6 @@ voyc.DualProjection.prototype.invert = function(pt) {
 
 	var lng = lngm || lngo
 	var lat = latm || lato
-	if (this.mix != voyc.Projection.mercator && this.mix != voyc.Projection.orthographic) {
-	}
 	return [lng,lat,visible];
 }
 
@@ -394,11 +496,5 @@ voyc.DualProjection.prototype.precision = function(x) {
 	// to give it the great arc curvature on the surface of the globe.
 	// We assume our data has sufficient points, ie., no long straight lines,
 	// so that resampling is not necessary.
-}
-
-voyc.Projection = {
-	mercator: -1,
-	orthographic: +1,
-	// mix: somewhere between -1 and +1
 }
 

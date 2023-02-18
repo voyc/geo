@@ -99,7 +99,7 @@ icon {
 	left:0;
 	bottom:0;
 	height:1em;
-	width:5.5em;
+	width:7em; /* 5.5em; */
 	text-align:center;
 }
 #loading.off {
