@@ -75,13 +75,15 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.texlo = new voyc.Texture()
 	var self = this
 	this.texlo.load('whole', this.co, function(row) {
-		self.texhi.load('tiled', this.co, function(row) {
-			voyc.$('loadpct').innerHTML = `${row.pct}`
-			if (!(self.texhi.numLoaded % 10) || row.pct == 100) {
-				self.moved = true
-				voyc.geosketch.render(0)
-			}
-		})
+		if (voyc.geosketch.options.hires) {
+			self.texhi.load('tiled', this.co, function(row) {
+				voyc.$('loadpct').innerHTML = `${row.pct}`
+				if (!(self.texhi.numLoaded % 10) || row.pct == 100) {
+					self.moved = true
+					voyc.geosketch.render(0)
+				}
+			})
+		}
 	})
 }
 
@@ -155,12 +157,15 @@ voyc.World.prototype.dropTime = function(evt) {
 // called at startup
 voyc.World.prototype.setupZoom = function(startzoom) {
 	this.zoom.now = startzoom
-	if (typeof(voyc.geosketch.options.maxzoom == 'defined'))
-		this.zoom.max = voyc.geosketch.options.maxzoom
+	if (voyc.geosketch.options.devzoom) {
+		this.zoom.min = voyc.devZoom.min
+		this.zoom.max = voyc.devZoom.max
+	}
 }
 
 // public zoom by increment, as with key arrow or mouse wheel
-voyc.World.prototype.stepZoom = function(dir,pt) {
+voyc.World.prototype.stepZoom = function(dir,pt,coarse) {
+	coarse = coarse || false
 	pt = pt || false // if mousewheel, zoom centered on the mouse point
 	var coOld = (pt) ? this.projection.invert(pt) : false
 	var x = 0;
@@ -168,7 +173,8 @@ voyc.World.prototype.stepZoom = function(dir,pt) {
 		case voyc.spin.IN: x = 1; break;
 		case voyc.spin.OUT: x = -1; break;
 	}
-	var newzoom = this.zoom.now + (x * this.zoom.step)
+	var step = (coarse) ? this.zoom.bigstep : this.zoom.babystep
+	var newzoom = this.zoom.now + (x * step)
 	newzoom = voyc.clamp(newzoom, this.zoom.min, this.zoom.max)
 	this.setZoom(newzoom)
 	if (pt) {
@@ -186,7 +192,7 @@ voyc.World.prototype.setZoom = function(newzoom) {
 		this.zoom.now = newzoom
 	this.projection.scale(this.zoom.now)
 	
-	voyc.geosketch.hud.setZoomer(this.zoom.now)
+	voyc.geosketch.hud.setZoomer(this.zoom.now, this.projection.gscale)
 	this.stoZoom()
 	this.moved = true;
 	voyc.geosketch.render(0)
@@ -875,10 +881,15 @@ voyc.spin = {
 	DOWN:8,
 }		
 
+voyc.devZoom = {
+	min: -2,
+	max: 7,
+}
 voyc.defaultZoom = {
-	min: -2,  // small number, zoomed out
+	min: 0,  // small number, zoomed out
 	max: 4,    // large number, zoomed in
-	step: .5,
+	bigstep: .5,
+	babystep: .1,
 	now: 0,
 }
 voyc.defaultSpin = {

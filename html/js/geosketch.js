@@ -9,8 +9,9 @@ voyc.GeoSketch = function () {
 
 	this.options = {}
 	this.defaultOptions = {
-		showid:true,
-		maxzoom:4,
+		showid:false,
+		devzoom:false,
+		hires:true,
 		animation:true,
 		fps:20,
 	}
@@ -114,10 +115,12 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 	localStorage.setItem( 'options', JSON.stringify(this.options));
 
 	voyc.$('option-showid').checked = this.options.showid
-	voyc.$('option-maxzoom').value = this.options.maxzoom
-	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
+	voyc.$('option-devzoom').checked = this.options.devzoom
+	voyc.$('option-hires').checked = this.options.hires
 	voyc.$('option-animation').checked = this.options.animation
 	voyc.$('option-fps').value = this.options.fps
+
+	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
 }
 voyc.GeoSketch.prototype.setOption = function (key,value) {
 	this.options[key] = value

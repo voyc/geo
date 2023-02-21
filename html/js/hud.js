@@ -113,13 +113,22 @@ voyc.Hud.prototype.attachButtons = function() {
 
 	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
 
-	
-	document.getElementById('option-maxzoom').addEventListener('change', function(evt) {
-		voyc.geosketch.setOption( 'maxzoom', parseFloat(evt.target.value))
+	document.getElementById('searchbtn').addEventListener('click', function(evt) {
+		var q = voyc.$('searchq').value
+		self.onSearch(q)
 	}, false)
+	
 
 	document.getElementById('option-showid').addEventListener('change',  function(evt) {
 		voyc.geosketch.setOption( 'showid', evt.target.checked)
+	}, false)
+
+	document.getElementById('option-devzoom').addEventListener('change', function(evt) {
+		voyc.geosketch.setOption( 'devzoom', evt.target.checked)
+	}, false)
+
+	document.getElementById('option-hires').addEventListener('change', function(evt) {
+		voyc.geosketch.setOption( 'hires', evt.target.checked)
 	}, false)
 
 	document.getElementById('option-animation').addEventListener('change',  function(evt) {
@@ -131,11 +140,6 @@ voyc.Hud.prototype.attachButtons = function() {
 		var fps = parseFloat(evt.target.value)
 		voyc.geosketch.setOption( 'fps', fps)
 		voyc.geosketch.game.maxfps = fps
-	}, false)
-
-	document.getElementById('searchbtn').addEventListener('click', function(evt) {
-		var q = voyc.$('searchq').value
-		self.onSearch(q)
 	}, false)
 }
 	
@@ -194,8 +198,8 @@ voyc.Hud.prototype.attachKeyboard = function() {
 			switch (evt.keyCode) {
 				case 39: voyc.geosketch.world.spin(voyc.spin.CW); break;
 				case 37: voyc.geosketch.world.spin(voyc.spin.CCW); break;
-				case 38: voyc.geosketch.world.zoom(voyc.spin.IN); break;
-				case 40: voyc.geosketch.world.zoom(voyc.spin.OUT); break;
+				case 38: voyc.geosketch.world.stepZoom(voyc.spin.IN); break;
+				case 40: voyc.geosketch.world.stepZoom(voyc.spin.OUT); break;
 				default: return;
 			}
 		}
@@ -456,7 +460,7 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer.min   = zoom.min
 	this.mapzoomer.max   = zoom.max
 	this.mapzoomer.value = zoom.now
-	this.mapzoomer.step  = zoom.step
+	this.mapzoomer.step  = zoom.babystep
 
 	var self = this
 	this.mapzoomer.addEventListener('mousedown', function(evt) {self.mapZoomerDown(evt)}, false)
@@ -467,10 +471,10 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false)
 
 	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.stepZoom(voyc.spin.IN)	
+		voyc.geosketch.world.stepZoom(voyc.spin.IN, false, true)	
 	}, false)
 	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.stepZoom(voyc.spin.OUT)	
+		voyc.geosketch.world.stepZoom(voyc.spin.OUT, false, true)	
 	}, false)
 }
 
@@ -492,7 +496,7 @@ voyc.Hud.prototype.mapZoomerDown = function (evt) {
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
 	evt.stopPropagation();
 	if (this.mapzoomerIsHot)
-		voyc.geosketch.world.setZoom(evt.target.value)
+		voyc.geosketch.world.setZoom(parseFloat(evt.target.value))
 }
 
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
@@ -531,11 +535,12 @@ voyc.Hud.prototype.closeAnnouncement = function() {
 	this.fade(document.getElementById('announce'), false);
 }
 
-voyc.Hud.prototype.setZoomer = function(newvalue) {
+voyc.Hud.prototype.setZoomer = function(zoom,scale) {
 	if (!this.mapzoomerIsHot) {
-		this.mapzoomer.value = newvalue;
+		this.mapzoomer.value = zoom
 	}
-	voyc.$('option-zoom').innerHTML = 'zoom: ' + newvalue
+	voyc.$('option-zoom').innerHTML = 'zoom: ' + zoom
+	voyc.$('option-scale').innerHTML = 'scale: ' + parseInt(scale)
 }
 
 voyc.Hud.prototype.setCo = function(co,gamma) {
@@ -780,9 +785,9 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 		this.ptPrev = pt
 		if (pinch) {
 			if (pinch < -2)
-				voyc.geosketch.world.zoom(voyc.spin.OUT)
+				voyc.geosketch.world.stepZoom(voyc.spin.OUT)
 			else if (pinch > 2)
-				voyc.geosketch.world.zoom(voyc.spin.IN)
+				voyc.geosketch.world.stepZoom(voyc.spin.IN)
 		}
 		voyc.$('whereami').innerHTML = twist
 		if (twist) {
