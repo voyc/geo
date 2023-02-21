@@ -90,7 +90,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 voyc.World.prototype.showHiRes = function(boo) {}
 
 voyc.World.prototype.setProjType = function(projtype) {
-	this.projection.projtype = projtype
+	this.projection.setProjType(projtype)
 	this.moved = true
 	voyc.geosketch.render(0)
 	this.stoPro()
@@ -714,14 +714,14 @@ voyc.World.prototype.drawWater = function() {
 	if (this.projection.projtype == 'orthographic')
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
 	else if (this.projection.projtype == 'mercator') {
-		nw = this.projection.project([-180,85])
-		se = this.projection.project([180,-85])
+		nw = this.projection.cx[0]
+		se = this.projection.cx[1]
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
 		this.mercwidth = se[0] - nw[0] 
 	}
 	else if (this.projection.projtype == 'equirectangular') {
-		nw = this.projection.project([-180,90])
-		se = this.projection.project([180,-90])
+		nw = this.projection.cx[0]
+		se = this.projection.cx[1]
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
 		this.mercwidth = se[0] - nw[0] 
 	}

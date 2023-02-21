@@ -83,6 +83,11 @@ voyc.DualProjection = function() {
 	this.cx = [[],[]]
 }
 
+voyc.DualProjection.prototype.setProjType = function(projtype) {
+	this.projtype = projtype
+	this.cx = this.clipExtent()
+}
+
 /**
 	rotate([λ,φ,γ])
 	Sets the projection’s three-axis rotation 
