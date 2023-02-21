@@ -43,15 +43,11 @@
 voyc.DualProjection = function() {
 	// inputs
 	this.projtype = 'orthographic'  // orthographic, equirectangular, mercator, mix
-	// this.wd
-	// this.ht
-	// this.co
-	// this.zoom
+	this.wd = 0
+	this.ht = 0
+	this.co = []    // center coord [lng,lat]  E and S are positive (opposite of world.co)
+	this.zoom = 0        // [0:20], [0:4], [-2:7]
 
-
-
-
-	this.mix = 0
 
 	// rotate
 	this.δλ = 0  // delta lambda, horizontal angle in radians
@@ -67,20 +63,18 @@ voyc.DualProjection = function() {
 	this.δy = 0  // delta y in pixels
 
 	// new stuff added for mercator
-	this.wd = 0
-	this.ht = 0
-	this.co = []    // center [lng,lat]  E and S are positive (opposite of world.co)
 	this.pt = []    // center [x,y]
 	this.ptNullIsland = []   // pt projected from co [0,0]
 
 	// scale
-	this.zoom = 0        // [0:20], [0:4], [-2:7]
-	this.k = 0           // orthographic: radius of the globe in pixels
-	this.mapscale = 0    // information only.  not used.
+	this.k = 0	// orthographic: radius of the globe in pixels
+	this.gscale = 0	// information only.  not used.
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
-	this.cx = [[],[]]
+	this.cx = [[],[]]  // clipExtent, rectangle of viewport 
+
+	this.mix = 0  // used during animated projection morph
 }
 
 voyc.DualProjection.prototype.setProjType = function(projtype) {
@@ -102,12 +96,6 @@ voyc.DualProjection.prototype.setProjType = function(projtype) {
 		spin adjusts by an increment
 		passes the zero-complement of the three values as ro
 */
-//voyc.DualProjection.prototype.rotateIncr = function(ro) {
-//	ro[0] -= this.co[0]
-//	ro[1] += this.co[1]
-//	this.rotate(ro)
-//}
-
 voyc.DualProjection.prototype.rotate = function(ro) {
 	// for mercator, set the center coordinate
 	var lng = 0 - ro[0] 
@@ -137,9 +125,10 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 
 	Called by World.zoom()
 */
+
 voyc.DualProjection.prototype.scale = function(zoom) {
 	this.zoom = zoom				// level between -2 and 20
-	this.mapscale = (2**zoom) * 591657527.591555	// not used
+	this.gscale = (2**zoom) * voyc.scaleConstant256	// not used
 	this.square = Math.min(this.wd, this.ht)	// largest square in window, in pixels
 	this.halfwid = this.square / 2			// half square
 
@@ -158,8 +147,7 @@ voyc.DualProjection.prototype.scale = function(zoom) {
 	Sets the projection’s translation offset 
 	to the specified two-element array [x, y] in pixels.
 	This is normally the center point of the viewport window.
-
-	Called by voyc.World.setup() and resize()
+	Called on load and resize.
 */
 voyc.DualProjection.prototype.translate = function(pt) {
 	// save the center point in pixels
@@ -172,6 +160,12 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	// for mercator, calc screen boundaries in pixels
 	this.wd = this.pt[0] * 2
 	this.ht = this.pt[1] * 2
+
+	// rescale: zoom is kept constant, factors recalculated for new length
+	this.square = Math.min(this.wd, this.ht)
+	this.halfwid = this.square / 2
+	this.k = (2**this.zoom) * (this.halfwid/Math.PI)
+	this.pxlPerDgr = (2**this.zoom) * (this.square / 360)	// fixed ratio of pixels to degrees
 
 	this.ptNullIsland = this.project([0,0]) 
 	this.cx = this.clipExtent()

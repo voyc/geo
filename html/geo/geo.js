@@ -23,10 +23,11 @@ voyc.Geo.circumferenceKm = 40000     // circumference of planet earth in km
 voyc.radians = function(x) { return x * (Math.PI / 180) }
 voyc.degrees = function(x) { return x * (180 / Math.PI) }
 voyc.secant = function(x) { return 1/Math.cos(voyc.radians(x))} // reciprocal cosine, a ratio 
+voyc.powR = function(x,y) { return Math.log(y) / Math.log(x) } // reciprocal power, x**n == y, return n
 
 voyc.mercatorStretch = function(latm) {var phim=voyc.radians(latm); var phi =Math.log(Math.tan(Math.PI / 4 + phim / 2)); return voyc.degrees(phi);}
 voyc.mercatorShrink  = function(lat)  {var phi =voyc.radians(lat);  var phim=(2*Math.atan(Math.exp(phi))) - (Math.PI/2); return voyc.degrees(phim);}
-
+voyc.scaleConstant256 = 591657527.591555 // scale at zoom 0, with mercator square at 256 pixels and ppi of 96
 
 
 
