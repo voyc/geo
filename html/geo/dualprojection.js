@@ -80,6 +80,7 @@ voyc.DualProjection = function() {
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
+	this.cx = [[],[]]
 }
 
 /**
@@ -120,6 +121,7 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	this.sinδγ = Math.sin(this.δγ);
 
 	this.ptNullIsland = this.project([0,0]) 
+	this.cx = this.clipExtent()
 }
 
 /**
@@ -143,6 +145,7 @@ voyc.DualProjection.prototype.scale = function(zoom) {
 	this.pxlPerDgr = (2**zoom) * (this.square / 360)	// fixed ratio of pixels to degrees
 
 	this.ptNullIsland = this.project([0,0]) 
+	this.cx = this.clipExtent()
 }
 
 /**
@@ -166,6 +169,7 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	this.ht = this.pt[1] * 2
 
 	this.ptNullIsland = this.project([0,0]) 
+	this.cx = this.clipExtent()
 }
 
 /**
@@ -193,21 +197,26 @@ voyc.DualProjection.prototype.clipAngle = function(angle) {
 		2. "extent" clipping, performed after point projection, 
 			by comparing the output [x,y] point to the visible rectangle of the viewport window.
 */
-voyc.DualProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
-	// not implemented
-//   m.clipExtent = function(_) {
-//      var v = clipExtent.apply(m, arguments);
-//      if (v === m) {
-//        if (clipAuto = _ == null) {
-//          var k = π * scale(), t = translate();
-//          clipExtent([ [ t[0] - k, t[1] - k ], [ t[0] + k, t[1] + k ] ]);
-//        }
-//      } else if (clipAuto) {
-//        v = null;
-//      }
-//      return v;
-//    };
-//    return m.clipExtent(null);
+voyc.DualProjection.prototype.clipExtent = function()  {
+	var y = (this.projtype == 'mercator') ? 85 : 90
+	var nw = this.project([-180, y])
+	var se = this.project([180, 0-y]) 
+
+	var w = Math.max(nw[0], 0)
+	var n = Math.max(nw[1], 0)
+	var e = Math.min(se[0], this.wd)
+	var s = Math.min(se[1], this.ht)
+	var cx = [[w,n],[e,s]]
+
+	// this is same as project without the rotate ?
+        //var k = π * scale() 
+	//var t = translate()
+	//cx = clipExtent([ [ t[0] - k, t[1] - k ], [ t[0] + k, t[1] + k ] ]);
+	return cx
+}
+voyc.DualProjection.prototype.isVisibleExtent = function(x,y) {
+	return (x >= this.cx[0][0]) && (x <= this.cx[1][0])
+	    && (y >= this.cx[0][1]) && (y <= this.cx[1][1])
 }
 
 /**
@@ -278,6 +287,9 @@ voyc.DualProjection.prototype.project = function(co) {
 		// translate
 		xm += this.pt[0]
 		ym += this.pt[1]
+
+		//var boo = this.isVisibleExtent(xm,ym)
+		//if (!boo) return false
 	}
 
 	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
@@ -348,6 +360,8 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	var visible = true
 
 	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
+		visible = this.isVisibleExtent(pt[0], pt[1])
+
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 
@@ -359,6 +373,8 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	}
 
 	if (this.projtype == 'mercator' || this.projtype == 'mix') {
+		visible = this.isVisibleExtent(pt[0], pt[1])
+
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 

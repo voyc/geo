@@ -250,7 +250,6 @@ voyc.Texture.prototype.draw = function(dst) {
 	for (var y=0; y<(dst.h); y++) {
 		for (var x=0; x<(dst.w); x++) {
 			co = dst.projection.invert([x,y]);
-			//if (!(isNaN(co[0]) || isNaN(co[1]))) {
 			if (co[2]) {
 				pt = this.projection.project(co)   // hello
 				wn = (y * dst.w + x) * 4;
@@ -259,11 +258,7 @@ voyc.Texture.prototype.draw = function(dst) {
 				dst.imageData.data[wn + 1] = this.imgdata.data[tn + 1];
 				dst.imageData.data[wn + 2] = this.imgdata.data[tn + 2];
 				if (!(this.imgdata.data[tn]+this.imgdata.data[tn+1]+this.imgdata.data[tn+3])) {
-					//dst.imageData.data[wn + 3] = 0
-					dst.imageData.data[wn + 0] = 255
-					dst.imageData.data[wn + 1] = 0
-					dst.imageData.data[wn + 2] = 0
-					dst.imageData.data[wn + 3] = 255
+					dst.imageData.data[wn + 3] = 0
 				}
 				else
 					dst.imageData.data[wn + 3] = 255
