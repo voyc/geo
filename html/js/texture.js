@@ -258,8 +258,13 @@ voyc.Texture.prototype.draw = function(dst) {
 				dst.imageData.data[wn + 0] = this.imgdata.data[tn + 0];
 				dst.imageData.data[wn + 1] = this.imgdata.data[tn + 1];
 				dst.imageData.data[wn + 2] = this.imgdata.data[tn + 2];
-				if (!(this.imgdata.data[tn]+this.imgdata.data[tn+1]+this.imgdata.data[tn+3]))	
-					dst.imageData.data[wn + 3] = 0
+				if (!(this.imgdata.data[tn]+this.imgdata.data[tn+1]+this.imgdata.data[tn+3])) {
+					//dst.imageData.data[wn + 3] = 0
+					dst.imageData.data[wn + 0] = 255
+					dst.imageData.data[wn + 1] = 0
+					dst.imageData.data[wn + 2] = 0
+					dst.imageData.data[wn + 3] = 255
+				}
 				else
 					dst.imageData.data[wn + 3] = 255
 			}

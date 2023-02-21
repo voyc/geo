@@ -24,6 +24,12 @@ voyc.radians = function(x) { return x * (Math.PI / 180) }
 voyc.degrees = function(x) { return x * (180 / Math.PI) }
 voyc.secant = function(x) { return 1/Math.cos(voyc.radians(x))} // reciprocal cosine, a ratio 
 
+voyc.mercatorStretch = function(latm) {var phim=voyc.radians(latm); var phi =Math.log(Math.tan(Math.PI / 4 + phim / 2)); return voyc.degrees(phi);}
+voyc.mercatorShrink  = function(lat)  {var phi =voyc.radians(lat);  var phim=(2*Math.atan(Math.exp(phi))) - (Math.PI/2); return voyc.degrees(phim);}
+
+
+
+
 voyc.Geo.distanced3 = function(a, b) { // original d3 function
 	var Δλ = (b[0] - a[0]) * voyc.Geo.to_radians, φ0 = a[1] * voyc.Geo.to_radians, φ1 = b[1] * voyc.Geo.to_radians, sinΔλ = Math.sin(Δλ), cosΔλ = Math.cos(Δλ), sinφ0 = Math.sin(φ0), cosφ0 = Math.cos(φ0), sinφ1 = Math.sin(φ1), cosφ1 = Math.cos(φ1), t;
 	return Math.atan2(Math.sqrt((t = cosφ1 * sinΔλ) * t + (t = cosφ0 * sinφ1 - sinφ0 * cosφ1 * cosΔλ) * t), sinφ0 * sinφ1 + cosφ0 * cosφ1 * cosΔλ);

@@ -36,9 +36,9 @@ function test() {
 	proj.wd = window.innerWidth
 	proj.ht = window.innerHeight
 	proj.projtype = 'mercator'
-	proj.rotate([0-co[0], 0-co[1], 0-gamma])
-	proj.translate([w/2, h/2])  // position the circle within the canvas (centered) in pixels
-	proj.scale(w/2)                  // size of the circle in pixels
+	proj.rotate([0-co[0], 0-co[1], 0-gamma])  // rotate to null island
+	proj.translate([w/2, h/2])                // position the circle within the canvas (centered) in pixels
+	proj.scale(0)                             // zoom level 0
 	
 	console.log(coNY)
 	var ptNY = proj.project(coNY)
@@ -71,12 +71,12 @@ function test() {
 	for (var c=0; c<90; c+=10) {
 		var pt = [42,c]
 		var co = [42,c]
-		var mfpti = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.ht, 1, 2)
-		var mfcoi = voyc.interpolate(Math.abs(co[1]), 0, +90, 1, 2)
+		var mfcoi = voyc.interpolate(Math.abs(co[1]), 0, 90, .9, 1.6)
+		var mfpti = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.halfwid, .9, 1.6)
 		var mfcos = voyc.secant(Math.abs(co[1]))
 		console.log([mfpti,mfcoi,mfcos])	
 	}
-	var pt = [40,40]
+	var pt = [70,70]
 	var co = proj.project(pt)
 	var ps = proj.invert(co)
 	console.log([pt,co,ps])

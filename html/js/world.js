@@ -9,6 +9,7 @@ voyc.World = function() {
 	this.gamma = 0;  // degrees rotation around the z-axis
 	this.w = 0;
 	this.h = 0;
+	this.mercwidth = 0
 
 	this.projection = {};
 	this.layer = [];  // array of layer objects, layer is a canvas
@@ -269,7 +270,6 @@ voyc.World.prototype.getCenterPoint = function() {
 }
 
 // --------  setup data, iterators, and layers
-
 
 voyc.World.prototype.setupData = function() {
 	// topojson converts the arc format to the geometries format
@@ -619,6 +619,7 @@ voyc.World.prototype.resize = function(w, h) {
 voyc.World.prototype.drawWorld = function() {
 	this.stepFrame()  // animate rivers
 
+
 	if (this.moved) {
 		this.drawWater();
 		this.drawLayer('land')
@@ -636,9 +637,28 @@ voyc.World.prototype.drawWorld = function() {
 			this.drawEmpire()
 			this.drawTexture()
 		}
+//		this.projection.pt[0] += this.mercwidth
+//
+//		this.drawLayer('land')
+//		this.drawLayer('grid')
+//		this.drawSketch()
+//		this.drawLayer('hilite')
+//		this.drawCustom()
+//		if (!this.dragging) {
+//			this.drawLayer('deserts')
+//			this.drawLayer('mountains')
+//			this.drawRiver()
+//			this.drawLayer('lakes')
+//			this.drawLayer('cities')
+//			this.drawLayer('countries')
+//			this.drawEmpire()
+//			this.drawTexture()
+//		}
+//		this.projection.pt[0] -= this.mercwidth
 	}
 	else if (this.time.moved)
 		this.drawEmpire()
+
 
 	this.moved = false
 	this.time.moved = false
@@ -691,12 +711,19 @@ voyc.World.prototype.drawWater = function() {
 	var palette = this.palette['water'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
-	if (this.projection.projtype == 'orthographic') // sphere
+	if (this.projection.projtype == 'orthographic')
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
-	else { // mercator rectangle
+	else if (this.projection.projtype == 'mercator') {
+		nw = this.projection.project([-180,85])
+		se = this.projection.project([180,-85])
+		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
+		this.mercwidth = se[0] - nw[0] 
+	}
+	else if (this.projection.projtype == 'equirectangular') {
 		nw = this.projection.project([-180,90])
 		se = this.projection.project([180,-90])
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
+		this.mercwidth = se[0] - nw[0] 
 	}
 	ctx.fillStyle = palette.fill
 	ctx.fill()
@@ -727,7 +754,7 @@ voyc.World.prototype.drawRiver = function() {
 }
 
 voyc.World.prototype.drawTexture = function() {
-	if (this.layer.hires.enabled && (this.zoom.now >= 2.4))
+	if (this.layer.hires.enabled && (this.zoom.now >= 2))
 		this.texhi.draw({
 			projection: this.projection,
 			imageData: this.layer.hires.imageData, 

@@ -41,7 +41,16 @@
 		
 */
 voyc.DualProjection = function() {
+	// inputs
 	this.projtype = 'orthographic'  // orthographic, equirectangular, mercator, mix
+	// this.wd
+	// this.ht
+	// this.co
+	// this.zoom
+
+
+
+
 	this.mix = 0
 
 	// rotate
@@ -54,7 +63,6 @@ voyc.DualProjection = function() {
 	this.sinδγ = 0
 
 	// translate
-	this.pt = [] // centerpoint in pixels
 	this.δx = 0  // delta x in pixels
 	this.δy = 0  // delta y in pixels
 
@@ -66,7 +74,9 @@ voyc.DualProjection = function() {
 	this.ptNullIsland = []   // pt projected from co [0,0]
 
 	// scale
-	this.k = 0  // orthographic: radius of the globe
+	this.zoom = 0        // [0:20], [0:4], [-2:7]
+	this.k = 0           // orthographic: radius of the globe in pixels
+	this.mapscale = 0    // information only.  not used.
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
@@ -113,7 +123,7 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 }
 
 /**
-	projection.scale(scale)
+	projection.scale(zoom)
 	Sets the projection’s scale factor to the specified value.
 	In the Orthographic projection, scale is equal to the radius of the globe in screen pixels.
 	In the Mercator projection, scale is used as a percentage to interpolate the nsew boundaries.
@@ -121,41 +131,19 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	Called by World.zoom()
 */
 voyc.DualProjection.prototype.scale = function(zoom) {
-	// for mercator, zoom level between 0 and 20
-	this.zoom = zoom
+	this.zoom = zoom				// level between -2 and 20
+	this.mapscale = (2**zoom) * 591657527.591555	// not used
+	this.square = Math.min(this.wd, this.ht)	// largest square in window, in pixels
+	this.halfwid = this.square / 2			// half square
 
-	// for orthographic, k = radius of earth in pixels
-	var halfwid = Math.min(this.wd, this.ht)
-	this.k = (2**zoom) * (halfwid/Math.PI)
+	// for orthographic
+	this.k = (2**zoom) * (this.halfwid/Math.PI)	// radius of earth in pixels, for given zoom
 
-	// for equirectangular, a fixed ratio of pixels to degrees
-	this.pxlPerDgr = (this.k * 4) / 360
-	this.halfwid = this.k * (Math.PI/2)
-	this.pxlPerDgr = (this.halfwid * 4) / 360
-	//this.pxlPerDgr = (halfwid * Math.PI) / 360
+	// for equirectangular 
+	this.pxlPerDgr = (2**zoom) * (this.square / 360)	// fixed ratio of pixels to degrees
 
 	this.ptNullIsland = this.project([0,0]) 
-
-	//var zoom = -.5
-	//var halfwid = Math.min(this.wd,this.ht)/2
-	//this.mercfact =(halfwid/Math.PI) * (2**zoom)
 }
-
-///**
-//	center([lng,lat])
-//	Sets the projection’s center to the specified coordinate, 
-//	a three-element array of longitude in degrees.
-//
-//	Called by World.drag() and Hud.ontap().  Hud.ondrop() calls ontap().
-//*/
-//voyc.DualProjection.prototype.center = function(co) {
-//	this.rotate([0-co[0], 0-co[1]]);
-//	// legacy - replace with rotate
-//	// rotate to a coordinate
-//	// center starts at 0,0
-//	// to move lng 50 to center
-//	// rotate by 0-50
-//}
 
 /**
 	translate([x,y])
@@ -207,6 +195,19 @@ voyc.DualProjection.prototype.clipAngle = function(angle) {
 */
 voyc.DualProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
 	// not implemented
+//   m.clipExtent = function(_) {
+//      var v = clipExtent.apply(m, arguments);
+//      if (v === m) {
+//        if (clipAuto = _ == null) {
+//          var k = π * scale(), t = translate();
+//          clipExtent([ [ t[0] - k, t[1] - k ], [ t[0] + k, t[1] + k ] ]);
+//        }
+//      } else if (clipAuto) {
+//        v = null;
+//      }
+//      return v;
+//    };
+//    return m.clipExtent(null);
 }
 
 /**
@@ -217,18 +218,6 @@ voyc.DualProjection.prototype.clipExtent = function([x1,x2,y1,y2]) {
 voyc.DualProjection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
 }
-
-//voyc.DualProjection.prototype.isPointVisibleInvert = function(λ, φ) {
-//	if ((Math.cos(λ) * Math.cos(φ)) > this.cr)   // cr 6.12323395736766e-17
-//		return true
-//
-//	if (this.δφ > 0)  // equator is bowed up, southern hemisphere dominant
-//	if (this.δφ < 0)  // equator is bowed down, northern hemisphere dominant 
-//
-//	//if (!((Math.cos(λ) * Math.cos(φ)) < 0-this.cr))
-//	//	return false
-//	return false
-//}
 
 voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 	var xc = this.wd/2
@@ -256,8 +245,8 @@ voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 		clip to the rectangle extent of the viewport (not implemented)
 */
 voyc.DualProjection.prototype.project = function(co) {
-	var xm = xo = 0
-	var ym = yo = 0
+	var xe = xm = xo = 0
+	var ye = ym = yo = 0
 
 	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
 		// rotate
@@ -265,25 +254,20 @@ voyc.DualProjection.prototype.project = function(co) {
 		lat = (0-co[1]) - this.co[1]
 
 		// scale
-		xm = lng * this.pxlPerDgr
-		ym = lat * this.pxlPerDgr
+		xe = lng * this.pxlPerDgr
+		ye = lat * this.pxlPerDgr
 
 		// translate
-		xm += this.pt[0]
-		ym += this.pt[1]
+		xe += this.pt[0]
+		ye += this.pt[1]
 	}
 
 	if (this.projtype == 'mercator' || this.projtype == 'mix') {
-
-		// calculate a mercator factor, increasing with distance from equator
-		var mf = voyc.interpolate(Math.abs(co[1]), 0, 90, .8, 1.8)
-		this.mf = mf
-		//var mf = voyc.secant(Math.abs(co[1]))
-	
 		// rotate
 		lng = co[0] - this.co[0]
 		lat = 0-co[1]
-		lat = lat * mf  // apply mercator factor to the nominal latitude BEFORE rotate
+		lat = Math.min(lat,85)
+		lat = voyc.mercatorStretch(lat)
 		lat = lat - this.co[1]    
 
 		// scale
@@ -294,35 +278,6 @@ voyc.DualProjection.prototype.project = function(co) {
 		// translate
 		xm += this.pt[0]
 		ym += this.pt[1]
-	}
-
-	if (this.projtype == 'webmercator' || this.projtype == 'mix') {
-		//https://en.wikipedia.org/wiki/Web_Mercator_projection
-		//https://gist.github.com/shiffman/a0d2fde31f571163c730ba0da4a01c82
-		//https://developer.tomtom.com/blog/decoded/understanding-map-tile-grids-and-zoom-levels
-
-		// mercator uses ellipsoid model, has time-consuming calculation
-		// webmercator uses spheroid model, introduces "zoom level", and simplifies the calculation
-		// a sphere is a subset of an ellipsoid object
-
-		// rotate
-		lng = co[0] - this.co[0]
-		lat = (0-co[1]) - this.co[1]
-		lat = co[1]
-
-		// scale
-		//var zoom = -2
-		var halfwid = Math.min(this.wd,this.ht)/2
-		xm = (halfwid/Math.PI) * (2**this.zoom) * (voyc.radians(lng)+Math.PI)
-		ym = (halfwid/Math.PI) * (2**this.zoom) * ((Math.PI - Math.log(Math.tan((Math.PI/4) + (voyc.radians(lat)/2)))) - voyc.radians(this.co[1]))
-		//ym = (halfwid/Math.PI) * (2**zoom) * (voyc.radians(lat)+Math.PI)
-
-		xm = Math.round(xm)
-		ym = Math.round(ym)
-
-		// translate
-		xm += this.pt[0]
-		//ym += this.pt[1]
 	}
 
 	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
@@ -364,12 +319,14 @@ voyc.DualProjection.prototype.project = function(co) {
 		yo = work3y
 	}
 
-	var x = xm || xo
-	var y = ym || yo
+	var x = xm || xo || xe
+	var y = ym || yo || ye
 
 	if (this.projtype == 'mix') {
 		// in-between, mix
-		var mixpct = .4
+
+		// doing mixes, like with cylindrical for example, requires availablity of visible flag
+		var mixpct = .1
 		x = xm + ((xo - xm) * mixpct)
 		y = ym + ((yo - ym) * mixpct)
 	}
@@ -402,11 +359,6 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	}
 
 	if (this.projtype == 'mercator' || this.projtype == 'mix') {
-
-		// calculate a mercator factor, increasing with distance from equator
-		var mfp= voyc.interpolate(Math.abs(pt[1]-this.ptNullIsland[1]), 0, this.halfwid, .8, 1.8)
-		//var mf = voyc.secant(Math.abs(pt[1]-this.ptNullIsland[1]))
-	
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 
@@ -415,24 +367,9 @@ voyc.DualProjection.prototype.invert = function(pt) {
 
 		lngm += this.co[0]
 		latm += this.co[1]
-		var mfc= voyc.interpolate(Math.abs(latm), 0, 90, .8, 1.8)
-		//console.log(['mf', mfp,mfc, this.mf])
-		latm /= mfp  //this.mf //mfp
+
+		latm = voyc.mercatorShrink(latm)
 		latm = (0-latm)
-	}
-
-	if (this.projtype == 'webmercator' || this.projtype == 'mix') {
-		x = pt[0] - this.pt[0]
-		y = pt[1] - this.pt[1]
-		y = pt[1]
-
-		var halfwid = Math.min(this.wd,this.ht)/2
-
-		lngm = voyc.degrees(                            (x / ((halfwid / Math.PI) * Math.pow(2, this.zoom)))   - Math.PI)
-		latm = voyc.degrees((Math.atan(Math.exp(Math.PI-(y / ((halfwid / Math.PI) * Math.pow(2, this.zoom))))) - (Math.PI / 4))*2)
-
-		lngm += this.co[0]
-		latm -= this.co[1]
 	}
 
 	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
