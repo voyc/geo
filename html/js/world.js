@@ -192,7 +192,7 @@ voyc.World.prototype.setZoom = function(newzoom) {
 		this.zoom.now = newzoom
 	this.projection.scale(this.zoom.now)
 	
-	voyc.geosketch.hud.setZoomer(this.zoom.now, this.projection.gscale)
+	voyc.geosketch.hud.setZoomer(this.zoom.now, this.projection.uscale)
 	this.stoZoom()
 	this.moved = true;
 	voyc.geosketch.render(0)
@@ -301,17 +301,18 @@ voyc.World.prototype.setupData = function() {
 		'name': 'grid',
 		'type': 'GeometryCollection',
 		'geometries': [
-		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
-		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
-		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
-		//	{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
+
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
 			
 			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel([0])},
 			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian([0],true)},
 			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian([180],true)},
-
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian([-180],true)},
 		]
 	}
 
@@ -319,7 +320,7 @@ voyc.World.prototype.setupData = function() {
 	for (var lat=-80; lat<=80; lat+=10)
 		if (lat != 0)
 			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 1, 
+				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Parallel",
 				'name': '', //String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
 				'coordinates': voyc.Geo.drawParallel(lat),
@@ -327,7 +328,7 @@ voyc.World.prototype.setupData = function() {
 	for (var lng=-170; lng<=170; lng+=10)
 		if (lng != 90 && lng != -90 && lng != 0)
 			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 1, 
+				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Meridian",
 				'name': '', //String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
 				'coordinates': voyc.Geo.drawMeridian(lng),
@@ -597,8 +598,7 @@ voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
 	this.projection.translate([this.w/2, this.h/2]);
-	//var newscale = Math.round(this.scale.factor * (Math.min(this.w,this.h) /2))
-	//this.setScale(newscale)
+	voyc.geosketch.hud.showScaleGraph(this.projection.uscale)
 
 	for (var id in this.layer) {
 		a = this.layer[id];
@@ -689,10 +689,10 @@ voyc.World.prototype.calcRank = function(id) {
 	var table = this.palette[id]
 	if (!table)
 		debugger;
-	var scale = this.zoom.now 
+	var scale = this.projection.uscale 
 	var rank = table.length
 	for (var r=0; r<table.length; r++) {
-		if (scale < table[r].scale) {
+		if (scale > table[r].scale) {
 			rank = r+1
 			break
 		}
@@ -900,15 +900,10 @@ voyc.defaultPalette = {
 	bkgrd: [{scale:5000, stroke:false,         pen:.5, fill:[  0,  0,  0], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	water: [{scale:5000, stroke:false,         pen:.5, fill:[111,166,207], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	land:  [{scale:5000, stroke:false,         pen:.5, fill:[237,220,203], pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
-	//grid:  [
-	//	{scale: 300, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-	//	{scale: 900, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-	//	{scale:5000, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-	//],
 	grid:  [
-		{scale: 300, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 900, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 300, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:153927470, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 76963735, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 38481867, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	empire:[
 		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
@@ -919,19 +914,19 @@ voyc.defaultPalette = {
 		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	rivers: [
-		{scale: 242, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 531, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 897, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1329, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1969, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:2904, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:307854939, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:153927470, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 76963735, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 38481867, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 19240934, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:  9620467, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	lakes: [{scale:5000, stroke:false,         pen:2 , fill:[  0,  0,255]},],
        deserts:[{scale:5000, stroke:false,         pen:2 , fill:[ 96, 96,  0], pat:false, patfile:'deserts'     ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
 	mountains:[
-		{scale: 300, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_1' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:1000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_2' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:5000, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:153927470, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_1' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 76963735, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_2' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 38481867, stroke:false,         pen:2 , fill:[ 96,  0,  0], pat:false, patfile:'mountains_3' ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	hilite:[{scale:5000, stroke:[255,  0,  0], pen: 5, dash:false ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:[255,  0,  0], lnPen: 2, ptRadius:10,ptStroke:[255,  0,  0], ptPen: 1, ptFill:[255,  0,  0]},],
 	custom:[{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,  0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],

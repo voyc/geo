@@ -540,12 +540,43 @@ voyc.Hud.prototype.setZoomer = function(zoom,scale) {
 		this.mapzoomer.value = zoom
 	}
 	voyc.$('option-zoom').innerHTML = 'zoom: ' + zoom
-	voyc.$('option-scale').innerHTML = 'scale: ' + parseInt(scale)
+	//voyc.$('option-scale').innerHTML = 'scale: ' + parseInt(scale).toLocaleString()
+	this.showOption('scale', parseInt(scale).toLocaleString())
+	this.showScaleGraph(scale)
 }
 
 voyc.Hud.prototype.setCo = function(co,gamma) {
 	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma
 }
+
+voyc.Hud.prototype.showOption = function (key,value) {
+	key = 'option-' + key
+	voyc.$(key).innerHTML = 'scale: ' + value 
+}
+
+voyc.Hud.prototype.showScaleGraph = function (scale) {
+	var o = voyc.scaleGraph(scale)  // o = {n:4000, unit:'km', cm:1.42, pxl:46}
+
+	var drawScaleGraph = function(ctx,wd,ht) {
+		ctx.moveTo(0,0)
+		ctx.lineTo(0,ht)
+		ctx.lineTo(wd,ht)
+		ctx.lineTo(wd,0)
+		ctx.lineWidth = 1.5
+		ctx.stroke()
+	}
+
+	voyc.$('scaletext').innerHTML = `${o.n} ${o.unit} `
+	var ht = 8
+	var wd = o.pxl	
+
+	var cvs = voyc.$('scalegraph')
+	cvs.width = wd
+	cvs.height = ht
+	var ctx = cvs.getContext('2d')
+	drawScaleGraph(ctx,wd,ht)
+}
+
 
 // -------- mouse
 

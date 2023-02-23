@@ -43,11 +43,9 @@
 voyc.DualProjection = function() {
 	// inputs
 	this.projtype = 'orthographic'  // orthographic, equirectangular, mercator, mix
-	this.wd = 0
-	this.ht = 0
-	this.co = []    // center coord [lng,lat]  E and S are positive (opposite of world.co)
-	this.zoom = 0        // [0:20], [0:4], [-2:7]
-
+	this.co = []	// center coord [lng,lat]  E and S are positive (opposite of world.co)
+	this.pt = []	// center [x,y]
+	this.zoom = 0	// [0:20], [0:4], [-2:7]
 
 	// rotate
 	this.δλ = 0  // delta lambda, horizontal angle in radians
@@ -61,14 +59,13 @@ voyc.DualProjection = function() {
 	// translate
 	this.δx = 0  // delta x in pixels
 	this.δy = 0  // delta y in pixels
-
-	// new stuff added for mercator
-	this.pt = []    // center [x,y]
-	this.ptNullIsland = []   // pt projected from co [0,0]
+	this.wd = 0
+	this.ht = 0
 
 	// scale
-	this.k = 0	// orthographic: radius of the globe in pixels
-	this.gscale = 0	// information only.  not used.
+	this.k = 0		// orthographic: radius of the globe in pixels
+	this.pxlPerDgr = 0	// equirectangular: ratio pixel to degree
+	this.uscale = 0		// all projections: ratio map to earth, used for qualify and palette choice
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
@@ -113,32 +110,26 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	this.cosδγ = Math.cos(this.δγ);
 	this.sinδγ = Math.sin(this.δγ);
 
-	this.ptNullIsland = this.project([0,0]) 
 	this.cx = this.clipExtent()
 }
 
 /**
 	projection.scale(zoom)
-	Sets the projection’s scale factor to the specified value.
-	In the Orthographic projection, scale is equal to the radius of the globe in screen pixels.
-	In the Mercator projection, scale is used as a percentage to interpolate the nsew boundaries.
-
-	Called by World.zoom()
+	Sets the projection’s zoom level
 */
-
 voyc.DualProjection.prototype.scale = function(zoom) {
 	this.zoom = zoom				// level between -2 and 20
-	this.gscale = (2**zoom) * voyc.scaleConstant256	// not used
-	this.square = Math.min(this.wd, this.ht)	// largest square in window, in pixels
-	this.halfwid = this.square / 2			// half square
+	this.uscale = voyc.scaler(this.wd,this.zoom)	// universal scale (all projections)
 
-	// for orthographic
-	this.k = (2**zoom) * (this.halfwid/Math.PI)	// radius of earth in pixels, for given zoom
+	var square = Math.min(this.wd, this.ht)		// largest square in window, in pixels
+	var halfwid = square / 2			// half square
 
-	// for equirectangular 
-	this.pxlPerDgr = (2**zoom) * (this.square / 360)	// fixed ratio of pixels to degrees
+	// scale-factor for orthographic
+	this.k = (2**zoom) * (halfwid/Math.PI)	// radius of earth in pixels, for given zoom
 
-	this.ptNullIsland = this.project([0,0]) 
+	// scale-factor for equirectangular 
+	this.pxlPerDgr = (2**zoom) * (square / 360)	// fixed ratio of pixels to degrees
+
 	this.cx = this.clipExtent()
 }
 
@@ -162,12 +153,11 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	this.ht = this.pt[1] * 2
 
 	// rescale: zoom is kept constant, factors recalculated for new length
-	this.square = Math.min(this.wd, this.ht)
-	this.halfwid = this.square / 2
-	this.k = (2**this.zoom) * (this.halfwid/Math.PI)
-	this.pxlPerDgr = (2**this.zoom) * (this.square / 360)	// fixed ratio of pixels to degrees
+	var square = Math.min(this.wd, this.ht)
+	var halfwid = square / 2
+	this.k = (2**this.zoom) * (halfwid/Math.PI)
+	this.pxlPerDgr = (2**this.zoom) * (square / 360)	// fixed ratio of pixels to degrees
 
-	this.ptNullIsland = this.project([0,0]) 
 	this.cx = this.clipExtent()
 }
 

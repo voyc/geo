@@ -17,8 +17,52 @@ voyc.Geo.halfπ = voyc.Geo.π / 2;   // half pi
 voyc.Geo.to_radians = voyc.Geo.π / 180;
 voyc.Geo.to_degrees = 180 / voyc.Geo.π;
 voyc.Geo.radiusKm = 6371             // radius of planet earth in km
-voyc.Geo.circumferenceKm = 40000     // circumference of planet earth in km
+voyc.circumferenceKm = 40075.01669   // 2 * PI * radiusKm
+voyc.ppcm = 37.79527559
 
+voyc.scaler = function(width,zoom,ppcm) {
+	var ppcm = ppcm || voyc.ppcm
+	var earthcm = voyc.circumferenceKm * 100000	
+	var mapcm = width / ppcm
+	var scale = (1/(2**zoom)) * (earthcm / mapcm)
+	return Math.round(scale)
+}
+voyc.scalezero = 591657527.591555  // scale at zoom 0 (one tile at 256 pixels, and ppi of 96)
+
+voyc.scaleGraph = function(uscale) {
+	var multiplier = [5,4,2,1]
+	var magnitude = [9,8,7,6,5,4,3,2,1]
+	var n,cm
+	var loop = true
+	for (var mag of magnitude) {
+		for (var mul of multiplier) {
+			n = (10**mag) * mul
+			cm = uscale/n
+			if (cm > 1)
+				loop = false
+			if (!loop)
+				break
+		}
+		if (!loop)
+			break
+	}
+
+	var nd, unit
+	if (n >= 100000) {
+		nd = n / 100000
+		unit = 'km'
+	}
+	else if (n >= 100) {
+		nd = n / 100
+		unit = 'm'
+	}
+	else {
+		nd = Math.round(n)
+		unit = 'cm'
+	}
+	var pxl = Math.round(cm * voyc.ppcm)
+	return {n:nd,unit:unit,cm:cm,pxl:pxl}
+}
 
 voyc.radians = function(x) { return x * (Math.PI / 180) }
 voyc.degrees = function(x) { return x * (180 / Math.PI) }
@@ -27,7 +71,6 @@ voyc.powR = function(x,y) { return Math.log(y) / Math.log(x) } // reciprocal pow
 
 voyc.mercatorStretch = function(latm) {var phim=voyc.radians(latm); var phi =Math.log(Math.tan(Math.PI / 4 + phim / 2)); return voyc.degrees(phi);}
 voyc.mercatorShrink  = function(lat)  {var phi =voyc.radians(lat);  var phim=(2*Math.atan(Math.exp(phi))) - (Math.PI/2); return voyc.degrees(phim);}
-voyc.scaleConstant256 = 591657527.591555 // scale at zoom 0, with mercator square at 256 pixels and ppi of 96
 
 
 

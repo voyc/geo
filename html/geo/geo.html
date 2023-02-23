@@ -46,45 +46,46 @@ function test() {
 	var coNY2 = proj.invert(ptNY)
 	console.log(coNY2)
 
-	//console.log([ 0, secant( 0)])
-	//console.log([30, secant(30)])
-	//console.log([45, secant(45)])
-	//console.log([60, secant(60)])
-	//console.log([85, secant(85)])
-
-	for (var zoom=1; zoom<23; zoom++)
-		console.log(Math.pow(2,zoom))
+	for (var zoom=-2; zoom<23; zoom++)
+		console.log(zoom, voyc.scaler(256,zoom), voyc.scaler(393,zoom), voyc.scaler(984,zoom))
 	
-	//console.log('interpolate points')
-	//for (var p=0; p<90; p+=10) {
-	//	var pt = [42,p]
-	//	var mf = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.ht, 1, 2)
-	//	console.log(mf)	
-	//}
-	//console.log('interpolate coordinates')
-	//for (var c=0; c<90; c+=10) {
-	//	var co = [42,c]
-	//	var mf = voyc.interpolate(Math.abs(co[1]), 0, +90, 1, 2)
-	//	console.log(mf)	
-	//}
-	//console.log('secant coordinates')
-	for (var c=0; c<90; c+=10) {
-		var pt = [42,c]
-		var co = [42,c]
-		var mfcoi = voyc.interpolate(Math.abs(co[1]), 0, 90, .9, 1.6)
-		var mfpti = voyc.interpolate(Math.abs(pt[1]-proj.ptNullIsland[1]), 0, proj.halfwid, .9, 1.6)
-		var mfcos = voyc.secant(Math.abs(co[1]))
-		console.log([mfpti,mfcoi,mfcos])	
-	}
 	var pt = [70,70]
 	var co = proj.project(pt)
 	var ps = proj.invert(co)
 	console.log([pt,co,ps])
+
+	var t = '5726498379'.split('')
+	var x = parseFloat(t.join(''))
+	var o
+	while (x > .1) {
+		o = voyc.scaleGraph(x)
+		console.log(`${x} ${o.n} ${o.unit} ${o.cm} ${o.pxl}`)
+		t.shift(1)
+		x = parseFloat(t.join(''))
+	}
+
+	var ht = 8
+	var wd = 40	
+	var cvs = document.getElementById('scalegraph')
+	cvs.width = wd
+	cvs.height = ht
+	var ctx = cvs.getContext('2d')
+	drawScaleGraph(ctx,40,8)
+}
+
+drawScaleGraph = function(ctx,wd,ht) {
+	ctx.moveTo(0,0)
+	ctx.lineTo(0,ht)
+	ctx.lineTo(wd,ht)
+	ctx.lineTo(wd,0)
+	ctx.lineWidth = 3
+	ctx.stroke()
 }
 
 </script>
 </head>
 <body>
-see console log
+<div>see console log</div>
+<div>4000 km <canvas id='scalegraph'></canvas></div>
 </body>
 </html>
