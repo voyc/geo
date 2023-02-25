@@ -539,8 +539,7 @@ voyc.Hud.prototype.setZoomer = function(zoom,scale) {
 	if (!this.mapzoomerIsHot) {
 		this.mapzoomer.value = zoom
 	}
-	voyc.$('option-zoom').innerHTML = 'zoom: ' + zoom
-	//voyc.$('option-scale').innerHTML = 'scale: ' + parseInt(scale).toLocaleString()
+	voyc.$('option-zoom').innerHTML = 'zoom: ' + voyc.round(zoom,1)
 	this.showOption('scale', parseInt(scale).toLocaleString())
 	this.showScaleGraph(scale)
 }

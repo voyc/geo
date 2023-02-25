@@ -69,7 +69,8 @@ voyc.DualProjection = function() {
 
 	// clip
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
-	this.cx = [[],[]]  // clipExtent, rectangle of viewport 
+	this.cx = [[],[]]  // clipExtent, rectangle of viewport, used to clip raster mercator points
+	this.mx = [[],[]]  // mapExtent, rectangle of complete map, used for mercator stitch
 
 	this.mix = 0  // used during animated projection morph
 }
@@ -187,22 +188,35 @@ voyc.DualProjection.prototype.clipAngle = function(angle) {
 			by comparing the output [x,y] point to the visible rectangle of the viewport window.
 */
 voyc.DualProjection.prototype.clipExtent = function()  {
+
+	// map extent
 	var y = (this.projtype == 'mercator') ? 85 : 90
 	var nw = this.project([-180, y])
 	var se = this.project([180, 0-y]) 
+	var w = nw[0]
+	var n = nw[1]
+	var e = se[0]
+	var s = se[1]
+	this.mx = [[w,n],[e,s]]
 
-	var w = Math.max(nw[0], 0)
-	var n = Math.max(nw[1], 0)
-	var e = Math.min(se[0], this.wd)
-	var s = Math.min(se[1], this.ht)
+	// center	
+	var wd = e - w
+	wd /= 2
+	w = this.pt[0] - wd
+	e = this.pt[0] + wd
+
+	// clamp to window
+	var w = Math.max(w, 0)
+	var n = Math.max(n, 0)
+	var e = Math.min(e, this.wd)
+	var s = Math.min(s, this.ht)
+
 	var cx = [[w,n],[e,s]]
-
-	// this is same as project without the rotate ?
-        //var k = π * scale() 
-	//var t = translate()
-	//cx = clipExtent([ [ t[0] - k, t[1] - k ], [ t[0] + k, t[1] + k ] ]);
 	return cx
 }
+/*
+	if clipExtent intersects pt
+*/
 voyc.DualProjection.prototype.isVisibleExtent = function(x,y) {
 	return (x >= this.cx[0][0]) && (x <= this.cx[1][0])
 	    && (y >= this.cx[0][1]) && (y <= this.cx[1][1])

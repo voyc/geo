@@ -55,6 +55,18 @@
 			all lines or multilines.  No one collection combines points,
 			lines, and polygons.  This saves us having to change the stack of 
 			iteratees for each geometry within one collection iteration.
+
+	Class Hierarchy
+		GeoIterator - base class, does nothing
+			GeoIteratorCount - for developer
+			GeoIteratorHitTest 
+			GeoIteratorClip - drawing, clipCircle for Orthogonal, clipExtant for Mercator, Mercator stitching
+				GeoIteratorSketch
+				GeoIteratorCustom
+				GeoIteratorHilite
+				GeoIteratorScale - select palette and draw by sorted group
+					GeoIteratorAnimate
+					GeoIteratorEmpire
 */
 
 var geolog = false
@@ -227,6 +239,7 @@ voyc.GeoIteratorClip.prototype.collectionStart = function(collection, add) {
 	this.projection = add[0]
 	this.ctx = add[1]
 	this.palette = add[2]
+	this.pass = 0
 	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
 	this.ctx.beginPath()
 	return true
@@ -244,6 +257,23 @@ voyc.GeoIteratorClip.prototype.draw = function(paletteNdx) {
 	if (palette.dash) this.ctx.setLineDash(palette.dash)
 	if (palette.fill) this.ctx.fill()
 	if (palette.stroke) this.ctx.stroke()
+}
+
+voyc.GeoIteratorClip.prototype.geometryStart = function(geometry) {
+	this.pass += 1
+	return true
+}
+
+voyc.GeoIteratorClip.prototype.geometryEnd = function(geometry) {
+	if (this.pass == 1 && this.projection.projtype == 'mercator') {
+		var wd = this.projection.mx[1][0] - this.projection.mx[0][0]
+		this.projection.pt[0] += wd
+		this.iterateGeometry(geometry) // again to the right
+		this.projection.pt[0] -= (2*wd)
+		this.iterateGeometry(geometry) // again to the left
+		this.projection.pt[0] += wd
+	}
+	this.pass -= 1
 }
 
 voyc.GeoIteratorClip.prototype.lineStart = function(line) {
@@ -384,13 +414,8 @@ voyc.GeoIteratorScale = function() {
 voyc.GeoIteratorScale.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
 voyc.GeoIteratorScale.prototype.collectionStart = function(collection, add) {
-	if (geolog) console.log(voyc.prepString('iterate draw $1',[collection.name]))
-	this.projection = add[0]
-	this.ctx = add[1]
-	this.palette = add[2]
+	voyc.GeoIteratorClip.prototype.collectionStart.call(this,collection,add)
 	this.scalerank = add[3]
-	this.ctx.clearRect(0, 0, this.ctx.canvas.width, this.ctx.canvas.height)
-	this.ctx.beginPath()
 	this.prevScaleRank = false
 	return true
 }
@@ -400,6 +425,7 @@ voyc.GeoIteratorScale.prototype.collectionEnd = function(collection) {
 }
 
 voyc.GeoIteratorScale.prototype.geometryStart = function(geometry) {
+
 	// two things happen in here: qualification and draw by scalerank
 	if (this.palette.length <= 1)
 		debugger;
@@ -416,30 +442,22 @@ voyc.GeoIteratorScale.prototype.geometryStart = function(geometry) {
 	this.prevScaleRank = geometry.scalerank
 
 	this.paletteNdx = this.calcPaletteIndex(this.scalerank, geometry.scalerank, this.palette.length)
+	voyc.GeoIteratorClip.prototype.geometryStart.call(this,geometry)
 	return true
 }
 
 voyc.GeoIteratorScale.prototype.calcPaletteIndex = function(zoomScaleRank, geomScaleRank, maxScaleRank) {
-		var paletteNdx = 0
-		if (geomScaleRank) {
-			var adj = maxScaleRank - zoomScaleRank   // value 5-0
-			var paletteLevel = geomScaleRank + adj  // 1-6
-			var paletteNdx = paletteLevel - 1  // 0-5
-		}
-		return paletteNdx
+	var paletteNdx = 0
+	if (geomScaleRank) {
+		var adj = maxScaleRank - zoomScaleRank   // value 5-0
+		var paletteLevel = geomScaleRank + adj  // 1-6
+		var paletteNdx = paletteLevel - 1  // 0-5
 	}
+	return paletteNdx
+}
 
 voyc.GeoIteratorScale.prototype.draw = function(geomScaleRank) {
-	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
-		var paletteNdx = 0
-		if (geomScaleRank) {
-			var adj = maxScaleRank - zoomScaleRank   // value 5-0
-			var paletteLevel = geomScaleRank + adj  // 1-6
-			var paletteNdx = paletteLevel - 1  // 0-5
-		}
-		return paletteNdx
-	}
-	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+	var paletteNdx = this.calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
 	voyc.GeoIteratorClip.prototype.draw.call(this,paletteNdx)
 }
 
@@ -580,16 +598,7 @@ voyc.GeoIteratorAnimate.prototype.collectionStart = function(collection, add) {
 }
 
 voyc.GeoIteratorAnimate.prototype.draw = function(geomScaleRank) {
-	 function calcPaletteIndex(zoomScaleRank, geomScaleRank, maxScaleRank) {
-		var paletteNdx = 0
-		if (geomScaleRank) {
-			var adj = maxScaleRank - zoomScaleRank   // value 5-0
-			var paletteLevel = geomScaleRank + adj  // 1-6
-			var paletteNdx = paletteLevel - 1  // 0-5
-		}
-		return paletteNdx
-	}
-	var paletteNdx = calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
+	var paletteNdx = this.calcPaletteIndex(this.scalerank, geomScaleRank, this.palette.length)
 	var palette = this.palette[paletteNdx]
 	this.ctx.fillStyle = palette.pat || palette.fill
 	this.ctx.lineWidth = palette.pen
@@ -756,16 +765,6 @@ voyc.GeoIteratorCustom = function() {
 }
 voyc.GeoIteratorCustom.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
 
-voyc.GeoIteratorCustom.prototype.collectionEnd = function(collection) {
-}
-voyc.GeoIteratorCustom.prototype.draw = function() {
-}
-
-voyc.GeoIteratorCustom.prototype.geometryStart = function(geometry) {
-	this.ctx.beginPath()
-	return true
-}
-
 voyc.GeoIteratorCustom.prototype.drawPoint = function(pt, within, ndx) {
 	var palette = this.palette[0]
 	this.ctx.arc(pt[0],pt[1], palette.ptRadius, 0, 2*Math.PI, false)
@@ -810,44 +809,4 @@ voyc.GeoIteratorHilite.prototype.drawPoint = function(pt, within, ndx) {
 	this.ctx.arc(pt[0],pt[1], palette.ptRadius, 0, 2*Math.PI, false)
 	return true
 }
-
-// -------- Hires    texture map
-
-voyc.GeoIteratorHires = function() {
-	voyc.GeoIteratorClip.call(this) // super
-}
-voyc.GeoIteratorHires.prototype = Object.create(voyc.GeoIteratorClip.prototype) // inherit
-
-
-voyc.GeoIteratorHires.prototype.draw = function(paletteNdx) {
-	console.log('draw hires')
-
-}
-
-//	if (voyc.plunder.getOption(voyc.option.HIRES)) {
-//		var ctx = this.getLayer(voyc.layer.SLOWBACKA).ctx;
-//		ctx.clearRect(0, 0, this.w, this.h);
-//		var dst = {w:this.w, h:this.h, projection:this.projection, ctx:this.getLayer(voyc.layer.SLOWBACKA).ctx, imageData:this.getLayer(voyc.layer.SLOWBACKA).imageData};
-//		voyc.Geo.drawTexture(dst, voyc.plunder.texture);
-//	}
-
-
-//voyc.GeoIteratorHires.prototype.drawTile = function(paletteNdx) {
-//	// not in use at this time
-//	var pt = this.polygon[0]
-//	var lng = pt[0]
-//	var lat = pt[1]
-//        var slng = 'm' ? (lng < 0) : 'p'
-//        var slat = 'm' ? (lat < 0) : 'p'
-//        var alng = Math.abs(lng)
-//        var alat = Math.abs(lat)
-//	var path = 'assets/tiles/'
-//	var filename = `{path}/{slng}{alng:03d}{slat}{alat:02d}.png`
-//
-//	var img = new Image()
-//	img.onload = function() {
-//		ctx.drawImage(img,x,y,w,l)
-//	}
-//	img.src = filename 
-//}
 

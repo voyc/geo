@@ -182,7 +182,7 @@ voyc.Geo.calcAngle = function(ptStart, ptEnd) {
 
 voyc.Geo.drawMeridian = function(lng,goalltheway) {
 	var goalltheway = goalltheway || false
-	var threshold = (goalltheway) ? 90 : 80
+	var threshold = (goalltheway) ? 85 : 80
 	var coords = []
 	for (var lat=0-threshold; lat<=threshold; lat+=10) {
 		coords.push([lng,lat])

@@ -335,6 +335,13 @@ voyc.World.prototype.setupData = function() {
 			})
 
 	voyc.data.custom01 = {"name":"custom01", "type": "GeometryCollection","geometries":[
+		{type:'Polygon',id:1,name:'hiibii',b:-9999,e:+9999,fb:0,c:5,coordinates:[[[41,67],[82,67],[82,29],[41,29],[41,67]]] },
+		{type:'Polygon',id:1,name:'jiibii',b:-9999,e:+9999,fb:0,c:5,coordinates:[[[-41,-67],[-82,-67],[-82,-29],[-41,-29],[-41,-67]]] },
+		//{type:'Polygon',id:1,name:'jaabai',b:-9999,e:+9999,fb:0,c:5,coordinates:[[[+172,+20],[-172,+20],[-172,-20],[+172,-20],[+172,+20]]] },
+		{type:'Polygon',id:1,name:'jaabai',b:-9999,e:+9999,fb:0,c:5,coordinates:[[[+172,+20],[+202,+20],[+202,-20],[+172,-20],[+172,+20]]] },
+	]},
+
+	voyc.data.custom02 = {"name":"custom01", "type": "GeometryCollection","geometries":[
 		{type:'Point',b:-2560,e:-2560,score:1000,cap:0,id:14444,name:'Great Pyramid of Giza',coordinates:[31.134,29.979]},
 		{type:'MultiPoint',b:-2600,e:-1900,score:1000,cap:0,id:1447774,name:'Harappa, Mohenjo Daro',coordinates:[[72.868,30.631],[68.136,27.324]]},
 		{type:'LineString',scalerank:1,featureclass:'Parallel',name:'Equator',coordinates:[[-180,0],[-170,0],[-160,0],[-150,0],[-140,0],[-130,0],[-120,0],[-110,0],[-100,0],[-90,0],[-80,0],[-70,0],[-60,0],[-50,0],[-40,0],[-30,0],[-20,0],[-10,0],[0,0],[10,0],[20,0],[30,0],[40,0],[50,0],[60,0],[70,0],[80,0],[90,0],[100,0],[110,0],[120,0],[130,0],[140,0],[150,0],[160,0],[170,0],[180,0]]},
@@ -509,6 +516,9 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'hilite' ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
+	createLayerCanvas('viewport'  ,false       ,false       ,false ,false    ,false       ,0)
+
+	//voyc.$('viewport').style.opacity = .5
 
 	var stolay = JSON.parse(localStorage.getItem('layers'))
 	if (stolay)
@@ -625,8 +635,8 @@ voyc.World.prototype.resize = function(w, h) {
 voyc.World.prototype.drawWorld = function() {
 	this.stepFrame()  // animate rivers
 
-
 	if (this.moved) {
+		this.drawViewport();
 		this.drawWater();
 		this.drawLayer('land')
 		this.drawLayer('grid')
@@ -643,24 +653,6 @@ voyc.World.prototype.drawWorld = function() {
 			this.drawEmpire()
 			this.drawTexture()
 		}
-//		this.projection.pt[0] += this.mercwidth
-//
-//		this.drawLayer('land')
-//		this.drawLayer('grid')
-//		this.drawSketch()
-//		this.drawLayer('hilite')
-//		this.drawCustom()
-//		if (!this.dragging) {
-//			this.drawLayer('deserts')
-//			this.drawLayer('mountains')
-//			this.drawRiver()
-//			this.drawLayer('lakes')
-//			this.drawLayer('cities')
-//			this.drawLayer('countries')
-//			this.drawEmpire()
-//			this.drawTexture()
-//		}
-//		this.projection.pt[0] -= this.mercwidth
 	}
 	else if (this.time.moved)
 		this.drawEmpire()
@@ -733,6 +725,30 @@ voyc.World.prototype.drawWater = function() {
 	}
 	ctx.fillStyle = palette.fill
 	ctx.fill()
+}
+
+voyc.World.prototype.drawViewport = function() {
+	var layer = this.layer['viewport']
+	if (!layer.enabled) return
+	var ctx = layer.ctx
+	var palette = this.palette['bkgrd'][0]
+	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
+	if (this.projection.projtype == 'mercator') {
+		ctx.beginPath()
+
+		ctx.moveTo(0,0)
+		ctx.lineTo(0,this.h)
+		ctx.lineTo(this.w,this.h)
+		ctx.lineTo(this.w,0)
+		ctx.lineTo(0,0)
+
+		var nw = this.projection.cx[0]
+		var se = this.projection.cx[1]
+		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
+
+		ctx.fillStyle = palette.fill
+		ctx.fill()
+	}
 }
 
 voyc.World.prototype.drawRiver = function() {
