@@ -286,7 +286,10 @@ voyc.World.prototype.setupData = function() {
 		'type':'GeometryCollection',
 		'geometries':[topojson.object(worldtopo, worldtopo['objects']['land'])]
 	}
-	voyc.data.land.geometries.push({type:'Polygon',coordinates:[[[-180,-84],[180,-84],[180,-90],[-180,-90],[-180,-84]]]})
+
+	// fixup antarctica land data for cylincrical projections
+	voyc.data.land.geometries[0].coordinates[7][0].splice(548,0,[-180,-90])
+	voyc.data.land.geometries[0].coordinates[7][0].splice(548,0,[180,-90])
 
 	voyc.data.hires = {
 		name: 'hires',
@@ -301,18 +304,18 @@ voyc.World.prototype.setupData = function() {
 		'name': 'grid',
 		'type': 'GeometryCollection',
 		'geometries': [
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian([90],true)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian([-90],true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian(90,true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian(-90,true)},
 
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel([66.55772])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel([-66.55772])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel([23.43715])},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel([-23.43715])},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel(66.55772)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel(-66.55772)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel(23.43715)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel(-23.43715)},
 			
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel([0])},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian([0],true)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian([180],true)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian([-180],true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel(0)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian(0,true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian(180,true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian(-180,true)},
 		]
 	}
 
@@ -516,7 +519,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'hilite' ,false       ,0)
 	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
 	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
-	createLayerCanvas('viewport'  ,false       ,false       ,false ,false    ,false       ,0)
+	createLayerCanvas('viewport'  ,'Viewport'  ,false       ,false ,false    ,false       ,0)
 
 	//voyc.$('viewport').style.opacity = .5
 
@@ -733,7 +736,7 @@ voyc.World.prototype.drawViewport = function() {
 	var ctx = layer.ctx
 	var palette = this.palette['bkgrd'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
-	if (this.projection.projtype == 'mercator') {
+	if (this.projection.projtype == 'mercator' || this.projection.projtype == 'equirectangular') {
 		ctx.beginPath()
 
 		ctx.moveTo(0,0)

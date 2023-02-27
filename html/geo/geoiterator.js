@@ -60,9 +60,9 @@
 		GeoIterator - base class, does nothing
 			GeoIteratorCount - for developer
 			GeoIteratorHitTest 
-			GeoIteratorClip - drawing, clipCircle for Orthogonal, clipExtant for Mercator, Mercator stitching
-				GeoIteratorSketch
+			GeoIteratorClip - drawing, clipCircle for Orthogonal, clipExtant for cylindrical, and cylindrical stitch
 				GeoIteratorCustom
+				GeoIteratorSketch
 				GeoIteratorHilite
 				GeoIteratorScale - select palette and draw by sorted group
 					GeoIteratorAnimate
@@ -265,7 +265,8 @@ voyc.GeoIteratorClip.prototype.geometryStart = function(geometry) {
 }
 
 voyc.GeoIteratorClip.prototype.geometryEnd = function(geometry) {
-	if (this.pass == 1 && this.projection.projtype == 'mercator') {
+	// cylindrical stitch
+	if (this.pass == 1 && (this.projection.projtype == 'mercator' || this.projection.projtype == 'equirectangular')) {
 		var wd = this.projection.mx[1][0] - this.projection.mx[0][0]
 		this.projection.pt[0] += wd
 		this.iterateGeometry(geometry) // again to the right

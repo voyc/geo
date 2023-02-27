@@ -71,8 +71,9 @@ voyc.DualProjection = function() {
 	this.cr = this.clipAngle(90) // cosine of the clip angle in radians
 	this.cx = [[],[]]  // clipExtent, rectangle of viewport, used to clip raster mercator points
 	this.mx = [[],[]]  // mapExtent, rectangle of complete map, used for mercator stitch
+	this.latClamp = 85.05113 // exclude polar regions for perfect mercator square
 
-	this.mix = 0  // used during animated projection morph
+	//this.mix = 0  // used during animated projection morph
 }
 
 voyc.DualProjection.prototype.setProjType = function(projtype) {
@@ -190,7 +191,7 @@ voyc.DualProjection.prototype.clipAngle = function(angle) {
 voyc.DualProjection.prototype.clipExtent = function()  {
 
 	// map extent
-	var y = (this.projtype == 'mercator') ? 85 : 90
+	var y = this.latClamp
 	var nw = this.project([-180, y])
 	var se = this.project([180, 0-y]) 
 	var w = nw[0]
@@ -261,9 +262,13 @@ voyc.DualProjection.prototype.project = function(co) {
 	var ye = ym = yo = 0
 
 	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
+		lng = co[0]
+		lat = 0-co[1]  // flip sign of latitude
+		lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp) // exclude polar regions
+
 		// rotate
-		lng = co[0]     - this.co[0]
-		lat = (0-co[1]) - this.co[1]
+		lng = lng - this.co[0]
+		lat = lat - this.co[1]    
 
 		// scale
 		xe = lng * this.pxlPerDgr
@@ -275,24 +280,23 @@ voyc.DualProjection.prototype.project = function(co) {
 	}
 
 	if (this.projtype == 'mercator' || this.projtype == 'mix') {
-		// rotate
-		lng = co[0] - this.co[0]
+		lng = co[0]
 		lat = 0-co[1]
-		lat = Math.min(lat,85)
+		lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp)
+
 		lat = voyc.mercatorStretch(lat)
+		
+		// rotate
+		lng = lng - this.co[0]
 		lat = lat - this.co[1]    
 
 		// scale
 		xm = lng * this.pxlPerDgr
-		ym = lat
 		ym = lat * this.pxlPerDgr
 
 		// translate
 		xm += this.pt[0]
 		ym += this.pt[1]
-
-		//var boo = this.isVisibleExtent(xm,ym)
-		//if (!boo) return false
 	}
 
 	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
