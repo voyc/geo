@@ -786,7 +786,8 @@ voyc.GeoIteratorCustom.prototype.lineEnd = function() {
 	this.ctx.beginPath()
 }
 
-voyc.GeoIteratorCustom.prototype.polygonEnd = function() {
+voyc.GeoIteratorCustom.prototype.polygonEnd = function(polygon) {
+	voyc.GeoIteratorClip.prototype.polygonEnd.call(this)
 	var palette = this.palette[0]
 	this.ctx.lineWidth = palette.pen
 	this.ctx.strokeStyle = palette.stroke
