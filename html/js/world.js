@@ -9,7 +9,6 @@ voyc.World = function() {
 	this.gamma = 0;  // degrees rotation around the z-axis
 	this.w = 0;
 	this.h = 0;
-	this.mercwidth = 0
 
 	this.projection = {};
 	this.layer = [];  // array of layer objects, layer is a canvas
@@ -65,7 +64,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.setupLayers()
 
 	this.projection = new voyc.DualProjection()
-	this.projection.projtype = localStorage.getItem('pro') || 'orthographic'
+	this.projection.mix = localStorage.getItem('mix') || 1
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
@@ -91,17 +90,19 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 
 voyc.World.prototype.showHiRes = function(boo) {}
 
-voyc.World.prototype.setProjType = function(projtype) {
-	this.projection.setProjType(projtype)
-	this.moved = true
-	voyc.geosketch.render(0)
-	this.stoPro()
+voyc.World.prototype.setMix = function(mix) {
+	var boo = this.projection.setMix(mix)
+	if (boo) {
+		this.moved = true
+		voyc.geosketch.render(0)
+	}
+	this.stoMix(mix)
 }
 
 // --------  localStorage
 
-voyc.World.prototype.stoPro = function() {
-	localStorage.setItem('pro',this.projection.projtype)
+voyc.World.prototype.stoMix = function() {
+	localStorage.setItem('mix',this.projection.mix)
 }
 voyc.World.prototype.stoCo = function() {
 	localStorage.setItem('co', JSON.stringify(this.co))
@@ -712,19 +713,14 @@ voyc.World.prototype.drawWater = function() {
 	var palette = this.palette['water'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
-	if (this.projection.projtype == 'orthographic')
+
+	if (this.projection.mix <= 50)
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
-	else if (this.projection.projtype == 'mercator') {
+
+	else if (this.projection.mix >= 80) {
 		nw = this.projection.cx[0]
 		se = this.projection.cx[1]
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
-		this.mercwidth = se[0] - nw[0] 
-	}
-	else if (this.projection.projtype == 'equirectangular') {
-		nw = this.projection.cx[0]
-		se = this.projection.cx[1]
-		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
-		this.mercwidth = se[0] - nw[0] 
 	}
 	ctx.fillStyle = palette.fill
 	ctx.fill()
@@ -736,7 +732,7 @@ voyc.World.prototype.drawViewport = function() {
 	var ctx = layer.ctx
 	var palette = this.palette['bkgrd'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
-	if (this.projection.projtype == 'mercator' || this.projection.projtype == 'equirectangular') {
+	if (this.projection.mix >= 80) {
 		ctx.beginPath()
 
 		ctx.moveTo(0,0)

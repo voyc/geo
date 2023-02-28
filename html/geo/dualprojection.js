@@ -42,7 +42,6 @@
 */
 voyc.DualProjection = function() {
 	// inputs
-	this.projtype = 'orthographic'  // orthographic, equirectangular, mercator, mix
 	this.co = []	// center coord [lng,lat]  E and S are positive (opposite of world.co)
 	this.pt = []	// center [x,y]
 	this.zoom = 0	// [0:20], [0:4], [-2:7]
@@ -73,12 +72,18 @@ voyc.DualProjection = function() {
 	this.mx = [[],[]]  // mapExtent, rectangle of complete map, used for mercator stitch
 	this.latClamp = 85.05113 // exclude polar regions for perfect mercator square
 
-	//this.mix = 0  // used during animated projection morph
+	this.mix = 1  // used during animated projection morph
 }
 
-voyc.DualProjection.prototype.setProjType = function(projtype) {
-	this.projtype = projtype
+voyc.DualProjection.prototype.setMix = function(mix) {
+	if (mix == this.mix) 
+		return false
+
+	this.mix = mix
+	console.log(['mix', mix])
+
 	this.cx = this.clipExtent()
+	return true
 }
 
 /**
@@ -258,13 +263,17 @@ voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 		clip to the rectangle extent of the viewport (not implemented)
 */
 voyc.DualProjection.prototype.project = function(co) {
-	var xe = xm = xo = 0
-	var ye = ym = yo = 0
+	var x = xe = xo = 0
+	var y = ye = yo = 0
 
-	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
+	if (this.mix >= 80) {
 		lng = co[0]
 		lat = 0-co[1]  // flip sign of latitude
 		lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp) // exclude polar regions
+
+		latm = voyc.mercatorStretch(lat)
+		var mf = voyc.interpolate(this.mix,80,100,.1,1)
+		lat = lat + ((latm - lat) * mf)
 
 		// rotate
 		lng = lng - this.co[0]
@@ -277,29 +286,12 @@ voyc.DualProjection.prototype.project = function(co) {
 		// translate
 		xe += this.pt[0]
 		ye += this.pt[1]
+
+		x = xe
+		y = ye
 	}
 
-	if (this.projtype == 'mercator' || this.projtype == 'mix') {
-		lng = co[0]
-		lat = 0-co[1]
-		lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp)
-
-		lat = voyc.mercatorStretch(lat)
-		
-		// rotate
-		lng = lng - this.co[0]
-		lat = lat - this.co[1]    
-
-		// scale
-		xm = lng * this.pxlPerDgr
-		ym = lat * this.pxlPerDgr
-
-		// translate
-		xm += this.pt[0]
-		ym += this.pt[1]
-	}
-
-	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
+	if (this.mix <= 50) {
 		// convert degrees to radians
 		var λ = co[0] * voyc.Geo.to_radians;  // lambda (small)
 		var φ = co[1] * voyc.Geo.to_radians;  // phi (small)
@@ -336,18 +328,9 @@ voyc.DualProjection.prototype.project = function(co) {
 		// clip extent (not implemented)
 		xo = work3x
 		yo = work3y
-	}
 
-	var x = xm || xo || xe
-	var y = ym || yo || ye
-
-	if (this.projtype == 'mix') {
-		// in-between, mix
-
-		// doing mixes, like with cylindrical for example, requires availablity of visible flag
-		var mixpct = .1
-		x = xm + ((xo - xm) * mixpct)
-		y = ym + ((yo - ym) * mixpct)
+		x = xo
+		y = yo
 	}
 	return [x,y];
 }
@@ -364,9 +347,10 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	var lato = 0
 	var lngm = 0
 	var lngo = 0
+	var lat,lng
 	var visible = true
 
-	if (this.projtype == 'equirectangular' || this.projtype == 'mix') {
+	if (this.mix >= 80) {
 		visible = this.isVisibleExtent(pt[0], pt[1])
 
 		x = pt[0] - this.pt[0]
@@ -377,9 +361,9 @@ voyc.DualProjection.prototype.invert = function(pt) {
 
 		lngm += this.co[0]
 		latm -= this.co[1]
-	}
+                
+		/////
 
-	if (this.projtype == 'mercator' || this.projtype == 'mix') {
 		visible = this.isVisibleExtent(pt[0], pt[1])
 
 		x = pt[0] - this.pt[0]
@@ -393,9 +377,12 @@ voyc.DualProjection.prototype.invert = function(pt) {
 
 		latm = voyc.mercatorShrink(latm)
 		latm = (0-latm)
+
+		lat = latm
+		lng = lngm
 	}
 
-	if (this.projtype == 'orthographic' || this.projtype == 'mix') {
+	if (this.mix <= 50) {
 		var visible = this.isPointInCircle(pt[0],pt[1])
 
 		var x = (pt[0] - this.δx) / this.k;
@@ -429,10 +416,11 @@ voyc.DualProjection.prototype.invert = function(pt) {
 
 		lngo = λ * voyc.Geo.to_degrees;
 		lato = φ * voyc.Geo.to_degrees;
+
+		lng = lngo
+		lat = lato
 	}
 
-	var lng = lngm || lngo
-	var lat = latm || lato
 	return [lng,lat,visible];
 }
 

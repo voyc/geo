@@ -48,10 +48,10 @@ icon {
 #layerbtn.mobile {
 	bottom:0rem;
 }
-#projectbtn.mobile {
+#mixbtn.mobile {
 	right:0rem;
 }
-#projectbtn {
+#mixbtn {
 	position:absolute;
 	bottom:0rem;
 	right:4rem;
@@ -157,6 +157,16 @@ icon {
 	-webkit-appearance:slider-vertical;
 	width:2rem;
 	height:7rem;
+}
+
+#mixslide {
+	right:4rem;
+	bottom:3rem;
+}
+#mixslide input {
+	-webkit-appearance:slider-vertical;
+	width:2rem;
+	height:20rem;
 }
 
 #chronometer {

@@ -35,7 +35,7 @@ function test() {
 	var proj = new voyc.DualProjection()
 	proj.wd = window.innerWidth
 	proj.ht = window.innerHeight
-	proj.projtype = 'mercator'
+	proj.mix = 100
 	proj.rotate([0-co[0], 0-co[1], 0-gamma])  // rotate to null island
 	proj.translate([w/2, h/2])                // position the circle within the canvas (centered) in pixels
 	proj.scale(0)                             // zoom level 0

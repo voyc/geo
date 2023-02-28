@@ -37,7 +37,7 @@ voyc.Hud = function() {
 }
 
 voyc.Hud.prototype.resize = function(w, h) {
-	for (var id of ['mapzoom','projectbtn', 'layerbtn','whereami'])
+	for (var id of ['mapzoom','mixbtn', 'layerbtn','whereami'])
 		if (w < 500)
 			voyc.$(id).classList.add('mobile')
 		else
@@ -49,11 +49,12 @@ voyc.Hud.prototype.setup = function(elem,comm) {
 	this.comm = comm;
 	this.menuIsOpen = false;
 	this.populateLayerMenu()
-	this.setupProjectBtn()
+	this.setupMixBtn()
 	this.setupToolBar()
 	this.setupEditBar()
 	this.attachButtons()
 	this.attachMapZoomer()
+	this.attachMixSlider()
 	this.attachTimeSlider()
 	this.attachKeyboard()
 	this.attachTouch()
@@ -111,7 +112,7 @@ voyc.Hud.prototype.attachButtons = function() {
 		self.closeAnnouncement();
 	}, false);
 
-	document.getElementById('projectbtn').addEventListener('click', function(evt) {self.onProjectBtn(evt)}, false)
+	document.getElementById('mixbtn').addEventListener('click', function(evt) {self.onMixBtn(evt)}, false)
 
 	document.getElementById('searchbtn').addEventListener('click', function(evt) {
 		var q = voyc.$('searchq').value
@@ -372,34 +373,25 @@ voyc.Hud.prototype.setupEditBar = function() {
 	}
 }
 
-// -------- project button
+// -------- mix button
 
-voyc.Hud.prototype.setupProjectBtn = function() {
-	voyc.$('projectbtn').setAttribute('projtype', 'equirectangular')
-	//var id = (voyc.geosketch.world.projection.projtype == 'orthographic') ? 'globeimg' : 'mercimg'
-	//voyc.show(voyc.$(id),false)
+voyc.Hud.prototype.setupMixBtn = function() {
+	var id = (voyc.geosketch.world.projection.mix == 1) ? 'globeimg' : 'mercimg'
+	voyc.show(voyc.$(id),false)
 }
-voyc.Hud.prototype.onProjectBtn = function(evt,btn) {
-	if (hudlog) console.log(['projectbtn','click',evt.target.id,evt.currentTarget.id])
+voyc.Hud.prototype.onMixBtn = function(evt,btn) {
+	if (hudlog) console.log(['mixbtn','click',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
-	//for (var p in ['globeimg', 'mercimg', 'equimg'])
-	//	voyc.show(voyc.$('mercimg'),false)
-	//if (evt.currentTarget.firstElementChild.classList.contains('hidden')) {
-	//	voyc.show(voyc.$('equimg'),true)
-	//	voyc.geosketch.world.setProjType('mercator')
-	//}
-	
-	if (evt.target.id == 'equimg') {
-		voyc.$('projectbtn').setAttribute('projtype', 'equirectangular')
-		voyc.geosketch.world.setProjType('equirectangular')
-	}
-	else if (evt.target.id == 'mercimg') {
-		voyc.$('projectbtn').setAttribute('projtype', 'mercator')
-		voyc.geosketch.world.setProjType('mercator')
+
+	if (evt.target.id == 'mercimg') {
+		voyc.geosketch.world.setMix(100)
+		voyc.show(voyc.$('globeimg'),true)
+		voyc.show(voyc.$('mercimg'),false)
 	}
 	else {
-		voyc.$('projectbtn').setAttribute('projtype', 'orthographic')
-		voyc.geosketch.world.setProjType('orthographic')
+		voyc.geosketch.world.setMix(1)
+		voyc.show(voyc.$('globeimg'),false)
+		voyc.show(voyc.$('mercimg'),true)
 	}
 }
 
@@ -450,6 +442,40 @@ voyc.Hud.prototype.timeSliderUp = function (evt) {
 	evt.stopPropagation();
 	this.timesliderIsHot = false
 	voyc.geosketch.world.dropTime(evt)
+}
+
+// -------- projtype slider
+
+voyc.Hud.prototype.attachMixSlider = function() {
+	this.mixslider = document.getElementById('mixslider')
+	this.mixslider.min   = 1
+	this.mixslider.max   = 100
+	this.mixslider.value = 1
+	this.mixslider.step  = 1
+
+	this.mixsliderIsHot = false 
+
+	var self = this
+	this.mixslider.addEventListener('mousedown',  function(evt) {self.mixSliderDown(evt)}, false)
+	this.mixslider.addEventListener('touchstart', function(evt) {self.mixSliderDown(evt)}, false)
+	this.mixslider.addEventListener('input',      function(evt) {self.mixSliderMove(evt)}, false)
+	this.mixslider.addEventListener('mousemove',  function(evt) {self.mixSliderMove(evt)}, false)
+	this.mixslider.addEventListener('touchend',   function(evt) {self.mixSliderUp(evt)}, false)
+	this.mixslider.addEventListener('mouseup',    function(evt) {self.mixSliderUp(evt)}, false)
+}
+
+voyc.Hud.prototype.mixSliderDown = function (evt) {
+	evt.stopPropagation()
+	this.mixsliderIsHot = true
+}
+voyc.Hud.prototype.mixSliderMove = function (evt) {
+	evt.stopPropagation()
+	if (this.mixsliderIsHot)
+		voyc.geosketch.world.setMix(parseFloat(evt.target.value))
+}
+voyc.Hud.prototype.mixSliderUp = function (evt) {
+	evt.stopPropagation();
+	this.mixsliderIsHot = false
 }
 
 // -------- map zoomer
@@ -510,7 +536,6 @@ voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	pt = this.getMousePt(evt)
 	voyc.geosketch.world.stepZoom(spin,pt)	
 }
-
 // -------- public
 
 voyc.Hud.prototype.fade = function(elem, boo) {

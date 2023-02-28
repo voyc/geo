@@ -266,7 +266,7 @@ voyc.GeoIteratorClip.prototype.geometryStart = function(geometry) {
 
 voyc.GeoIteratorClip.prototype.geometryEnd = function(geometry) {
 	// cylindrical stitch
-	if (this.pass == 1 && (this.projection.projtype == 'mercator' || this.projection.projtype == 'equirectangular')) {
+	if (this.pass == 1 && this.projection.mix >= 80) {
 		var wd = this.projection.mx[1][0] - this.projection.mx[0][0]
 		this.projection.pt[0] += wd
 		this.iterateGeometry(geometry) // again to the right
