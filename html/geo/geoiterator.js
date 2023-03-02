@@ -266,7 +266,7 @@ voyc.GeoIteratorClip.prototype.geometryStart = function(geometry) {
 
 voyc.GeoIteratorClip.prototype.geometryEnd = function(geometry) {
 	// cylindrical stitch
-	if (this.pass == 1 && this.projection.mix >= 80) {
+	if (this.pass == 1 && this.projection.mixer.stitch) {
 		var wd = this.projection.mx[1][0] - this.projection.mx[0][0]
 		this.projection.pt[0] += wd
 		this.iterateGeometry(geometry) // again to the right
@@ -310,7 +310,7 @@ voyc.GeoIteratorClip.prototype.polygonEnd = function(polygon) {
 
 voyc.GeoIteratorClip.prototype.doPoint = function(co, within, ndx) {
 	var pt = this.projection.project(co);
-	if (pt) {                                              // if visible
+	if (pt[2]) {                                           // if visible
 		if (!this.firstVisiblePointInRing) {           //    if first visible point
 			this.firstVisiblePointInRing = pt;     //       save it
 		}
@@ -335,6 +335,7 @@ voyc.GeoIteratorClip.prototype.doPoint = function(co, within, ndx) {
 		}
 		this.visiblePointCount++                       //    count it
 		this.lastVisiblePointInRing = pt               //    mark it last visible (so far)
+		this.previousPt = pt                           // save previous
 	}
 	else {                                                 // else if not visible
 		if (!this.pointCount) {                        //    if first point
@@ -346,7 +347,6 @@ voyc.GeoIteratorClip.prototype.doPoint = function(co, within, ndx) {
 		}                                              //       prev point was last-before-gap
 	}
 	this.pointCount++                                      // count
-	this.previousPt = pt                                   // save previous
 	return true
 }
 

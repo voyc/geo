@@ -64,7 +64,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.setupLayers()
 
 	this.projection = new voyc.DualProjection()
-	this.projection.mix = localStorage.getItem('mix') || 1
+	this.projection.setMix(localStorage.getItem('mix') || voyc.orthographic)
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.projection.translate([this.w/2, this.h/2]);  // position the circle within the canvas (centered) in pixels
@@ -575,12 +575,6 @@ voyc.World.prototype.stepFrame = function() {
 		this.counter=0
 	for (var i=0; i<this.animation.length; i++)
 		this.showLayer(this.animation[i], this.counter==i)
-
-	//this.counterMix = 20
-	//mix range -1 1
-	//range 1 - -1 = 2
-	//step = 2 / 20 = .1
-	
 }
 
 
@@ -714,10 +708,10 @@ voyc.World.prototype.drawWater = function() {
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
 	ctx.beginPath();
 
-	if (this.projection.mix <= 50)
+	if (this.projection.mixer.orthographic)
 		ctx.arc(this.w/2, this.h/2, this.projection.k, 0*Math.PI, 2*Math.PI);
 
-	else if (this.projection.mix >= 80) {
+	else if (this.projection.mixer.cylindrical) {
 		nw = this.projection.cx[0]
 		se = this.projection.cx[1]
 		ctx.rect(nw[0], nw[1], se[0]-nw[0], se[1]-nw[1])
@@ -732,7 +726,7 @@ voyc.World.prototype.drawViewport = function() {
 	var ctx = layer.ctx
 	var palette = this.palette['bkgrd'][0]
 	ctx.clearRect(0,0,ctx.canvas.width, ctx.canvas.height)
-	if (this.projection.mix >= 80) {
+	if (this.projection.mixer.viewport) {
 		ctx.beginPath()
 
 		ctx.moveTo(0,0)
@@ -1001,4 +995,3 @@ voyc.feature2layer = {
 	'valley'          : '',
 	'wetlands'        : '',
 }
-

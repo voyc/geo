@@ -72,17 +72,18 @@ voyc.DualProjection = function() {
 	this.mx = [[],[]]  // mapExtent, rectangle of complete map, used for mercator stitch
 	this.latClamp = 85.05113 // exclude polar regions for perfect mercator square
 
-	this.mix = 1  // used during animated projection morph
+	this.mix = -1  // used during animated projection morph
+	this.mixer = {}
 }
 
 voyc.DualProjection.prototype.setMix = function(mix) {
 	if (mix == this.mix) 
 		return false
-
 	this.mix = mix
-	console.log(['mix', mix])
-
-	this.cx = this.clipExtent()
+	this.mixer = voyc.mixer[Math.floor(this.mix/10)]
+	this.mf = voyc.interpolate(this.mix,voyc.mercatorRange.lo,voyc.mercatorRange.hi,.1,1)
+	this.sf = voyc.interpolate(this.mix,voyc.soupcanRange.lo,voyc.soupcanRange.hi,.1,1)
+	this.translate(this.pt)
 	return true
 }
 
@@ -263,35 +264,39 @@ voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 		clip to the rectangle extent of the viewport (not implemented)
 */
 voyc.DualProjection.prototype.project = function(co) {
-	var x = xe = xo = 0
-	var y = ye = yo = 0
+	var lng,lat,x,xc,xo,y,yc,yo
+	var visible = true
 
-	if (this.mix >= 80) {
+	if (this.mixer.cylindrical) {
 		lng = co[0]
 		lat = 0-co[1]  // flip sign of latitude
-		lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp) // exclude polar regions
 
-		latm = voyc.mercatorStretch(lat)
-		var mf = voyc.interpolate(this.mix,80,100,.1,1)
-		lat = lat + ((latm - lat) * mf)
+		if (this.mixer.mercator) {
+			lat = voyc.clamp(lat, 0-this.latClamp, this.latClamp) // exclude polar regions
+			latm = voyc.mercatorStretch(lat)
+			lat = lat + ((latm - lat) * this.mf)
+		}
 
 		// rotate
 		lng = lng - this.co[0]
 		lat = lat - this.co[1]    
 
+		if (this.mixer.soupcan) {
+			//if (Math.abs(lng) < 90) lng = 90
+			lng = voyc.degrees(Math.sin(voyc.radians(lng)))
+			//((Math.PI / 2) * this.sf)
+		}
+
 		// scale
-		xe = lng * this.pxlPerDgr
-		ye = lat * this.pxlPerDgr
+		xc = lng * this.pxlPerDgr
+		yc = lat * this.pxlPerDgr
 
 		// translate
-		xe += this.pt[0]
-		ye += this.pt[1]
-
-		x = xe
-		y = ye
+		xc += this.pt[0]
+		yc += this.pt[1]
 	}
 
-	if (this.mix <= 50) {
+	if (this.mixer.orthographic) {
 		// convert degrees to radians
 		var λ = co[0] * voyc.Geo.to_radians;  // lambda (small)
 		var φ = co[1] * voyc.Geo.to_radians;  // phi (small)
@@ -308,31 +313,32 @@ voyc.DualProjection.prototype.project = function(co) {
 		φ = this.asin(k * this.cosδγ + y * this.sinδγ);
 	
 		// clip to small circle
-		var boo = this.isPointVisible(λ,φ);
-		if (!boo) {
-			return false;
+		visible = this.isPointVisible(λ,φ);
+		if (visible) {
+			// scale
+			var cosλ = Math.cos(λ);
+			var cosφ = Math.cos(φ);
+			var k = 1; //scale(cosλ * cosφ);  // scale() return 1
+			var work2x = k * cosφ * Math.sin(λ)
+			var work2y = k * Math.sin(φ);
+	
+			// translate
+			var work3x = work2x * this.k + this.δx;
+			var work3y = this.δy - work2y * this.k;
+			
+			// clip extent (not implemented)
+			xo = work3x
+			yo = work3y
 		}
-	
-		// scale
-		var cosλ = Math.cos(λ);
-		var cosφ = Math.cos(φ);
-		var k = 1; //scale(cosλ * cosφ);  // scale() return 1
-	
-		var work2x = k * cosφ * Math.sin(λ)
-		var work2y = k * Math.sin(φ);
-	
-		// translate
-		var work3x = work2x * this.k + this.δx;
-		var work3y = this.δy - work2y * this.k;
-		
-		// clip extent (not implemented)
-		xo = work3x
-		yo = work3y
-
-		x = xo
-		y = yo
 	}
-	return [x,y];
+
+	x = xo
+	y = yo 
+	if (this.mixer.cylindrical) {
+		x = xc
+		y = yc
+	}
+	return [x,y,visible];
 }
 
 /**
@@ -343,50 +349,36 @@ voyc.DualProjection.prototype.project = function(co) {
 	Returns an array [longitude, latitude] given the input array [x, y]. 
 */
 voyc.DualProjection.prototype.invert = function(pt) {
-	var latm = 0
-	var lato = 0
-	var lngm = 0
-	var lngo = 0
-	var lat,lng
+	var x,y,lat,lng
 	var visible = true
 
-	if (this.mix >= 80) {
+	if (this.mixer.cylindrical) {
 		visible = this.isVisibleExtent(pt[0], pt[1])
 
+		// translate
 		x = pt[0] - this.pt[0]
 		y = pt[1] - this.pt[1]
 
-		lngm = x / this.pxlPerDgr
-		latm = 0 - (y / this.pxlPerDgr)
+		// scale
+		lng = x / this.pxlPerDgr
+		lat = y / this.pxlPerDgr
 
-		lngm += this.co[0]
-		latm -= this.co[1]
-                
-		/////
+		// rotate
+		lng += this.co[0]
+		lat += this.co[1]
 
-		visible = this.isVisibleExtent(pt[0], pt[1])
+		// calc mercator 
+		lat = voyc.mercatorShrink(lat)
 
-		x = pt[0] - this.pt[0]
-		y = pt[1] - this.pt[1]
-
-		lngm = x / this.pxlPerDgr
-		latm = y / this.pxlPerDgr
-
-		lngm += this.co[0]
-		latm += this.co[1]
-
-		latm = voyc.mercatorShrink(latm)
-		latm = (0-latm)
-
-		lat = latm
-		lng = lngm
+		// flip sign
+		lat = (0-lat)
 	}
 
-	if (this.mix <= 50) {
-		var visible = this.isPointInCircle(pt[0],pt[1])
+	if (this.mixer.orthographic) {
+		visible = this.isPointInCircle(pt[0],pt[1])
 
-		var x = (pt[0] - this.δx) / this.k;
-		var y = (this.δy - pt[1]) / this.k;
+		x = (pt[0] - this.δx) / this.k;
+		y = (this.δy - pt[1]) / this.k;
 	
 		var ρ = Math.sqrt(x * x + y * y);
 		var c = this.asin(ρ); //angle(ρ);
@@ -403,22 +395,11 @@ voyc.DualProjection.prototype.invert = function(pt) {
 		λ = Math.atan2(yy * this.cosδγ + zz * this.sinδγ, xx * this.cosδφ + k * this.sinδφ); 
 		φ = this.asin(k * this.cosδφ - xx * this.sinδφ);
 	
-		// clip to small circle
-		//var boo = this.isPointVisibleInvert(λ,φ)
-		//if (!boo) 
-		//	return false
-
-		//var test1 = (λ > voyc.Geo.π)
-		//var test2 = (λ < -voyc.Geo.π)
-		
 		λ -= this.δλ;  // δλ = -1.3962634015954636
 		λ = (λ > voyc.Geo.π) ? λ - voyc.Geo.τ : (λ < -voyc.Geo.π) ? λ + voyc.Geo.τ : λ;
 
-		lngo = λ * voyc.Geo.to_degrees;
-		lato = φ * voyc.Geo.to_degrees;
-
-		lng = lngo
-		lat = lato
+		lng = λ * voyc.Geo.to_degrees;
+		lat = φ * voyc.Geo.to_degrees;
 	}
 
 	return [lng,lat,visible];
@@ -444,5 +425,46 @@ voyc.DualProjection.prototype.precision = function(x) {
 	// to give it the great arc curvature on the surface of the globe.
 	// We assume our data has sufficient points, ie., no long straight lines,
 	// so that resampling is not necessary.
+}
+
+voyc.mixer = {
+	 0: { orthographic:true ,cylindrical:false,stitch:false,viewport:false,mercator:false,soupcan:false, },
+	 1: { orthographic:true ,cylindrical:false,stitch:false,viewport:false,mercator:false,soupcan:false, },
+	 2: { orthographic:true ,cylindrical:true ,stitch:false,viewport:true ,mercator:false,soupcan:true , },
+	 3: { orthographic:true ,cylindrical:true ,stitch:false,viewport:true ,mercator:false,soupcan:true , },
+	 4: { orthographic:false,cylindrical:true ,stitch:false,viewport:true ,mercator:false,soupcan:true , },
+	 5: { orthographic:false,cylindrical:true ,stitch:false,viewport:true ,mercator:false,soupcan:true , },
+	 6: { orthographic:false,cylindrical:true ,stitch:true ,viewport:true ,mercator:true ,soupcan:false, },
+	 7: { orthographic:false,cylindrical:true ,stitch:true ,viewport:true ,mercator:true ,soupcan:false, },
+	 8: { orthographic:false,cylindrical:true ,stitch:true ,viewport:true ,mercator:true ,soupcan:false, },
+}
+
+// four basic steps: ortho, soupcan, equi, merc
+// mercator and soupcan are variations applied to cylindrical
+
+//     0 globe 
+//  0-20 straighten up
+//    20 upright globe
+// 20-40 globe to soupcan
+//    40 soupcan
+// 40-60 unroll the soupcan
+//    60 equi
+// 60-80 mercator stretch
+//    80 merc
+
+voyc.orthographic = 0
+voyc.cylindrical = 80
+
+voyc.mixerRange = {
+	lo: voyc.orthagonal,
+	hi: voyc.cylindrical,
+}
+voyc.mercatorRange = {
+	lo: 61,
+	hi: 80,
+}
+voyc.soupcanRange = {
+	lo: 60, // 100 - (100 * ((Math.PI / 2) * .1))
+	hi: 40, // 100 - (100 * ((Math.PI / 2) * ))
 }
 

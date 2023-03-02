@@ -376,7 +376,7 @@ voyc.Hud.prototype.setupEditBar = function() {
 // -------- mix button
 
 voyc.Hud.prototype.setupMixBtn = function() {
-	var id = (voyc.geosketch.world.projection.mix == 1) ? 'globeimg' : 'mercimg'
+	var id = (voyc.geosketch.world.projection.mixer.orthographic) ? 'globeimg' : 'mercimg'
 	voyc.show(voyc.$(id),false)
 }
 voyc.Hud.prototype.onMixBtn = function(evt,btn) {
@@ -384,12 +384,12 @@ voyc.Hud.prototype.onMixBtn = function(evt,btn) {
 	evt.preventDefault(); evt.stopPropagation()
 
 	if (evt.target.id == 'mercimg') {
-		voyc.geosketch.world.setMix(100)
+		voyc.geosketch.world.setMix(voyc.cylindrical)
 		voyc.show(voyc.$('globeimg'),true)
 		voyc.show(voyc.$('mercimg'),false)
 	}
 	else {
-		voyc.geosketch.world.setMix(1)
+		voyc.geosketch.world.setMix(voyc.orthographic)
 		voyc.show(voyc.$('globeimg'),false)
 		voyc.show(voyc.$('mercimg'),true)
 	}
@@ -444,13 +444,13 @@ voyc.Hud.prototype.timeSliderUp = function (evt) {
 	voyc.geosketch.world.dropTime(evt)
 }
 
-// -------- projtype slider
+// -------- mix slider
 
 voyc.Hud.prototype.attachMixSlider = function() {
 	this.mixslider = document.getElementById('mixslider')
-	this.mixslider.min   = 1
-	this.mixslider.max   = 100
-	this.mixslider.value = 1
+	this.mixslider.min   = voyc.mixerRange.lo
+	this.mixslider.max   = voyc.mixerRange.hi
+	this.mixslider.value = voyc.geosketch.world.projection.mix
 	this.mixslider.step  = 1
 
 	this.mixsliderIsHot = false 
