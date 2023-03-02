@@ -63,7 +63,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 
 	this.setupLayers()
 
-	this.projection = new voyc.DualProjection()
+	this.projection = new voyc.Projection()
 	this.projection.setMix(localStorage.getItem('mix') || voyc.orthographic)
 
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);

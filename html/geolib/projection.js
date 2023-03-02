@@ -1,5 +1,5 @@
 /** 
-	class DualProjection
+	class Projection
 	@constructor 
 
 	Project orthographic or mercator or a point in between.
@@ -39,7 +39,7 @@
 		center()
 		
 */
-voyc.DualProjection = function() {
+voyc.Projection = function() {
 	// inputs
 	this.co = []	// center coord [lng,lat]  E and S are positive (opposite of world.co)
 	this.pt = []	// center [x,y]
@@ -75,7 +75,7 @@ voyc.DualProjection = function() {
 	this.mixer = {}
 }
 
-voyc.DualProjection.prototype.setMix = function(mix) {
+voyc.Projection.prototype.setMix = function(mix) {
 	if (mix == this.mix) 
 		return false
 	this.mix = mix
@@ -100,7 +100,7 @@ voyc.DualProjection.prototype.setMix = function(mix) {
 		spin adjusts by an increment
 		passes the zero-complement of the three values as ro
 */
-voyc.DualProjection.prototype.rotate = function(ro) {
+voyc.Projection.prototype.rotate = function(ro) {
 	// for mercator, set the center coordinate
 	var lng = 0 - ro[0] 
 	var lat = ro[1]      // flip latitude
@@ -124,7 +124,7 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	projection.scale(zoom)
 	Sets the projection’s zoom level
 */
-voyc.DualProjection.prototype.scale = function(zoom) {
+voyc.Projection.prototype.scale = function(zoom) {
 	this.zoom = zoom				// level between -2 and 20
 	this.uscale = voyc.scaler(this.wd,this.zoom)	// universal scale (all projections)
 
@@ -147,7 +147,7 @@ voyc.DualProjection.prototype.scale = function(zoom) {
 	This is normally the center point of the viewport window.
 	Called on load and resize.
 */
-voyc.DualProjection.prototype.translate = function(pt) {
+voyc.Projection.prototype.translate = function(pt) {
 	// save the center point in pixels
 	this.pt = pt
 
@@ -174,7 +174,7 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	This is used for "small-circle" clipping of each coordinate during project().
 	We always use 90 degrees, which is the exact circle of the visible hemisphere.
 */
-voyc.DualProjection.prototype.clipAngle = function(angle) {
+voyc.Projection.prototype.clipAngle = function(angle) {
 	var clipAngle = angle
 	var clipRadians = voyc.radians(clipAngle)
 	var cr = Math.cos(clipRadians)
@@ -193,7 +193,7 @@ voyc.DualProjection.prototype.clipAngle = function(angle) {
 		2. "extent" clipping, performed after point projection, 
 			by comparing the output [x,y] point to the visible rectangle of the viewport window.
 */
-voyc.DualProjection.prototype.clipExtent = function()  {
+voyc.Projection.prototype.clipExtent = function()  {
 
 	// map extent
 	var y = this.latClamp
@@ -223,7 +223,7 @@ voyc.DualProjection.prototype.clipExtent = function()  {
 /*
 	if clipExtent intersects pt
 */
-voyc.DualProjection.prototype.isVisibleExtent = function(x,y) {
+voyc.Projection.prototype.isVisibleExtent = function(x,y) {
 	return (x >= this.cx[0][0]) && (x <= this.cx[1][0])
 	    && (y >= this.cx[0][1]) && (y <= this.cx[1][1])
 }
@@ -233,11 +233,11 @@ voyc.DualProjection.prototype.isVisibleExtent = function(x,y) {
 	Returns true or false.
 	Called by project() to implements small-circle clipping of a coordinate.
 */
-voyc.DualProjection.prototype.isPointVisible = function(λ, φ) {
+voyc.Projection.prototype.isPointVisible = function(λ, φ) {
 	return (Math.cos(λ) * Math.cos(φ)) > this.cr   // cr 6.12323395736766e-17
 }
 
-voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
+voyc.Projection.prototype.isPointInCircle = function(x, y) {
 	var xc = this.wd/2
 	var yc = this.ht/2
 	var r = this.k
@@ -262,7 +262,7 @@ voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
 			adaptive resampling (not implemented) 
 		clip to the rectangle extent of the viewport (not implemented)
 */
-voyc.DualProjection.prototype.project = function(co) {
+voyc.Projection.prototype.project = function(co) {
 	var lng,lat,x,xc,xo,y,yc,yo
 	var visible = true
 
@@ -347,7 +347,7 @@ voyc.DualProjection.prototype.project = function(co) {
 	to spherical coordinates (in degrees). 
 	Returns an array [longitude, latitude] given the input array [x, y]. 
 */
-voyc.DualProjection.prototype.invert = function(pt) {
+voyc.Projection.prototype.invert = function(pt) {
 	var x,y,lat,lng
 	var visible = true
 
@@ -405,7 +405,7 @@ voyc.DualProjection.prototype.invert = function(pt) {
 }
 
 // constrain within pos or neg half pi
-voyc.DualProjection.prototype.asin = function(x) {
+voyc.Projection.prototype.asin = function(x) {
 	return x > 1 ? voyc.halfπ : x < -1 ? -voyc.halfπ : Math.asin(x)
 }
 
@@ -417,7 +417,7 @@ voyc.DualProjection.prototype.asin = function(x) {
 	Defaults to Math.SQRT(1/2).
 	A precision of 0 disables adaptive resampling.
 */
-voyc.DualProjection.prototype.precision = function(x) {
+voyc.Projection.prototype.precision = function(x) {
 	// not implemented
 	// We do NOT do adaptive resampling.
 	// "Adaptive resampling" inserts additional points in a line

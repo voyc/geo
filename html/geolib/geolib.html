@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <title>geo test</title>
 <script>voyc = {}</script>
-<script src='geo.js'></script>
-<script src='dualprojection.js'></script>
+<script src='geolib.js'></script>
+<script src='projection.js'></script>
 <script src='../jslib/utils.js'></script>
 <script>
 window.addEventListener('load', function() {test()}, false)
@@ -32,10 +32,10 @@ function test() {
 	var co = [0,0]
 	var gamma = 0
 
-	var proj = new voyc.DualProjection()
+	var proj = new voyc.Projection()
 	proj.wd = window.innerWidth
 	proj.ht = window.innerHeight
-	proj.mix = 100
+	proj.setMix( voyc.orthographic)
 	proj.rotate([0-co[0], 0-co[1], 0-gamma])  // rotate to null island
 	proj.translate([w/2, h/2])                // position the circle within the canvas (centered) in pixels
 	proj.scale(0)                             // zoom level 0
