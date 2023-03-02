@@ -12,19 +12,19 @@ window.addEventListener('load', function() {test()}, false)
 function test() {
 	var coNY = [ -74.00594, -40.71278]
 	var coLA = [-118.24368, -34.05223]
-	var nyla  = voyc.Geo.distanceKm(coNY, coLA)
+	var nyla  = voyc.distanceKm(coNY, coLA)
 	console.log([nyla,'3944 km'])
 	
-	var nylad3  = voyc.Geo.distanced3(coNY, coLA) * voyc.Geo.radiusKm
+	var nylad3  = voyc.distanced3(coNY, coLA) * voyc.radiusKm
 	console.log([nylad3,'3944 km'])
 	
 	var coLondon = [0, 51.5]
 	var coArlington = [-77.1, 38.8]
-	var londonarlington = voyc.Geo.distanceKm(coLondon, coArlington)
+	var londonarlington = voyc.distanceKm(coLondon, coArlington)
 	console.log([londonarlington, '5918 km'])
 	
 	var coZero = [0,0]
-	var zero = voyc.Geo.distanceKm(coZero,coZero)
+	var zero = voyc.distanceKm(coZero,coZero)
 	console.log([zero, '0 km'])
 	
 	var w = window.innerWidth

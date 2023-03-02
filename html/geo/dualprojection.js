@@ -3,7 +3,6 @@
 	@constructor 
 
 	Project orthographic or mercator or a point in between.
-	Useful for animating globe to mercatur and back again.
 	
 	Notes on clipping.
 		To clip a point means to remove it from consideration because it is not visible.
@@ -14,7 +13,7 @@
 		We do NOT implement extent clipping, because it has no visual effect,
 		and offers no improvement in performance of canvas drawing.
 		There are some additional issues in clipping lines and polygons,
-		and these are implemented in class GeoIteration.
+		and these are implemented in class GeoIterator.
 		
 	Variable naming conventions.
 		pt is an [x,y] point in pixels
@@ -108,15 +107,15 @@ voyc.DualProjection.prototype.rotate = function(ro) {
 	this.co = [lng,lat]  // in here, N is negative
 
 	// for orthographic, set three rotation amounts
-	this.δλ = ro[0] % 360 * voyc.Geo.to_radians;   // delta lambda (horizontal)
-	this.δφ = ro[1] % 360 * voyc.Geo.to_radians;   // delta phi (vertical)
+	this.δλ = voyc.radians(ro[0] % 360)   // delta lambda (horizontal)
+	this.δφ = voyc.radians(ro[1] % 360)   // delta phi (vertical)
 	if (ro.length > 2) {
-		this.δγ = ro[2] % 360 * voyc.Geo.to_radians;  // delta gamma (z-axis)
+		this.δγ = voyc.radians(ro[2] % 360)  // delta gamma (z-axis)
 	}
-	this.cosδφ = Math.cos(this.δφ);
-	this.sinδφ = Math.sin(this.δφ);
-	this.cosδγ = Math.cos(this.δγ);
-	this.sinδγ = Math.sin(this.δγ);
+	this.cosδφ = Math.cos(this.δφ)
+	this.sinδφ = Math.sin(this.δφ)
+	this.cosδγ = Math.cos(this.δγ)
+	this.sinδγ = Math.sin(this.δγ)
 
 	this.cx = this.clipExtent()
 }
@@ -150,11 +149,11 @@ voyc.DualProjection.prototype.scale = function(zoom) {
 */
 voyc.DualProjection.prototype.translate = function(pt) {
 	// save the center point in pixels
-	this.pt = pt;
+	this.pt = pt
 
 	// for orthographic, set the translation amounts
-	this.δx = this.pt[0];
-	this.δy = this.pt[1];
+	this.δx = this.pt[0]
+	this.δy = this.pt[1]
 
 	// for mercator, calc screen boundaries in pixels
 	this.wd = this.pt[0] * 2
@@ -176,9 +175,9 @@ voyc.DualProjection.prototype.translate = function(pt) {
 	We always use 90 degrees, which is the exact circle of the visible hemisphere.
 */
 voyc.DualProjection.prototype.clipAngle = function(angle) {
-	var clipAngle = angle;
-	var clipRadians = clipAngle * voyc.Geo.to_radians;
-	var cr = Math.cos(clipRadians);
+	var clipAngle = angle
+	var clipRadians = voyc.radians(clipAngle)
+	var cr = Math.cos(clipRadians)
 	return cr
 }
 
@@ -235,7 +234,7 @@ voyc.DualProjection.prototype.isVisibleExtent = function(x,y) {
 	Called by project() to implements small-circle clipping of a coordinate.
 */
 voyc.DualProjection.prototype.isPointVisible = function(λ, φ) {
-	return (Math.cos(λ) * Math.cos(φ)) > this.cr;   // cr 6.12323395736766e-17
+	return (Math.cos(λ) * Math.cos(φ)) > this.cr   // cr 6.12323395736766e-17
 }
 
 voyc.DualProjection.prototype.isPointInCircle = function(x, y) {
@@ -298,33 +297,33 @@ voyc.DualProjection.prototype.project = function(co) {
 
 	if (this.mixer.orthographic) {
 		// convert degrees to radians
-		var λ = co[0] * voyc.Geo.to_radians;  // lambda (small)
-		var φ = co[1] * voyc.Geo.to_radians;  // phi (small)
+		var λ = voyc.radians(co[0])  // lambda (small)
+		var φ = voyc.radians(co[1])  // phi (small)
 	
 		// rotate
-		λ += this.δλ;  // lambda plus delta lambda
-		λ = (λ > voyc.Geo.π) ? λ - voyc.Geo.τ : (λ < -voyc.Geo.π) ? λ + voyc.Geo.τ : λ;  // constrain to pi
-		var cosφ = Math.cos(φ);
-		var x = Math.cos(λ) * cosφ;
-		var y = Math.sin(λ) * cosφ;
-		var z = Math.sin(φ);
-		var k = z * this.cosδφ + x * this.sinδφ;
-		λ = Math.atan2(y * this.cosδγ - k * this.sinδγ, x * this.cosδφ - z * this.sinδφ);
-		φ = this.asin(k * this.cosδγ + y * this.sinδγ);
+		λ += this.δλ  // lambda plus delta lambda
+		λ = (λ > Math.PI) ? λ - voyc.τ : (λ < -Math.PI) ? λ + voyc.τ : λ  // constrain to pi
+		var cosφ = Math.cos(φ)
+		var x = Math.cos(λ) * cosφ
+		var y = Math.sin(λ) * cosφ
+		var z = Math.sin(φ)
+		var k = z * this.cosδφ + x * this.sinδφ
+		λ = Math.atan2(y * this.cosδγ - k * this.sinδγ, x * this.cosδφ - z * this.sinδφ)
+		φ = this.asin(k * this.cosδγ + y * this.sinδγ)
 	
 		// clip to small circle
-		visible = this.isPointVisible(λ,φ);
+		visible = this.isPointVisible(λ,φ)
 		if (visible) {
 			// scale
-			var cosλ = Math.cos(λ);
-			var cosφ = Math.cos(φ);
-			var k = 1; //scale(cosλ * cosφ);  // scale() return 1
+			var cosλ = Math.cos(λ)
+			var cosφ = Math.cos(φ)
+			var k = 1 //scale(cosλ * cosφ)  // scale() return 1
 			var work2x = k * cosφ * Math.sin(λ)
-			var work2y = k * Math.sin(φ);
+			var work2y = k * Math.sin(φ)
 	
 			// translate
-			var work3x = work2x * this.k + this.δx;
-			var work3y = this.δy - work2y * this.k;
+			var work3x = work2x * this.k + this.δx
+			var work3y = this.δy - work2y * this.k
 			
 			// clip extent (not implemented)
 			xo = work3x
@@ -338,7 +337,7 @@ voyc.DualProjection.prototype.project = function(co) {
 		x = xc
 		y = yc
 	}
-	return [x,y,visible];
+	return [x,y,visible]
 }
 
 /**
@@ -377,37 +376,37 @@ voyc.DualProjection.prototype.invert = function(pt) {
 	if (this.mixer.orthographic) {
 		visible = this.isPointInCircle(pt[0],pt[1])
 
-		x = (pt[0] - this.δx) / this.k;
-		y = (this.δy - pt[1]) / this.k;
+		x = (pt[0] - this.δx) / this.k
+		y = (this.δy - pt[1]) / this.k
 	
-		var ρ = Math.sqrt(x * x + y * y);
-		var c = this.asin(ρ); //angle(ρ);
-		var sinc = Math.sin(c);
-		var cosc = Math.cos(c);
-		var λ = Math.atan2(x * sinc, ρ * cosc);
-		var φ = Math.asin(ρ && y * sinc / ρ);
+		var ρ = Math.sqrt(x * x + y * y)
+		var c = this.asin(ρ) //angle(ρ)
+		var sinc = Math.sin(c)
+		var cosc = Math.cos(c)
+		var λ = Math.atan2(x * sinc, ρ * cosc)
+		var φ = Math.asin(ρ && y * sinc / ρ)
 	
-		var cosφ = Math.cos(φ);
-		var xx = Math.cos(λ) * cosφ;
-		var yy = Math.sin(λ) * cosφ;
-		var zz = Math.sin(φ);
-		var k = zz * this.cosδγ - yy * this.sinδγ;
-		λ = Math.atan2(yy * this.cosδγ + zz * this.sinδγ, xx * this.cosδφ + k * this.sinδφ); 
-		φ = this.asin(k * this.cosδφ - xx * this.sinδφ);
+		var cosφ = Math.cos(φ)
+		var xx = Math.cos(λ) * cosφ
+		var yy = Math.sin(λ) * cosφ
+		var zz = Math.sin(φ)
+		var k = zz * this.cosδγ - yy * this.sinδγ
+		λ = Math.atan2(yy * this.cosδγ + zz * this.sinδγ, xx * this.cosδφ + k * this.sinδφ) 
+		φ = this.asin(k * this.cosδφ - xx * this.sinδφ)
 	
-		λ -= this.δλ;  // δλ = -1.3962634015954636
-		λ = (λ > voyc.Geo.π) ? λ - voyc.Geo.τ : (λ < -voyc.Geo.π) ? λ + voyc.Geo.τ : λ;
+		λ -= this.δλ  // δλ = -1.3962634015954636
+		λ = (λ > Math.PI) ? λ - voyc.τ : (λ < -voyc.π) ? λ + voyc.τ : λ
 
-		lng = λ * voyc.Geo.to_degrees;
-		lat = φ * voyc.Geo.to_degrees;
+		lng = voyc.degrees(λ)
+		lat = voyc.degrees(φ)
 	}
 
-	return [lng,lat,visible];
+	return [lng,lat,visible]
 }
 
 // constrain within pos or neg half pi
 voyc.DualProjection.prototype.asin = function(x) {
-	return x > 1 ? voyc.Geo.halfπ : x < -1 ? -voyc.Geo.halfπ : Math.asin(x);
+	return x > 1 ? voyc.halfπ : x < -1 ? -voyc.halfπ : Math.asin(x)
 }
 
 /**

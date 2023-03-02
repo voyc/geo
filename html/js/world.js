@@ -305,18 +305,18 @@ voyc.World.prototype.setupData = function() {
 		'name': 'grid',
 		'type': 'GeometryCollection',
 		'geometries': [
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.Geo.drawMeridian(90,true)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.Geo.drawMeridian(-90,true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°E", 'coordinates': voyc.drawMeridian(90,true)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Meridian", 'name': "90°W", 'coordinates': voyc.drawMeridian(-90,true)},
 
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.Geo.drawParallel(66.55772)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.Geo.drawParallel(-66.55772)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.Geo.drawParallel(23.43715)},
-			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.Geo.drawParallel(-23.43715)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Arctic Circle",  'coordinates': voyc.drawParallel(66.55772)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Antarctic Circle",  'coordinates': voyc.drawParallel(-66.55772)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Cancer",  'coordinates': voyc.drawParallel(23.43715)},
+			{ 'type': "LineString", 'scalerank': 2, 'featureclass': "Parallel", 'name': "Tropic of Capricorn",  'coordinates': voyc.drawParallel(-23.43715)},
 			
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.Geo.drawParallel(0)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.Geo.drawMeridian(0,true)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian(180,true)},
-			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.Geo.drawMeridian(-180,true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Parallel", 'name': "Equator",        'coordinates': voyc.drawParallel(0)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Prime Meridian", 'coordinates': voyc.drawMeridian(0,true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.drawMeridian(180,true)},
+			{ 'type': "LineString", 'scalerank': 1, 'featureclass': "Meridian", 'name': "Anti Meridian",  'coordinates': voyc.drawMeridian(-180,true)},
 		]
 	}
 
@@ -327,7 +327,7 @@ voyc.World.prototype.setupData = function() {
 				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Parallel",
 				'name': '', //String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
-				'coordinates': voyc.Geo.drawParallel(lat),
+				'coordinates': voyc.drawParallel(lat),
 			})
 	for (var lng=-170; lng<=170; lng+=10)
 		if (lng != 90 && lng != -90 && lng != 0)
@@ -335,7 +335,7 @@ voyc.World.prototype.setupData = function() {
 				'type': "LineString", 'scalerank': 3, 
 				'featureclass': "Meridian",
 				'name': '', //String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
-				'coordinates': voyc.Geo.drawMeridian(lng),
+				'coordinates': voyc.drawMeridian(lng),
 			})
 
 	voyc.data.custom01 = {"name":"custom01", "type": "GeometryCollection","geometries":[
