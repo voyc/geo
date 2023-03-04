@@ -582,7 +582,7 @@ voyc.Hud.prototype.setZoomer = function(zoom,scale) {
 }
 
 voyc.Hud.prototype.setCo = function(co,gamma) {
-	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma
+	voyc.$('option-co').innerHTML = co[0].toFixed(2)+', '+co[1].toFixed(2)+', '+gamma.toFixed(2)
 }
 
 voyc.Hud.prototype.showOption = function (key,value) {

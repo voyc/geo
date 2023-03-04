@@ -42,7 +42,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.w = w;
 	this.h = h;
 	this.co = JSON.parse(localStorage.getItem('co')) || co
-	this.gamma = localStorage.getItem('gamma') || 0
+	this.gamma = parseFloat(localStorage.getItem('gamma')) || 0
 	this.time.now = localStorage.getItem('timenow') || this.time.now 
 
 	var startzoom = localStorage.getItem('zoom') 
@@ -925,10 +925,10 @@ voyc.defaultPalette = {
 	rivers: [
 		{scale:307854939, stroke:[  0,  0,255], pen:5  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 		{scale:153927470, stroke:[  0,  0,255], pen:4  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 76963735, stroke:[  0,  0,255], pen:3.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 38481867, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale: 19240934, stroke:[  0,  0,255], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
-		{scale:  9620467, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 76963735, stroke:[  0,  0,255], pen:3  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 38481867, stroke:[  0,  0,255], pen:2  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale: 19240934, stroke:[  0,  0,255], pen:1  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:  9620467, stroke:[  0,  0,255], pen:1  ,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	lakes: [{scale:5000, stroke:false,         pen:2 , fill:[  0,  0,255]},],
        deserts:[{scale:5000, stroke:false,         pen:2 , fill:[ 96, 96,  0], pat:false, patfile:'deserts'     ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },],
@@ -942,12 +942,11 @@ voyc.defaultPalette = {
 	sketch:[{scale:5000, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[255,255,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[  0,  0,  0], lnPen: 1, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,  0]},],
      countries:[{scale:5000, stroke:[128,128,128], pen:.5, dash:[5,5] ,fill:false        , pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 	cities:[
-		{scale: 242, stroke:[  0,  0,  0], pen: 3, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:6, ptStroke:[  0,  0,  0], ptPen: 3, ptFill:[  0,  0,128]},
-		{scale: 531, stroke:[  0,  0,  0], pen: 2, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 2, ptFill:[  0,  0,128]},
-		{scale: 897, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:4, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,280]},
-		{scale:1329, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:3, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
-		{scale:1969, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:2, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
-		{scale:2904, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:1, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+		{scale:153927470, stroke:[  0,  0,  0], pen: 3, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:6, ptStroke:[  0,  0,  0], ptPen: 3, ptFill:[  0,  0,128]},
+		{scale: 76963735, stroke:[  0,  0,  0], pen: 2, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,  0], ptPen: 2, ptFill:[  0,  0,128]},
+		{scale: 38481867, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:4, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+		{scale: 19240934, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:3, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
+		{scale:  9620467, stroke:[  0,  0,  0], pen: 1, dash:false ,fill:[0,  0,128], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:2, ptStroke:[  0,  0,  0], ptPen: 1, ptFill:[  0,  0,128]},
 	],
 	hires: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
 	lores: [{scale:5000, stroke:[255,  0,255], pen: 5, dash:false ,fill:[255,0,  0], pat:false, patfile:false         ,opac:.5, lnStroke:[255,255,  0], lnPen: 7, ptRadius:5, ptStroke:[  0,  0,255], ptPen: 3, ptFill:[  0,255,  0]},],
