@@ -128,6 +128,11 @@ voyc.Hud.prototype.attachButtons = function() {
 		voyc.geosketch.setOption( 'devzoom', evt.target.checked)
 	}, false)
 
+	document.getElementById('option-devmix').addEventListener('change', function(evt) {
+		voyc.geosketch.setOption( 'devmix', evt.target.checked)
+		voyc.toggleAttribute( voyc.$('mixslide'), 'hidden', '', !evt.target.checked)
+	}, false)
+
 	document.getElementById('option-hires').addEventListener('change', function(evt) {
 		voyc.geosketch.setOption( 'hires', evt.target.checked)
 	}, false)
@@ -378,6 +383,7 @@ voyc.Hud.prototype.setupEditBar = function() {
 voyc.Hud.prototype.setupMixBtn = function() {
 	var id = (voyc.geosketch.world.projection.mixer.orthographic) ? 'globeimg' : 'mercimg'
 	voyc.show(voyc.$(id),false)
+	voyc.toggleAttribute( voyc.$('mixslide'), 'hidden', '', !voyc.geosketch.options.devmix) 
 }
 voyc.Hud.prototype.onMixBtn = function(evt,btn) {
 	if (hudlog) console.log(['mixbtn','click',evt.target.id,evt.currentTarget.id])
@@ -505,11 +511,11 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 }
 
 // five ways to zoom, to call world.setZoom()
-//   1. mouse wheel
-//   2. click plus or minus
-//   3. drag zoom slider
-//   4. keyboard shift up or down arrow
-//   5. touch two-finger pinch
+//   1. mouse wheel, big
+//   2. click plus or minus, big
+//   3. drag zoom slider, baby
+//   4. keyboard shift up or down arrow, baby
+//   5. touch two-finger pinch, big
 
 // zoom UI, like google earth: up is zoom in, down is zoom out
 // up = zoom in: up wheel, up slider, up shift-arrow, up plus
@@ -525,6 +531,7 @@ voyc.Hud.prototype.mapZoomerMove = function (evt) {
 		voyc.geosketch.world.setZoom(parseFloat(evt.target.value))
 }
 
+
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
 	evt.stopPropagation();
 	this.mapzoomerIsHot = false
@@ -532,9 +539,14 @@ voyc.Hud.prototype.mapZoomerUp = function (evt) {
 }
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
+	this.timewheel = new Date()
+	var wheeltimeout = setTimeout(function() {
+		voyc.geosketch.world.drop()	
+	}, 200)
+	voyc.geosketch.world.grab()	
 	var spin = (evt.deltaY > 0) ? voyc.spin.OUT : voyc.spin.IN
 	pt = this.getMousePt(evt)
-	voyc.geosketch.world.stepZoom(spin,pt)	
+	voyc.geosketch.world.stepZoom(spin,pt, true)	
 }
 // -------- public
 
@@ -764,6 +776,7 @@ voyc.Hud.prototype.ptTouch = function(evt) {
 voyc.Hud.prototype.ontouchstart = function(evt) {
 	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
 	this.touchdown = true
+	voyc.geosketch.world.grab()
 	var time = new Date()
 
 	this.timetouchstart = time
@@ -789,6 +802,7 @@ voyc.Hud.prototype.ontouchmove = function(evt) {
 voyc.Hud.prototype.ontouchend  = function(evt) {
 	if (this.touchdown && evt.currentTarget == this.elem) ; else return
 	this.touchdown = false
+	voyc.geosketch.world.drop()
 
 	var time = new Date()
 
@@ -839,16 +853,17 @@ voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 		voyc.geosketch.world.drag(pt,this.ptPrev)
 		this.ptPrev = pt
 		if (pinch) {
-			if (pinch < -2)
-				voyc.geosketch.world.stepZoom(voyc.spin.OUT)
-			else if (pinch > 2)
-				voyc.geosketch.world.stepZoom(voyc.spin.IN)
+			var coarse = (Math.abs(pinch) > 2)
+			if (pinch < -1)
+				voyc.geosketch.world.stepZoom(voyc.spin.OUT, pt, coarse)
+			else if (pinch > 1)
+				voyc.geosketch.world.stepZoom(voyc.spin.IN, pt, coarse)
 		}
 		voyc.$('whereami').innerHTML = twist
 		if (twist) {
-			if (twist < -2)
+			if (twist < -3)
 				voyc.geosketch.world.spin(voyc.spin.CCW)
-			else if (twist > 2)
+			else if (twist > 3)
 				voyc.geosketch.world.spin(voyc.spin.CW)
 		}
 	}

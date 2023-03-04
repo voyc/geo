@@ -15,7 +15,7 @@ voyc.World = function() {
 
 	this.moved = true;
 	this.dragging = false;
-	this.nodraglayers = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires','lores']
+	this.slowtwitch = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires','lores']
 	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
 	this.zoom = voyc.defaultZoom
@@ -46,7 +46,7 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.time.now = localStorage.getItem('timenow') || this.time.now 
 
 	var startzoom = localStorage.getItem('zoom') 
-	if (startzoom === 'null')
+	if (startzoom === 'null')  // zero is valid value
 		startzoom = zoom
 	startzoom = Number(startzoom)
 	this.setupZoom(startzoom)
@@ -238,7 +238,7 @@ voyc.World.prototype.spin = function(dir) {
 
 voyc.World.prototype.grab = function(pt,prev) {
 	this.dragging = true
-	for (var id of this.nodraglayers.values())
+	for (var id of this.slowtwitch.values())
 		this.showLayer(this.layer[id].e, false)
 	//this.animate(false)
 }
@@ -252,7 +252,7 @@ voyc.World.prototype.drag = function(pt,prev) {
 }
 voyc.World.prototype.drop = function() {
 	this.dragging = false
-	for (var id of this.nodraglayers.values())
+	for (var id of this.slowtwitch.values())
 		if (this.layer[id].enabled)
 			this.showLayer(this.layer[id].e, true)
 	this.moved = true

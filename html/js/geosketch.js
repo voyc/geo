@@ -11,6 +11,7 @@ voyc.GeoSketch = function () {
 	this.defaultOptions = {
 		showid:false,
 		devzoom:false,
+		devmix:false,
 		hires:true,
 		animation:true,
 		fps:20,
@@ -116,6 +117,7 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 
 	voyc.$('option-showid').checked = this.options.showid
 	voyc.$('option-devzoom').checked = this.options.devzoom
+	voyc.$('option-devmix').checked = this.options.devmix
 	voyc.$('option-hires').checked = this.options.hires
 	voyc.$('option-animation').checked = this.options.animation
 	voyc.$('option-fps').value = this.options.fps
