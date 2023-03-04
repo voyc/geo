@@ -371,6 +371,12 @@ voyc.Projection.prototype.invert = function(pt) {
 
 		// flip sign
 		lat = (0-lat)
+
+		// accomodate cylindrical stitch
+		if (lng > 180)
+			lng = -180 + (lng % 180)
+		if (lng < -180)
+			lng = 180 + (lng % 180)
 	}
 
 	if (this.mixer.orthographic) {
