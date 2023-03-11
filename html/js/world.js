@@ -16,7 +16,7 @@ voyc.World = function() {
 	this.moved = true;
 	this.dragging = false;
 	this.slowtwitch = ['empire','rivers','lakes','deserts', 'mountains','countries','cities','hires','lores']
-	this.hitlayers = ['cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
+	this.hitlayers = ['cover','cities','custom01','rivers','lakes','deserts','mountains','empire','countries']
 
 	this.zoom = voyc.defaultZoom
 
@@ -30,7 +30,7 @@ voyc.World = function() {
 		step: 10,
 		moved: false,
 		sliding: false,
-		speed: 10 // years per second	
+		speed: 10 // years per second
 	}
 
 	this.texlo = {}
@@ -507,6 +507,7 @@ voyc.World.prototype.setupLayers = function() {
 	createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
 	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
 	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
+	createLayerCanvas('cover'     ,'Cover'     ,'cover'     ,false ,'empire' ,false       ,0)
 	createLayerCanvas('lores'     ,'Lo Res'    ,false       ,true  ,false    ,false       ,0)
 	createLayerCanvas('hires'     ,'Hi Res'    ,false       ,true  ,false    ,false       ,0)
 	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
@@ -637,6 +638,7 @@ voyc.World.prototype.drawWorld = function() {
 		this.drawViewport();
 		this.drawWater();
 		this.drawLayer('land')
+		this.drawLayer('cover')
 		this.drawLayer('grid')
 		this.drawSketch()
 		this.drawLayer('hilite')
@@ -913,6 +915,18 @@ voyc.defaultPalette = {
 		{scale:153927470, stroke:[255,255,  0], pen:2.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 		{scale: 76963735, stroke:[255,255,  0], pen:1.5,fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 		{scale: 38481867, stroke:[255,255,255], pen:.5, fill:false        , pat:false, patfile:false         ,opac: 1, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+	],
+	cover:[
+		{scale:5000, stroke:false,         pen:.5, fill:[128,255,128], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,255,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,192,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0,128,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[  0, 64,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,255,255], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,128,128], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[128,128,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
+		{scale:5000, stroke:false,         pen:.5, fill:[ 64, 64,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
 	],
 	empire:[
 		{scale:5000, stroke:false,         pen:.5, fill:[255,  0,  0], pat:false, patfile:false         ,opac:.4, lnStroke:false        , lnPen: 1, lnDash:[]    ,ptRadius:0, ptStroke:false        , ptPen: 1, ptFill:false        },
