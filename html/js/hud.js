@@ -72,10 +72,10 @@ voyc.Hud.prototype.closeModal = function(note) {
 
 voyc.Hud.prototype.populateLayerMenu = function() {
 	var s = ''
-	for (var id in voyc.geosketch.world.layer) {
-		if (voyc.geosketch.world.layer[id].menulabel) {
-			var isChecked = voyc.geosketch.world.layer[id].enabled ? 'checked':''
-			s += voyc.prepString("<div><span><input type='checkbox' $3 layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geosketch.world.layer[id].menulabel, isChecked])
+	for (var id in voyc.geo.world.layer) {
+		if (voyc.geo.world.layer[id].menulabel) {
+			var isChecked = voyc.geo.world.layer[id].enabled ? 'checked':''
+			s += voyc.prepString("<div><span><input type='checkbox' $3 layerid='$1' id='layer$1' class='layermenucheckbox' /><label for='layer$1' > $2</label></span>", [id, voyc.geo.world.layer[id].menulabel, isChecked])
 			s += voyc.prepString("<button g id='palettebtn$1' class='layerpalettebtn'><img src='i/palette_black_24.png'/></button></div>", [id])
 		}
 		if (id == 'custom')
@@ -92,7 +92,7 @@ voyc.Hud.prototype.populateLayerMenu = function() {
 			evt.stopPropagation()
 			var layerid = evt.target.getAttribute('layerid')
 			var boo = evt.target.checked
-			voyc.geosketch.world.enableLayer(layerid, boo)
+			voyc.geo.world.enableLayer(layerid, boo)
 
 			// show the chronometer only when empire layer is enabled
 			if (layerid == 'empire') 
@@ -121,46 +121,46 @@ voyc.Hud.prototype.attachButtons = function() {
 	
 
 	document.getElementById('option-showid').addEventListener('change',  function(evt) {
-		voyc.geosketch.setOption( 'showid', evt.target.checked)
+		voyc.geo.setOption( 'showid', evt.target.checked)
 	}, false)
 
 	document.getElementById('option-devzoom').addEventListener('change', function(evt) {
-		voyc.geosketch.setOption( 'devzoom', evt.target.checked)
+		voyc.geo.setOption( 'devzoom', evt.target.checked)
 	}, false)
 
 	document.getElementById('option-devmix').addEventListener('change', function(evt) {
-		voyc.geosketch.setOption( 'devmix', evt.target.checked)
+		voyc.geo.setOption( 'devmix', evt.target.checked)
 		voyc.toggleAttribute( voyc.$('mixslide'), 'hidden', '', !evt.target.checked)
 	}, false)
 
 	document.getElementById('option-hires').addEventListener('change', function(evt) {
-		voyc.geosketch.setOption( 'hires', evt.target.checked)
+		voyc.geo.setOption( 'hires', evt.target.checked)
 	}, false)
 
 	document.getElementById('option-animation').addEventListener('change',  function(evt) {
-		voyc.geosketch.setOption( 'animation', evt.target.checked)
-		voyc.geosketch.animate(evt.target.checked)
+		voyc.geo.setOption( 'animation', evt.target.checked)
+		voyc.geo.animate(evt.target.checked)
 	}, false)
 
 	document.getElementById('option-fps').addEventListener('change', function(evt) {
 		var fps = parseFloat(evt.target.value)
-		voyc.geosketch.setOption( 'fps', fps)
-		voyc.geosketch.game.maxfps = fps
+		voyc.geo.setOption( 'fps', fps)
+		voyc.geo.game.maxfps = fps
 	}, false)
 }
 	
 voyc.Hud.prototype.attachTimeSlider = function() {
 	var self = this
 	voyc.$('timeforwardbtn').addEventListener('click', function(evt) {
-		voyc.geosketch.world.stepTime(true)
+		voyc.geo.world.stepTime(true)
 	}, false)	
 	voyc.$('timebackbtn').addEventListener('click', function(evt) {
-		voyc.geosketch.world.stepTime(false)
+		voyc.geo.world.stepTime(false)
 	}, false)	
 
 	this.timeslider = document.getElementById('timeslider');
-	this.timeslider.min = voyc.geosketch.world.time.begin;
-	this.timeslider.max = voyc.geosketch.world.time.end;
+	this.timeslider.min = voyc.geo.world.time.begin;
+	this.timeslider.max = voyc.geo.world.time.end;
 
 	this.timeslider.addEventListener('mousedown', function(evt) {
 		self.timeSliderDown(evt)
@@ -195,26 +195,26 @@ voyc.Hud.prototype.attachKeyboard = function() {
 		}
 		if (evt.ctrlKey) {
 			switch (evt.keyCode) {
-				case 39: voyc.geosketch.timeForward(); break;
-				case 37: voyc.geosketch.timeBackward(); break;
+				case 39: voyc.geo.timeForward(); break;
+				case 37: voyc.geo.timeBackward(); break;
 				default: return;
 			}
 		}
 		else if (evt.shiftKey) {
 			switch (evt.keyCode) {
-				case 39: voyc.geosketch.world.spin(voyc.spin.CW); break;
-				case 37: voyc.geosketch.world.spin(voyc.spin.CCW); break;
-				case 38: voyc.geosketch.world.stepZoom(voyc.spin.IN); break;
-				case 40: voyc.geosketch.world.stepZoom(voyc.spin.OUT); break;
+				case 39: voyc.geo.world.spin(voyc.spin.CW); break;
+				case 37: voyc.geo.world.spin(voyc.spin.CCW); break;
+				case 38: voyc.geo.world.stepZoom(voyc.spin.IN); break;
+				case 40: voyc.geo.world.stepZoom(voyc.spin.OUT); break;
 				default: return;
 			}
 		}
 		else {
 			switch (evt.keyCode) {
-				case 39: voyc.geosketch.world.spin(voyc.spin.RIGHT); break;
-				case 37: voyc.geosketch.world.spin(voyc.spin.LEFT ); break;
-				case 38: voyc.geosketch.world.spin(voyc.spin.DOWN ); break;
-				case 40: voyc.geosketch.world.spin(voyc.spin.UP   ); break;
+				case 39: voyc.geo.world.spin(voyc.spin.RIGHT); break;
+				case 37: voyc.geo.world.spin(voyc.spin.LEFT ); break;
+				case 38: voyc.geo.world.spin(voyc.spin.DOWN ); break;
+				case 40: voyc.geo.world.spin(voyc.spin.UP   ); break;
 				default: return;
 			}
 		}
@@ -258,7 +258,7 @@ voyc.Hud.prototype.onSearchResults = function(response) {
 	if (response.matches.length > 1)
 		this.onMultiMatch(response.matches)
 	else 
-		voyc.geosketch.world.drawHilite(response.matches[0])
+		voyc.geo.world.drawHilite(response.matches[0])
 }
 
 voyc.Hud.prototype.onMultiMatch = function(matches) {
@@ -289,7 +289,7 @@ voyc.Hud.prototype.onMultiMatch = function(matches) {
 			var fc = a[1]
 			//self.hiLite(id, fc)
 			var x = geomNdx(id)
-			voyc.geosketch.world.drawHilite(voyc.data.search[geomNdx(id)])
+			voyc.geo.world.drawHilite(voyc.data.search[geomNdx(id)])
 		}, false)
 	}
 }
@@ -302,7 +302,7 @@ voyc.Hud.prototype.goto = function(geom) {
 //	var geom = inp
 //	console.log(`hilite ${geom}`)
 //	if (Number.isInteger(inp))
-//		geom = voyc.geosketch.world.getGeom(inp, fc)
+//		geom = voyc.geo.world.getGeom(inp, fc)
 //	console.log(`geom ${geom.name}`)
 //
 //	//if (!isOnScreen(geom))
@@ -362,7 +362,7 @@ voyc.Hud.prototype.setupEditBar = function() {
 		tool.addEventListener('click', function(evt) {
 			evt.stopPropagation(); evt.preventDefault();
 			var action = evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_'))
-			voyc.geosketch.sketch[action]()
+			voyc.geo.sketch[action]()
 		}, false)
 	}
 	var tools = document.querySelectorAll('.shapebtn')
@@ -370,7 +370,7 @@ voyc.Hud.prototype.setupEditBar = function() {
 		tool.addEventListener('click', function(evt) {
 			evt.stopPropagation(); evt.preventDefault();
 			var shape = evt.currentTarget.id.substring(0,evt.currentTarget.id.indexOf('_'))
-			voyc.geosketch.sketch.setShape(shape)
+			voyc.geo.sketch.setShape(shape)
 			for (var tool of tools)
 				tool.classList.remove('down')
 			evt.currentTarget.classList.add('down')
@@ -381,28 +381,28 @@ voyc.Hud.prototype.setupEditBar = function() {
 // -------- mix button
 
 voyc.Hud.prototype.setupMixBtn = function() {
-	var id = (voyc.geosketch.world.projection.mixer.orthographic) ? 'globeimg' : 'mercimg'
+	var id = (voyc.geo.world.projection.mixer.orthographic) ? 'globeimg' : 'mercimg'
 	voyc.show(voyc.$(id),false)
-	voyc.toggleAttribute( voyc.$('mixslide'), 'hidden', '', !voyc.geosketch.options.devmix) 
+	voyc.toggleAttribute( voyc.$('mixslide'), 'hidden', '', !voyc.geo.options.devmix) 
 }
 voyc.Hud.prototype.onMixBtn = function(evt,btn) {
 	if (hudlog) console.log(['mixbtn','click',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 
 	if (evt.target.id == 'mercimg') {
-		voyc.geosketch.world.setMix(voyc.cylindrical)
+		voyc.geo.world.setMix(voyc.cylindrical)
 		voyc.show(voyc.$('globeimg'),true)
 		voyc.show(voyc.$('mercimg'),false)
 	}
 	else {
-		voyc.geosketch.world.setMix(voyc.orthographic)
+		voyc.geo.world.setMix(voyc.orthographic)
 		voyc.show(voyc.$('globeimg'),false)
 		voyc.show(voyc.$('mercimg'),true)
 	}
 }
 
 voyc.Hud.prototype.showWhereami = function (pt) {
-	var co = voyc.geosketch.world.projection.invert(pt)
+	var co = voyc.geo.world.projection.invert(pt)
 	if (!co[2]) {
 		voyc.$('whereami').innerHTML = ''
 		return
@@ -436,18 +436,18 @@ voyc.Hud.prototype.setTime = function(time) {
 voyc.Hud.prototype.timeSliderDown = function (evt) {
 	evt.stopPropagation()
 	this.timesliderIsHot = true
-	voyc.geosketch.world.grabTime(evt)
+	voyc.geo.world.grabTime(evt)
 }
 voyc.Hud.prototype.timeSliderMove = function (evt,force) {
 	evt.stopPropagation()
 	if (this.timesliderIsHot || force)
-		voyc.geosketch.world.setTime(parseInt(evt.target.value,10))
+		voyc.geo.world.setTime(parseInt(evt.target.value,10))
 }
 
 voyc.Hud.prototype.timeSliderUp = function (evt) {
 	evt.stopPropagation();
 	this.timesliderIsHot = false
-	voyc.geosketch.world.dropTime(evt)
+	voyc.geo.world.dropTime(evt)
 }
 
 // -------- mix slider
@@ -456,7 +456,7 @@ voyc.Hud.prototype.attachMixSlider = function() {
 	this.mixslider = document.getElementById('mixslider')
 	this.mixslider.min   = voyc.mixerRange.lo
 	this.mixslider.max   = voyc.mixerRange.hi
-	this.mixslider.value = voyc.geosketch.world.projection.mix
+	this.mixslider.value = voyc.geo.world.projection.mix
 	this.mixslider.step  = 1
 
 	this.mixsliderIsHot = false 
@@ -477,7 +477,7 @@ voyc.Hud.prototype.mixSliderDown = function (evt) {
 voyc.Hud.prototype.mixSliderMove = function (evt) {
 	evt.stopPropagation()
 	if (this.mixsliderIsHot)
-		voyc.geosketch.world.setMix(parseFloat(evt.target.value))
+		voyc.geo.world.setMix(parseFloat(evt.target.value))
 }
 voyc.Hud.prototype.mixSliderUp = function (evt) {
 	evt.stopPropagation();
@@ -488,7 +488,7 @@ voyc.Hud.prototype.mixSliderUp = function (evt) {
 
 voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer = document.getElementById('mapzoomer')
-	var zoom = voyc.geosketch.world.zoom
+	var zoom = voyc.geo.world.zoom
 	this.mapzoomer.min   = zoom.min
 	this.mapzoomer.max   = zoom.max
 	this.mapzoomer.value = zoom.now
@@ -503,10 +503,10 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 	this.mapzoomer.addEventListener('mouseup', function(evt) {self.mapZoomerUp(evt)}, false)
 
 	document.getElementById('zoomplusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.stepZoom(voyc.spin.IN, false, true)	
+		voyc.geo.world.stepZoom(voyc.spin.IN, false, true)	
 	}, false)
 	document.getElementById('zoomminusbtn').addEventListener('click', function(e) {
-		voyc.geosketch.world.stepZoom(voyc.spin.OUT, false, true)	
+		voyc.geo.world.stepZoom(voyc.spin.OUT, false, true)	
 	}, false)
 }
 
@@ -523,30 +523,30 @@ voyc.Hud.prototype.attachMapZoomer = function() {
 voyc.Hud.prototype.mapZoomerDown = function (evt) {
 	evt.stopPropagation();
 	this.mapzoomerIsHot = true;
-	voyc.geosketch.world.grab()
+	voyc.geo.world.grab()
 }
 voyc.Hud.prototype.mapZoomerMove = function (evt) {
 	evt.stopPropagation();
 	if (this.mapzoomerIsHot)
-		voyc.geosketch.world.setZoom(parseFloat(evt.target.value))
+		voyc.geo.world.setZoom(parseFloat(evt.target.value))
 }
 
 
 voyc.Hud.prototype.mapZoomerUp = function (evt) {
 	evt.stopPropagation();
 	this.mapzoomerIsHot = false
-	voyc.geosketch.world.drop()
+	voyc.geo.world.drop()
 }
 
 voyc.Hud.prototype.mapZoomWheel = function(evt) {
 	this.timewheel = new Date()
 	var wheeltimeout = setTimeout(function() {
-		voyc.geosketch.world.drop()	
+		voyc.geo.world.drop()	
 	}, 200)
-	voyc.geosketch.world.grab()	
+	voyc.geo.world.grab()	
 	var spin = (evt.deltaY > 0) ? voyc.spin.OUT : voyc.spin.IN
 	pt = this.getMousePt(evt)
-	voyc.geosketch.world.stepZoom(spin,pt, true)	
+	voyc.geo.world.stepZoom(spin,pt, true)	
 }
 // -------- public
 
@@ -646,7 +646,7 @@ voyc.Hud.prototype.onmousedown = function(evt) {
 	this.mousebuttondown = evt.button
 	
 	if ((this.tool == 'point') || (this.mousebuttondown == voyc.mouse.middle))
-		voyc.geosketch.world.grab()
+		voyc.geo.world.grab()
 }
 
 voyc.Hud.prototype.onmousemove = function(evt) {
@@ -656,16 +656,16 @@ voyc.Hud.prototype.onmousemove = function(evt) {
 	this.showWhereami(pt)
 	if (this.dragPrev) {
 		if ((this.tool == 'point') || (this.mousebuttondown == voyc.mouse.middle)) {
-			voyc.geosketch.world.drag(pt, this.dragPrev);
+			voyc.geo.world.drag(pt, this.dragPrev);
 			this.setCursor('move')
 		}
 		else if (this.tool == 'sketch')
-			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
+			voyc.geo.sketch.addPoint(pt, this.dragPrev)
 		this.dragPrev = pt
 		this.mousemoved = true
 	}
 	else if (this.tool == 'sketch')
-		voyc.geosketch.sketch.mousemove(pt)
+		voyc.geo.sketch.mousemove(pt)
 }
 
 voyc.Hud.prototype.onmouseup = function(evt) {
@@ -679,14 +679,14 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 	//if ((this.tool == 'point') || evt.shiftKey) {
 	if (this.dragPrev) {
 		if (click) {
-			var geom = voyc.geosketch.world.testHit(pt)
+			var geom = voyc.geo.world.testHit(pt)
 			//if (s) this.showLabel(pt,s)
 		}
 	}
-	voyc.geosketch.world.drop()
+	voyc.geo.world.drop()
 	if (this.tool == 'sketch')
 		if (click)
-			voyc.geosketch.sketch.addPoint(pt, this.dragPrev)
+			voyc.geo.sketch.addPoint(pt, this.dragPrev)
 	this.setCursor('point')
 	this.dragPrev = false
 	this.mousebuttondown = false
@@ -695,7 +695,7 @@ voyc.Hud.prototype.onmouseup = function(evt) {
 
 voyc.Hud.prototype.unHit = function() {
 	this.showLabel(false)
-	voyc.geosketch.world.clearHilite()
+	voyc.geo.world.clearHilite()
 }
 
 voyc.Hud.prototype.ondblclick = function(evt) {
@@ -703,7 +703,7 @@ voyc.Hud.prototype.ondblclick = function(evt) {
 	if (hudlog) console.log(['hud','dblclick',evt.target.id,evt.currentTarget.id])
 	evt.preventDefault(); evt.stopPropagation()
 //	if (this.tool == 'sketch')
-//		voyc.geosketch.sketch.finish()
+//		voyc.geo.sketch.finish()
 }
 
 voyc.Hud.prototype.onwheel = function(evt) {
@@ -776,7 +776,7 @@ voyc.Hud.prototype.ptTouch = function(evt) {
 voyc.Hud.prototype.ontouchstart = function(evt) {
 	if (evt.target == this.elem && evt.currentTarget == this.elem) ; else return
 	this.touchdown = true
-	voyc.geosketch.world.grab()
+	voyc.geo.world.grab()
 	var time = new Date()
 
 	this.timetouchstart = time
@@ -802,7 +802,7 @@ voyc.Hud.prototype.ontouchmove = function(evt) {
 voyc.Hud.prototype.ontouchend  = function(evt) {
 	if (this.touchdown && evt.currentTarget == this.elem) ; else return
 	this.touchdown = false
-	voyc.geosketch.world.drop()
+	voyc.geo.world.drop()
 
 	var time = new Date()
 
@@ -826,45 +826,45 @@ voyc.Hud.prototype.ontouchend  = function(evt) {
 
 voyc.Hud.prototype.publish = function(evt, name, pt, pinch, twist) {
 	// window events: touchstart, touchend, touchmove
-	// geosketch events: tap, doubletap, onefingermove, twofingermove
+	// geo events: tap, doubletap, onefingermove, twofingermove
 	if (name == 'tap') {
 		if (this.tool == 'point') {
-			var s = voyc.geosketch.world.testHit(pt)
+			var s = voyc.geo.world.testHit(pt)
 //			if (s) this.showLabel(pt,s)
 		}
 		else if (this.tool == 'sketch') 
-			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+			voyc.geo.sketch.addPoint(pt, this.ptPrev)
 		else if (this.tool == 'measure')
 			;
 	}
 	else if (name == 'doubletap') 
-		voyc.geosketch.sketch.finish()
+		voyc.geo.sketch.finish()
 	else if (name == 'onefingermove') {
 		if (this.tool == 'point') {
-			voyc.geosketch.world.drag(pt,this.ptPrev)
+			voyc.geo.world.drag(pt,this.ptPrev)
 			this.ptPrev = pt
 		}
 		else if (this.tool == 'sketch')
-			voyc.geosketch.sketch.addPoint(pt, this.ptPrev)
+			voyc.geo.sketch.addPoint(pt, this.ptPrev)
 		else if (this.tool == 'measure')
 			;
 	}
 	else if (name == 'twofingermove') {
-		voyc.geosketch.world.drag(pt,this.ptPrev)
+		voyc.geo.world.drag(pt,this.ptPrev)
 		this.ptPrev = pt
 		if (pinch) {
 			var coarse = (Math.abs(pinch) > 2)
 			if (pinch < -1)
-				voyc.geosketch.world.stepZoom(voyc.spin.OUT, pt, coarse)
+				voyc.geo.world.stepZoom(voyc.spin.OUT, pt, coarse)
 			else if (pinch > 1)
-				voyc.geosketch.world.stepZoom(voyc.spin.IN, pt, coarse)
+				voyc.geo.world.stepZoom(voyc.spin.IN, pt, coarse)
 		}
 		voyc.$('whereami').innerHTML = twist
 		if (twist) {
 			if (twist < -3)
-				voyc.geosketch.world.spin(voyc.spin.CCW)
+				voyc.geo.world.spin(voyc.spin.CCW)
 			else if (twist > 3)
-				voyc.geosketch.world.spin(voyc.spin.CW)
+				voyc.geo.world.spin(voyc.spin.CW)
 		}
 	}
 }

@@ -42,7 +42,7 @@ function getprofile() {
 	$photo = '';
 	$phone = '';
 	$name = 'query-profile';
-	$sql = "select gender, photo, phone from geosketch.profile where userid = $1";
+	$sql = "select gender, photo, phone from geo.profile where userid = $1";
 	$params = array($userid);
 	$result = execSql($conn, $name, $sql, $params, true);
 	if ($result) {

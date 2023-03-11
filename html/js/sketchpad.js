@@ -53,8 +53,8 @@ voyc.SketchPad.prototype = {
 		voyc.data.custom01.geometries.push(movegeom)
 		this.newGeom()
 		this.draw()
-		voyc.geosketch.world.drawCustom()
-		voyc.geosketch.hud.closeModal()
+		voyc.geo.world.drawCustom()
+		voyc.geo.hud.closeModal()
 	},
 
 	cancel: function() {
@@ -96,7 +96,7 @@ voyc.SketchPad.prototype = {
 	addPoint: function (pt) {
 		var distance = voyc.length(pt,this.ptPrev)
 		if ((distance > 20) || !this.ptPrev) {
-			var co = voyc.geosketch.world.projection.invert(pt)
+			var co = voyc.geo.world.projection.invert(pt)
 			this.coords.push(co)
 			this.draw()
 			this.ptPrev = pt
@@ -117,7 +117,7 @@ voyc.SketchPad.prototype = {
 	},
 
 	draw: function (pt) {
-		voyc.geosketch.world.drawSketch(pt)
+		voyc.geo.world.drawSketch(pt)
 	}
 }
 

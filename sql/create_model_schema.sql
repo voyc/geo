@@ -4,10 +4,10 @@ This SQL is designed for postgres.
 After creating this schema, execute the GRANT statements found in the comments section of the config.php file.
 */
 
-/* drop schema geosketch cascade; */
-create schema geosketch;
+/* drop schema geo cascade; */
+create schema geo;
 
-create table geosketch.profile (
+create table geo.profile (
 	id serial primary key,
 	userid integer,
 	gender char(1),

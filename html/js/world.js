@@ -74,12 +74,12 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.texlo = new voyc.Texture()
 	var self = this
 	this.texlo.load('whole', this.co, function(row) {
-		if (voyc.geosketch.options.hires) {
+		if (voyc.geo.options.hires) {
 			self.texhi.load('tiled', this.co, function(row) {
 				voyc.$('loadpct').innerHTML = `${row.pct}`
 				if (!(self.texhi.numLoaded % 10) || row.pct == 100) {
 					self.moved = true
-					voyc.geosketch.render(0)
+					voyc.geo.render(0)
 				}
 			})
 		}
@@ -94,7 +94,7 @@ voyc.World.prototype.setMix = function(mix) {
 	var boo = this.projection.setMix(mix)
 	if (boo) {
 		this.moved = true
-		voyc.geosketch.render(0)
+		voyc.geo.render(0)
 	}
 	this.stoMix(mix)
 }
@@ -107,7 +107,7 @@ voyc.World.prototype.stoMix = function() {
 voyc.World.prototype.stoCo = function() {
 	localStorage.setItem('co', JSON.stringify(this.co))
 	localStorage.setItem('gamma',this.gamma)
-	voyc.geosketch.hud.setCo(this.co,this.gamma)
+	voyc.geo.hud.setCo(this.co,this.gamma)
 }
 voyc.World.prototype.stoZoom = function() {
 	localStorage.setItem('zoom',this.zoom.now)
@@ -129,9 +129,9 @@ voyc.World.prototype.stoLay = function() {
 
 voyc.World.prototype.setTime = function(newtime) {
 	this.time.now = newtime
-	voyc.geosketch.hud.setTime(this.time.now)
+	voyc.geo.hud.setTime(this.time.now)
 	this.time.moved = true
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 	this.stoTime()	
 }
 
@@ -158,7 +158,7 @@ voyc.World.prototype.dropTime = function(evt) {
 // called at startup
 voyc.World.prototype.setupZoom = function(startzoom) {
 	this.zoom.now = startzoom
-	if (voyc.geosketch.options.devzoom) {
+	if (voyc.geo.options.devzoom) {
 		this.zoom.min = voyc.devZoom.min
 		this.zoom.max = voyc.devZoom.max
 	}
@@ -193,10 +193,10 @@ voyc.World.prototype.setZoom = function(newzoom) {
 		this.zoom.now = newzoom
 	this.projection.scale(this.zoom.now)
 	
-	voyc.geosketch.hud.setZoomer(this.zoom.now, this.projection.uscale)
+	voyc.geo.hud.setZoomer(this.zoom.now, this.projection.uscale)
 	this.stoZoom()
 	this.moved = true;
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 }
 
 // --------  public move
@@ -232,7 +232,7 @@ voyc.World.prototype.spin = function(dir) {
 	this.gamma = this.clampGamma(this.gamma)
 	this.projection.rotate([0-this.co[0], 0-this.co[1], 0-this.gamma]);
 	this.moved = true;
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 	this.stoCo()
 }
 
@@ -256,7 +256,7 @@ voyc.World.prototype.drop = function() {
 		if (this.layer[id].enabled)
 			this.showLayer(this.layer[id].e, true)
 	this.moved = true
-	voyc.geosketch.render(0)  // more detailed drawing
+	voyc.geo.render(0)  // more detailed drawing
 }
 
 voyc.World.prototype.moveToPoint = function(pt) {
@@ -268,7 +268,7 @@ voyc.World.prototype.moveToCoord = function(co) {
 	this.co = co
 	this.projection.rotate([0-co[0], 0-co[1]])
 	this.moved = true
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 	this.stoCo()
 }
 
@@ -544,7 +544,7 @@ voyc.World.prototype.enableLayer = function(layerid, boo) {
 //			this.showLayer(e, boo)
 //	}
 	this.moved = true
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 	this.stoLay()
 }
 
@@ -607,7 +607,7 @@ voyc.World.prototype.resize = function(w, h) {
 	this.w = w;
 	this.h = h;
 	this.projection.translate([this.w/2, this.h/2]);
-	voyc.geosketch.hud.showScaleGraph(this.projection.uscale)
+	voyc.geo.hud.showScaleGraph(this.projection.uscale)
 
 	for (var id in this.layer) {
 		a = this.layer[id];
@@ -627,7 +627,7 @@ voyc.World.prototype.resize = function(w, h) {
 	}
 
 	this.moved = true
-	voyc.geosketch.render(0)
+	voyc.geo.render(0)
 }
 
 
@@ -677,7 +677,7 @@ voyc.World.prototype.drawLayer = function(id) {
 }
 
 voyc.World.prototype.calcRank = function(id) {
-	// https://curriculum.voyc.com/doku.php?id=geosketch_design_notes#scale
+	// https://curriculum.voyc.com/doku.php?id=geo_design_notes#scale
 	var table = this.palette[id]
 	if (!table)
 		debugger;
@@ -796,12 +796,12 @@ voyc.World.prototype.drawHilite = function(geom, pt) {
 	this.drawLayer('hilite')
 
 	var s = `${geom.name}, ${geom.fc}`
-	if (voyc.geosketch.getOption('showid') && geom.id)
+	if (voyc.geo.getOption('showid') && geom.id)
 		s += ' ('+geom.id+')'
 
 	var pt = pt || this.projection.project([parseFloat(geom.lng), parseFloat(geom.lat)])
 
-	voyc.geosketch.hud.showLabel(pt, s)
+	voyc.geo.hud.showLabel(pt, s)
 }
 voyc.World.prototype.clearHilite = function() {
 	this.enableLayer('hilite', false)
@@ -848,7 +848,7 @@ voyc.World.prototype.setupPalette = function() {
 			if (palette.ptStroke) palette.ptStroke = voyc.prepString('rgb($1,$2,$3)', palette.ptStroke)
 			if (palette.lnStroke) palette.lnStroke = voyc.prepString('rgb($1,$2,$3)', palette.lnStroke)
 			if (palette.patfile)
-				palette.pat = this.makePattern(voyc.geosketch.asset.get(palette.patfile), palette.fill)
+				palette.pat = this.makePattern(voyc.geo.asset.get(palette.patfile), palette.fill)
 		}
 	}
 }

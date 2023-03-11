@@ -1,2 +1,2 @@
-# GeoSketch
-Draw on a world map.  Switch between globe and mercator projection.
+# Geo
+Draw a world map.  Switch between globe and mercator projection.

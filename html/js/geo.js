@@ -1,11 +1,11 @@
 /**
-	class voyc.GeoSketch
+	class voyc.Geo
 	@constructor
 	A singleton object
 */
-voyc.GeoSketch = function () {
-	if (voyc.GeoSketch._instance) return voyc.GeoSketch._instance;
-	voyc.GeoSketch._instance = this;
+voyc.Geo = function () {
+	if (voyc.Geo._instance) return voyc.Geo._instance;
+	voyc.Geo._instance = this;
 
 	this.options = {}
 	this.defaultOptions = {
@@ -18,7 +18,7 @@ voyc.GeoSketch = function () {
 	}
 }
 
-voyc.GeoSketch.prototype.setup = function () {
+voyc.Geo.prototype.setup = function () {
 	this.setupOptions()
 
 	this.observer = new voyc.Observer();
@@ -31,13 +31,13 @@ voyc.GeoSketch.prototype.setup = function () {
 	var self = this;
 	new voyc.BrowserHistory('name', function(pageid) {
 		var event = pageid.split('-')[0];
-		self.observer.publish(event+'-requested', 'geosketch', {page:pageid});
+		self.observer.publish(event+'-requested', 'geo', {page:pageid});
 	});
 
 	// server communications
 	var url = '/svc/';
 	if (window.location.origin == 'file://') {
-		url = 'http://geosketch.voyc.com/svc';  // for local testing
+		url = 'http://geo.voyc.com/svc';  // for local testing
 	}
 	this.comm = new voyc.Comm(url, 'acomm', 2, true);
 
@@ -69,7 +69,7 @@ voyc.GeoSketch.prototype.setup = function () {
 	}
 }
 
-voyc.GeoSketch.prototype.setupContinue = function () {
+voyc.Geo.prototype.setupContinue = function () {
 	// setup world layer
 	this.world = new voyc.World();
 	var divworld = document.getElementById('world') 
@@ -106,12 +106,12 @@ voyc.GeoSketch.prototype.setupContinue = function () {
 	if (this.options.animation)
 		this.game.start()
 
-	this.observer.publish('setup-complete', 'geosketch', {});
+	this.observer.publish('setup-complete', 'geo', {});
 }
 
 // -------- options, settings, preferences
 
-voyc.GeoSketch.prototype.setupOptions = function () {
+voyc.Geo.prototype.setupOptions = function () {
 	this.options = JSON.parse(localStorage.getItem('options')) || this.defaultOptions
 	localStorage.setItem( 'options', JSON.stringify(this.options));
 
@@ -124,17 +124,17 @@ voyc.GeoSketch.prototype.setupOptions = function () {
 
 	voyc.$('option-dim').innerHTML = document.body.clientWidth +' x '+document.body.clientHeight
 }
-voyc.GeoSketch.prototype.setOption = function (key,value) {
+voyc.Geo.prototype.setOption = function (key,value) {
 	this.options[key] = value
 	localStorage.setItem('options', JSON.stringify(this.options))
 }
-voyc.GeoSketch.prototype.getOption = function (key) {
+voyc.Geo.prototype.getOption = function (key) {
 	return this.options[key]
 }
 
 // -------- demo from Account
 
-voyc.GeoSketch.prototype.onProfileRequested = function(note) {
+voyc.Geo.prototype.onProfileRequested = function(note) {
 	var svcname = 'getprofile';
 	var data = {};
 	data['si'] = voyc.getSessionId();
@@ -145,12 +145,12 @@ voyc.GeoSketch.prototype.onProfileRequested = function(note) {
 		if (!ok) {
 			response = { 'status':'system-error'};
 		}
-		self.observer.publish('getprofile-received', 'geosketch', response);
+		self.observer.publish('getprofile-received', 'geo', response);
 	});
-	this.observer.publish('getprofile-posted', 'geosketch', {});
+	this.observer.publish('getprofile-posted', 'geo', {});
 }
 
-voyc.GeoSketch.prototype.onGetProfileReceived = function(note) {
+voyc.Geo.prototype.onGetProfileReceived = function(note) {
 	var response = note.payload;
 	if (response['status'] == 'ok') {
 		console.log('getprofile success');
@@ -163,7 +163,7 @@ voyc.GeoSketch.prototype.onGetProfileReceived = function(note) {
 	}
 }
 
-voyc.GeoSketch.prototype.onProfileSubmitted = function(note) {
+voyc.Geo.prototype.onProfileSubmitted = function(note) {
 	var svcname = 'setprofile';
 	var inputs = note.payload.inputs;
 
@@ -181,7 +181,7 @@ voyc.GeoSketch.prototype.onProfileSubmitted = function(note) {
 			response = { 'status':'system-error'};
 		}
 
-		self.observer.publish('setprofile-received', 'geosketch', response);
+		self.observer.publish('setprofile-received', 'geo', response);
 
 		if (response['status'] == 'ok') {
 			console.log('setprofile success' + response['message']);
@@ -191,30 +191,30 @@ voyc.GeoSketch.prototype.onProfileSubmitted = function(note) {
 		}
 	});
 
-	this.observer.publish('setprofile-posted', 'geosketch', {});
+	this.observer.publish('setprofile-posted', 'geo', {});
 }
 
-voyc.GeoSketch.prototype.onSetProfilePosted = function(note) {
+voyc.Geo.prototype.onSetProfilePosted = function(note) {
 	console.log('setprofile posted');
 }
 
-voyc.GeoSketch.prototype.onSetProfileReceived = function(note) {
+voyc.Geo.prototype.onSetProfileReceived = function(note) {
 	console.log('setprofile received');
 }
 
-voyc.GeoSketch.prototype.animate = function(boo) {
+voyc.Geo.prototype.animate = function(boo) {
 	if (boo)
 		this.game.start()
 	else 
 		this.game.stop()
 }
 
-voyc.GeoSketch.prototype.render = function (timestamp) {
+voyc.Geo.prototype.render = function (timestamp) {
 	if (this.options.animation || !timestamp)
 		this.world.drawWorld()
 }
 
-voyc.GeoSketch.prototype.resize = function (evt) {
+voyc.Geo.prototype.resize = function (evt) {
 	var w = document.body.clientWidth 
 	var h = document.body.clientHeight
 	voyc.$('option-dim').innerHTML = w+' x '+h
@@ -225,10 +225,10 @@ voyc.GeoSketch.prototype.resize = function (evt) {
 // -------- startup events
 
 window.addEventListener('load', function(evt) {
-	voyc.geosketch = new voyc.GeoSketch();
-	voyc.geosketch.setup();
+	voyc.geo = new voyc.Geo();
+	voyc.geo.setup();
 	window.addEventListener('resize', function(evt) {
-		voyc.geosketch.resize()
+		voyc.geo.resize()
 	}, false);
 }, false);
 

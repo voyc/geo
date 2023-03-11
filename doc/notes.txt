@@ -139,14 +139,14 @@ save sketch to layer
 	replace sketch addPoint(pt) with addCoord(co), call invert() from Hud (or sketch?)
 	in sketch draw(), call project() for each point
 
-rename geosketch:geo, sketchpad:sketch
+rename geo:geo, sketchpad:sketch
 	rename repository
 	recreate subdomain
 	keep two files named sketch: one in jslib, one in geo, or rename one of them to draw or pad
 	what about letting the future of voyc dovetail into geo, global
 	geo.voyc.com
 	global.voyc.com - to be folded into geo
-	let geosketch be the authoring tool for global and plunder
+	let geo be the authoring tool for global and plunder
 	rename geo to GeoMath or GeoLib
 
 UI: world vs sketch vs plunder

@@ -42,7 +42,7 @@ voyc.World.prototype.drawFeatures = function() {
 hud
 interface between ui and world api
 
-plunder and geosketch can have completely different UI, with the identical world api
+plunder and geo can have completely different UI, with the identical world api
 
 world
 default layers
@@ -110,91 +110,91 @@ voyc.Hud.ddrop = function(e) { (new voyc.Hud()).ondrop(e); }
 ----------------------------------------
 
 -
-voyc.geosketch.game.start();
-voyc.geosketch.game.stop();
-voyc.geosketch.game.toggle();
+voyc.geo.game.start();
+voyc.geo.game.stop();
+voyc.geo.game.toggle();
 
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT)) {
-voyc.geosketch.getOption(voyc.option.CHEAT);
-voyc.geosketch.getOption(voyc.option.CHEAT) && this.onMap(e)) {
-voyc.geosketch.getOption(voyc.option.GRATICULE);
-voyc.geosketch.getOption(voyc.option.HIRES);
-voyc.geosketch.getOption(voyc.option.PRESENTDAY);
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT)) {
+voyc.geo.getOption(voyc.option.CHEAT);
+voyc.geo.getOption(voyc.option.CHEAT) && this.onMap(e)) {
+voyc.geo.getOption(voyc.option.GRATICULE);
+voyc.geo.getOption(voyc.option.HIRES);
+voyc.geo.getOption(voyc.option.PRESENTDAY);
 
-voyc.geosketch.hero.createDestination(pos, false);
-voyc.geosketch.hero.createDestination(pt, true);
-voyc.geosketch.hero.pt[0] + ((left + right) * arbitrary);
-voyc.geosketch.hero.pt[1] + ((up + down) * arbitrary);
-voyc.geosketch.hero.setLocation(voyc.geosketch.world.co);
+voyc.geo.hero.createDestination(pos, false);
+voyc.geo.hero.createDestination(pt, true);
+voyc.geo.hero.pt[0] + ((left + right) * arbitrary);
+voyc.geo.hero.pt[1] + ((up + down) * arbitrary);
+voyc.geo.hero.setLocation(voyc.geo.world.co);
 
-voyc.geosketch.keyboard;
+voyc.geo.keyboard;
 
-voyc.geosketch.render(0);
-voyc.geosketch.render(voyc.geosketch.previousTimestamp + 100);
+voyc.geo.render(0);
+voyc.geo.render(voyc.geo.previousTimestamp + 100);
 
-voyc.geosketch.score;
+voyc.geo.score;
 
-voyc.geosketch.setOption(voyc.option.CHEAT, evt.target.checked);
-voyc.geosketch.setOption(voyc.option.CHEAT, !voyc.geosketch.getOption(voyc.option.CHEAT));
-voyc.geosketch.setOption(voyc.option.GRATICULE, evt.target.checked);
-voyc.geosketch.setOption(voyc.option.HIRES, evt.target.checked);
-voyc.geosketch.setOption(voyc.option.PRESENTDAY, evt.target.checked);
+voyc.geo.setOption(voyc.option.CHEAT, evt.target.checked);
+voyc.geo.setOption(voyc.option.CHEAT, !voyc.geo.getOption(voyc.option.CHEAT));
+voyc.geo.setOption(voyc.option.GRATICULE, evt.target.checked);
+voyc.geo.setOption(voyc.option.HIRES, evt.target.checked);
+voyc.geo.setOption(voyc.option.PRESENTDAY, evt.target.checked);
 
-voyc.geosketch.timeBackward(); break;
+voyc.geo.timeBackward(); break;
 
-voyc.geosketch.time.begin;
-voyc.geosketch.time.end;
+voyc.geo.time.begin;
+voyc.geo.time.end;
 
-voyc.geosketch.timeForward(); break;
+voyc.geo.timeForward(); break;
 
-voyc.geosketch.timeslideStart();
+voyc.geo.timeslideStart();
 
-voyc.geosketch.timeslideStop();
+voyc.geo.timeslideStop();
 
-voyc.geosketch.timeslideValue(parseInt(this.value,10));
-voyc.geosketch.timeslideValue(this.value);
-
-
+voyc.geo.timeslideValue(parseInt(this.value,10));
+voyc.geo.timeslideValue(this.value);
 
 
-voyc.geosketch.world.mercator()}, false);
-voyc.geosketch.world.orthographic()}, false);
 
-voyc.geosketch.world.getCenterPoint();
-voyc.geosketch.world.moveToPoint(pos);  // setCenterPoint  ?
 
-voyc.geosketch.world.drag(false);
-voyc.geosketch.world.drag(newCenter);
+voyc.geo.world.mercator()}, false);
+voyc.geo.world.orthographic()}, false);
 
-voyc.geosketch.world.scale.max;
-voyc.geosketch.world.scale.min;
+voyc.geo.world.getCenterPoint();
+voyc.geo.world.moveToPoint(pos);  // setCenterPoint  ?
 
-voyc.geosketch.world.spin(voyc.Spin.CCW); break;
-voyc.geosketch.world.spin(voyc.Spin.CW); break;
-voyc.geosketch.world.spin(voyc.Spin.DOWN); break;
-voyc.geosketch.world.spin(voyc.Spin.LEFT); break;
-voyc.geosketch.world.spin(voyc.Spin.RIGHT); break;
-voyc.geosketch.world.spin(voyc.Spin.UP); break;
+voyc.geo.world.drag(false);
+voyc.geo.world.drag(newCenter);
 
-voyc.geosketch.world.zoom(spin)
-voyc.geosketch.world.zoom(voyc.Spin.IN); break;
-voyc.geosketch.world.zoom(voyc.Spin.OUT); break;
+voyc.geo.world.scale.max;
+voyc.geo.world.scale.min;
 
-voyc.geosketch.world.zoomStart();
+voyc.geo.world.spin(voyc.Spin.CCW); break;
+voyc.geo.world.spin(voyc.Spin.CW); break;
+voyc.geo.world.spin(voyc.Spin.DOWN); break;
+voyc.geo.world.spin(voyc.Spin.LEFT); break;
+voyc.geo.world.spin(voyc.Spin.RIGHT); break;
+voyc.geo.world.spin(voyc.Spin.UP); break;
 
-voyc.geosketch.world.zoomStop();
-voyc.geosketch.world.zoomStop();
+voyc.geo.world.zoom(spin)
+voyc.geo.world.zoom(voyc.Spin.IN); break;
+voyc.geo.world.zoom(voyc.Spin.OUT); break;
 
-voyc.geosketch.world.zoomValue(parseInt(evt.target.value,10));
+voyc.geo.world.zoomStart();
+
+voyc.geo.world.zoomStop();
+voyc.geo.world.zoomStop();
+
+voyc.geo.world.zoomValue(parseInt(evt.target.value,10));
 
 
