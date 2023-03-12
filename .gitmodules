@@ -13,3 +13,6 @@
 [submodule "html/fx"]
 	path = html/fx
 	url = https://github.com/voyc/fx
+[submodule "html/layout"]
+	path = html/layout
+	url = https://github.com/voyc/layout
