@@ -16,3 +16,6 @@
 [submodule "html/layout"]
 	path = html/layout
 	url = https://github.com/voyc/layout
+[submodule "html/geolib"]
+	path = html/geolib
+	url = https://github.com/voyc/geolib
