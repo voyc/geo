@@ -1,0 +1,64 @@
+gid,trx,old name,name,old scalerank,rank,featureclass,region,subregion,partof,comment,aka,wikikey
+136,update,Makgadikgadi Pan,Makgadikgadi Pan (Desert),6,1,desert,Africa,Botswana,Kalahari Desert,"a salt pan, surrounded by the Kalahari",,Makgadikgadi_Pan
+137,delete,Etosha Pan,Etosha Pan,6,1,desert,,Namibia,,a salt pan in the  north of Namibia,,
+138,delete,Jabal as Sawdä\u0092,Jabal as Sawdä\u0092,6,1,desert,,,,a mountain peak in Saudi Arabia,,
+139,delete,White Sands,White Sands,6,1,desert,,,,a national park at the north end of the Chihuahua Desert,,
+140,delete,Black Rock Desert,Black Rock Desert,6,1,desert,,"Reno, Nevada",Great Basin Desert,,,
+425,update,Salar de Uyuni,Salar de Uyuni Desert,5,2,desert,South America,Bolivia,Atacama Desert,salt flat,Salar de Tunupa,Salar_de_Uyuni
+426,update,Wahiba Sands,Wahiba Sands Desert,5,1,desert,Asia,Oman,,,Sharqiya Sands,Sharqiya_Sands
+427,update,Danakil,Danakil Desert,5,1,desert,Africa,Djibouti,,"in the Afar Triangle, guarding the entrance to the Red Sea",,Danakil_Desert
+428,update,Negev Desert,Negev Desert,5,1,desert,Asia,Israel,,southern Israel,,Negev
+429,update,Chalbi Desert,Chalbi Desert,5,2,desert,Africa,Kenya,Sahara Desert,north Kenya,,Chalbi_Desert
+430,update,Eastern Desert,Eastern Desert,5,2,desert,Africa,"Egypt, Sudan, Eritrea, Ethiopia",Sahara Desert,"east of Nile, includes Suez Canal",Red Sea Hills,Eastern_Desert
+431,delete,Trarza,Trarza,5,1,desert,,,,a region of Mauritania,,
+432,delete,Akchâr,Akchâr,5,2,desert,,Mauritania,Sahara Desert,,,
+433,delete,Hamada de Tinrhert,Hamada de Tinrhert,5,1,desert,,,,a town in Algeria,,
+434,update,\u0091Erg Iguidi,Erg Iguidi (Desert),5,2,desert,Africa,Algeria,Sahara Desert,,,Erg_Iguidi
+435,update,Strzelecki Desert,Strzelecki Desert,5,1,desert,Australia,,Great Australian Desert,,,Strzelecki_Desert
+436,update,Simpson Desert,Simpson Desert,5,1,desert,Australia,,Great Australian Desert,in the Great Artesian Basin watershed,,Simpson_Desert
+437,update,Tanami Desert,Tanami Desert,5,1,desert,Australia,,Great Australian Desert,,,Tanami_Desert
+438,update,Rigestan,Rigestan Desert,5,1,desert,Asia,Afghanistan,,,"Registan, Sistan Desert",Registan_Desert
+439,update,Margo Desert,Margo Desert,5,1,desert,Asia,Afghanistan,,adjacent to Registan and Dasht-e Khash,"Dasht-e Margo, Dasht-e Mārgow, Dasht-e Margoh",Dasht-e_Margo
+440,update,Kavir Desert,Kavir Desert,5,1,desert,Asia,Iran,,,"Dasht-e Kavir, Kavir-e Namak, Great Salt Desert",Dasht-e_Kavir
+441,update,An Nafud Desert,An Nafud Desert,5,2,desert,Asia,,Arabian Desert,"T. E. Lawrence, Lawrence of Arabia","An Nafud, Al-Nefud, The Nefud",An_Nafud
+442,delete,Big Bend,Big Bend,5,1,desert,,,,national park in Chihuahua Desert,,
+591,update,Idhän Murzuq,Idhän Murzuq (Desert),4,2,desert,Africa,Libya,Sahara Desert,southwest Libya,"Murzuq Desert, Idehan Murzuq, Murzaq, Murzuk, Marzuq, Murzak",Murzuq_Desert
+592,delete,Hamada du Drâa,Hamada du Drâa (Desert),4,1,desert,,,,name of a town and hotel in Algeria,,
+593,update,Ténéré,Ténéré (Desert),4,2,desert,Africa,Niger,Sahara Desert,Niger into Chad,Tenere,Ténéré
+594,delete,Tassili oua-n-Ahaggar,Tassili oua-n-Ahaggar (Desert),4,1,desert,,,,Name of a town in Algeria,,
+595,delete,Tassili-n-Ajjer,Tassili-n-Ajjer (Desert),4,1,desert,,,,a national park in Algeria,,
+596,update,Sarïr Kalanshiyu ar Ramli al Kabi,Sarïr Kalanshiyu ar Ramli al Kabi (Desert),4,2,desert,Africa,Libya,Sahara Desert,part of the Libyan Desert,"Calansho Sand Sea, Calanscio, Calancio, Kalansho, Kalanslio",Calanshio_Sand_Sea
+597,update,Grand Erg Oriental,Grand Erg Oriental (Desert),4,2,desert,Africa,Algeria,Sahara Desert,,Great Eastern Sand Sea,Grand_Erg_Oriental
+598,update,Grand Erg Occidental,Grand Erg Occidental (Desert),4,2,desert,Africa,,Sahara Desert,Algeria,Western Sand Sea,Grand_Erg_Occidental
+599,update,Erg Chech,Erg Chech (Desert),4,2,desert,Africa,Algeria,Sahara Desert,,,Erg_Chech
+600,update,El Djouf,El Djouf (Desert),4,2,desert,Africa,Mauritania,Sahara Desert,,,El_Djouf
+601,update,CHIHUAHUAN DESERT,Chihuahuan Desert,4,1,desert,North America,Mexico,,"North Mexico, SW USA, includes El Paso, Albuquerque, Roswell",,Chihuahuan_Desert
+602,update,SONORAN DESERT,Sonoran Desert,4,1,desert,North America,Mexico,,includes Baja,,Sonoran_Desert
+603,update,Great Salt Lake Desert,Great Salt Lake Desert,4,1,desert,North America,Nevada,Great Basin Desert,,,Great_Basin_Desert
+604,update,Gibson Desert,Gibson Desert,4,1,desert,Australia,,Great Australian Desert,western Australia,,Gibson_Desert
+605,update,Mu Us Desert,Mu Us Desert,4,2,desert,Asia,China,Ordos Desert,"south Ordos, crossed by Great Wall",Maowusu Desert,Mu_Us_Desert
+606,update,TAKLIMAKAN DESERT,Taklimakan Desert,4,1,desert,Asia,"Xinjiang, China",,coincident with Tarim Basin,Taklamakan,Taklamakan_Desert
+607,update,LUT DESERT,Lut Desert,4,1,desert,Asia,Iran,,,Dasht-e Lut,Dasht-e_Lut
+795,update,NAMIB DESERT,Namib Desert,3,1,desert,Africa,Namibia,,"western coast of Namibia, extending to Angola and South Africa",Namibe (Portuguese),Namib
+796,update,WESTERN DESERT,Western Desert,3,2,desert,Africa,Egypt,Sahara Desert,from the Nile to Libya,,Western_Desert_(Egypt)
+797,update,NUBIAN DESERT,Nubian Desert,3,2,desert,Africa,Sudan,Sahara Desert,eastern portion of the Sahara,,Nubian_Desert
+798,update,GREAT SANDY DESERT,Great Sandy Desert,3,1,desert,Australia,,Great Australian Desert,western Australia,,Great_Sandy_Desert
+799,update,LIBYAN DESERT,Libyan Desert,3,2,desert,Africa,Libya,Sahara Desert,northeast portion of the Sahara,,Libyan_Desert
+800,update,GREAT VICTORIA DESERT,Great Victoria Desert,3,1,desert,Australia,,Great Australian Desert,south and western Australia,,Great_Victoria_Desert
+801,update,THAR DESERT,Thar Desert,3,1,desert,Asia,India,,on the Pakistan border surrounded by Gangetic Plain,Great Indian Desert,Thar_Desert
+802,update,SYRIAN DESERT,Syrian Desert,3,2,desert,Asia,"Jordan, Syria",Arabian Desert,"covers 70% of Jordan, 55% of Syria, north of merges into the Arabian Desert","North Arabian Desert, Jordanian steppe, Badiya",Syrian_Desert
+803,update,GARAGUM DESERT,Garagum Desert,3,1,desert,Asia,Turkmenistan,,"covers 70% of Turkmenistan, east of the Caspian","Karakum, Kara-Kum,Gara-Gum",Karakum_Desert
+804,update,QIZILQUM DESERT,Qizilqum Desert,3,1,desert,Asia,Kazakhstan,,extending into Uzbekistan and Turkmenistan,Kyzylkum Desert,Kyzylkum_Desert
+805,update,DESIERTO DE ATACAMA,Atacama Desert,3,1,desert,South America,Chile,,"along the western coast under the Andes, northern Chile, extending up through the armpit into Peru",Desierto de Atacama (Spanish),Atacama_Desert
+879,update,BETPAQDALA DESERT,Betpaqdala Desert,2,1,desert,Asia,Kazakhstan,,,Betpak-Dala,Betpak-Dala
+880,delete,PUNJAB,Punjab Desert,2,1,desert,,,,huh?,,
+881,update,RUB\u0092 AL KHALI,Rub' al Khali Desert,2,2,desert,Asia,Arabia,Arabian Desert,southern third of Arabian peninsula,,Rub%27_al_Khali
+882,update,CAATINGAS,Caatingas Desert,2,1,desert,South America,Brazil,,"in the Brazillian Highlands, right on the point",,Caatinga
+883,update,KALAHARI DESERT,Kalahari Desert,2,1,desert,Africa,,,,,Kalahari_Desert
+921,update,GOBI DESERT,Gobi Desert,1,1,desert,Asia,China,,,,Gobi_Desert
+922,update,SAHARA,Sahara Desert,1,1,desert,Africa,,,,,Sahara
+,insert,,Arabian Desert,1,1,desert,Asia,Arabia,,,,Arabian_Desert
+,insert,,Great Basin Desert,4,1,desert,North America,Nevada,,"most of Nevada, western Utah, in the Great Basin Watershed",,Great_Salt_Lake_Desert
+,insert,,Great Australian Desert,,1,desert,Australia,,,,outback,Deserts_of_Australia
+,insert,,Ordos Desert,,1,desert,Asia,China,,,,Ordos_Desert
+,insert,,Kubuqi Desert,,2,desert,Asia,China,Ordos Desert,north Ordos,,Kubuqi_Desert
