@@ -1,4 +1,4 @@
-/* 
+/*
 	class World
 	singleton
 	manages the map display, multiple layered canvas elements
@@ -43,9 +43,9 @@ voyc.World.prototype.setup = function(elem, co, w, h, zoom) {
 	this.h = h;
 	this.co = JSON.parse(localStorage.getItem('co')) || co
 	this.gamma = parseFloat(localStorage.getItem('gamma')) || 0
-	this.time.now = localStorage.getItem('timenow') || this.time.now 
+	this.time.now = localStorage.getItem('timenow') || this.time.now
 
-	var startzoom = localStorage.getItem('zoom') 
+	var startzoom = localStorage.getItem('zoom')
 	if (startzoom === 'null')  // zero is valid value
 		startzoom = zoom
 	startzoom = Number(startzoom)
@@ -150,7 +150,7 @@ voyc.World.prototype.grabTime = function(evt) {
 //}
 
 voyc.World.prototype.dropTime = function(evt) {
-	this.time.sliding = false 
+	this.time.sliding = false
 }
 
 // --------  zoom
@@ -205,7 +205,7 @@ voyc.World.prototype.clampCoord = function(newco, oldco) {
 	var lng = newco[0]
 	var lat = newco[1]
 	if (lng > 180) lng -= 360
-	if (lng < -180) lng += 360 
+	if (lng < -180) lng += 360
 
 	if (lat > 90) lat = 90
 	if (lat < -90) lat = -90
@@ -215,7 +215,7 @@ voyc.World.prototype.clampCoord = function(newco, oldco) {
 voyc.World.prototype.clampGamma = function(gamma) {
 	var newgamma = gamma
 	if (newgamma >= 360)  newgamma -= 360
-	if (newgamma <= -360) newgamma += 360 
+	if (newgamma <= -360) newgamma += 360
 	return newgamma
 }
 
@@ -323,16 +323,16 @@ voyc.World.prototype.setupData = function() {
 	var geomlist = voyc.data.grid.geometries
 	for (var lat=-80; lat<=80; lat+=10)
 		if (lat != 0)
-			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 3, 
+			geomlist.unshift( {
+				'type': "LineString", 'scalerank': 3,
 				'featureclass': "Parallel",
 				'name': '', //String(Math.abs(lat)) + '°' + ((lat>0)?'N':'S'),
 				'coordinates': voyc.drawParallel(lat),
 			})
 	for (var lng=-170; lng<=170; lng+=10)
 		if (lng != 90 && lng != -90 && lng != 0)
-			geomlist.unshift( { 
-				'type': "LineString", 'scalerank': 3, 
+			geomlist.unshift( {
+				'type': "LineString", 'scalerank': 3,
 				'featureclass': "Meridian",
 				'name': '', //String(Math.abs(lng)) + '°' + ((lng>0)?'E':'W'),
 				'coordinates': voyc.drawMeridian(lng),
@@ -418,110 +418,109 @@ voyc.World.prototype.setupIterators = function() {
 	//this.iterator['hires' ]  = new voyc.GeoIteratorHires()
 }
 
-voyc.World.prototype.setupLayers = function() {
-	createLayerCanvas = function(id, menulabel, dataid, useImageData, iterator, container, offset) {
-		// create the html element
+voyc.World.prototype.createLayerCanvas = function(id, menulabel, dataid, useImageData, iterator, container, offset) {
+	// create the html element
+	var e = document.createElement('canvas')
+	e.id = id
+	e.classList.add('layer')
+	e.width  = this.w
+	e.height = this.h
+	e.style.width =  this.w + 'px'
+	e.style.height = this.h + 'px'
+	var cont = (container) ? this.layer[container].e : this.elem
+	cont.appendChild(e)
+
+	// create the layer array element
+	var a = {}
+	//a.isOn = true
+	a.menulabel = menulabel
+	a.offset = offset
+	a.type = 'canvas'
+	a.e = e
+	a.enabled = true
+	a.iterator = this.iterator[iterator]
+	a.data = voyc.data[dataid]
+	a.palette = this.palette[dataid]  //[0]
+	a.ctx = a.e.getContext("2d")
+	if (useImageData)
+		a.imageData = a.ctx.createImageData(this.w, this.h);
+	this.layer[id] = a
+	if (offset) {
+		a.overlays = this.createLayerAnimation( id, offset)
+		this.animation = a.overlays
+	}
+}
+
+voyc.World.prototype.createLayerAnimation = function(id, offset) {
+	var e = document.createElement('div')
+	e.setAttribute('group', id)
+	e.classList.add('layer');
+	e.style.width =  this.w + 'px';
+	e.style.height = this.h + 'px';
+	this.elem.appendChild(e);
+	e.appendChild(document.getElementById(id))
+	var container = e
+
+	// create an array of html elements
+	var a = []
+	for (var i=0; i<offset; i++) {
 		var e = document.createElement('canvas')
-		e.id = id
-		e.classList.add('layer') 
-		e.width  = self.w
-		e.height = self.h
-		e.style.width =  self.w + 'px'
-		e.style.height = self.h + 'px'
-		var cont = (container) ? self.layer[container].e : self.elem 
-		cont.appendChild(e)
-
-		// create the layer array element
-		var a = {}
-//		a.isOn = true
-		a.menulabel = menulabel
-		a.offset = offset
-		a.type = 'canvas'
-		a.e = e
-		a.enabled = true
-		a.iterator = self.iterator[iterator]
-		a.data = voyc.data[dataid]
-		a.palette = self.palette[dataid]  //[0]
-		a.ctx = a.e.getContext("2d")
-		if (useImageData) 
-			a.imageData = a.ctx.createImageData(self.w, self.h);
-		self.layer[id] = a
-		if (offset) {
-			a.overlays = createLayerAnimation( id, offset)
-			self.animation = a.overlays
-		}
-	}
-
-	createLayerAnimation = function(id, offset) {
-		var e = document.createElement('div')
 		e.setAttribute('group', id)
-		e.classList.add('layer');
-		e.style.width =  self.w + 'px';
-		e.style.height = self.h + 'px';
-		self.elem.appendChild(e);
-		e.appendChild(document.getElementById(id))
-		var container = e
-
-		// create an array of html elements
-		var a = []
-		for (var i=0; i<offset; i++) {
-			var e = document.createElement('canvas')
-			e.setAttribute('group', id)
-			e.id = id + '_' + i
-			e.classList.add('layer') 
-			e.width  = self.w
-			e.height = self.h
-			e.style.width =  self.w + 'px'
-			e.style.height = self.h + 'px'
-			container.appendChild(e)
-			a[i] = e
-		}
-		return a
+		e.id = id + '_' + i
+		e.classList.add('layer')
+		e.width  = this.w
+		e.height = this.h
+		e.style.width =  this.w + 'px'
+		e.style.height = this.h + 'px'
+		container.appendChild(e)
+		a[i] = e
 	}
+	return a
+}
 
-	createLayerDiv = function(id, menulabel, container) {
-		// create the html element
-		var e = document.createElement('div');
-		e.id = id;
-		e.menulabel = menulabel
-		e.classList.add('layer');
-		e.style.width =  self.w + 'px';
-		e.style.height = self.h + 'px';
-		var cont = (container) ? self.layer[container].e : self.elem 
-		cont.appendChild(e);
-	
-		// create the layer array element
-		var a = {};
-		a.type = 'div'
-		a.menulabel = menulabel
-		a.e = e
-		a.enabled = true
-		self.layer[id] = a
-	}
+voyc.World.prototype.createLayerDiv = function(id, menulabel, container) {
+	// create the html element
+	var e = document.createElement('div');
+	e.id = id;
+	e.menulabel = menulabel
+	e.classList.add('layer');
+	e.style.width =  this.w + 'px';
+	e.style.height = this.h + 'px';
+	var cont = (container) ? this.layer[container].e : this.elem
+	cont.appendChild(e);
 
+	// create the layer array element
+	var a = {};
+	a.type = 'div'
+	a.menulabel = menulabel
+	a.e = e
+	a.enabled = true
+	this.layer[id] = a
+}
+
+voyc.World.prototype.setupLayers = function() {
 	// layers are in created in display order from bottom to top
 	// each layer can be turned on or off
 	this.layer = {}
-	var self = this
-	//                 id         ,menulabel   ,dataid      ,img   ,iterator ,group  ,offset
-	createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
-	createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('cover'     ,'Cover'     ,'cover'     ,false ,'empire' ,false       ,0)
-	createLayerCanvas('lores'     ,'Lo Res'    ,false       ,true  ,false    ,false       ,0)
-	createLayerCanvas('hires'     ,'Hi Res'    ,false       ,true  ,false    ,false       ,0)
-	createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
-	createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('rivers'    ,'Rivers'    ,'rivers'    ,false ,'scale'  ,false       ,6)
-	createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
-	createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
-	createLayerCanvas('cities'    ,'Cities'    ,'cities'    ,false ,'scale'  ,false       ,0)
-	createLayerCanvas('countries' ,'Countries' ,'countries' ,false ,'clip'   ,false       ,0)
-	createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'hilite' ,false       ,0)
-	createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
-	createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
-	createLayerCanvas('viewport'  ,'Viewport'  ,false       ,false ,false    ,false       ,0)
+	//                      id         ,menulabel   ,dataid      ,img   ,iterator ,group  ,offset
+	this.createLayerDiv   ('background',false       ,false       ,false ,false    ,false       ,0)
+	this.createLayerCanvas('water'     ,'Oceans'    ,'water'     ,false ,'clip'   ,false       ,0)
+	this.createLayerCanvas('land'      ,'Land'      ,'land'      ,false ,'clip'   ,false       ,0)
+	this.createLayerCanvas('cover'     ,'Cover'     ,'cover'     ,false ,'empire' ,false       ,0)
+	this.createLayerCanvas('lores'     ,'Lo Res'    ,false       ,true  ,false    ,false       ,0)
+	this.createLayerCanvas('hires'     ,'Hi Res'    ,false       ,true  ,false    ,false       ,0)
+	this.createLayerCanvas('deserts'   ,'Deserts'   ,'deserts'   ,false ,'clip'   ,false       ,0)
+	this.createLayerCanvas('mountains' ,'Mountains' ,'mountains' ,false ,'scale'  ,false       ,0)
+	this.createLayerCanvas('lakes'     ,'Lakes'     ,'lakes'     ,false ,'clip'   ,false       ,0)
+	this.createLayerCanvas('rivers'    ,'Rivers'    ,'rivers'    ,false ,'scale'  ,false       ,6)
+	this.createLayerCanvas('empire'    ,'Historical','empire'    ,false ,'empire' ,false       ,0)
+	this.createLayerCanvas('grid'      ,'Grid'      ,'grid'      ,false ,'scale'  ,false       ,0)
+	this.createLayerCanvas('cities'    ,'Cities'    ,'cities'    ,false ,'scale'  ,false       ,0)
+	this.createLayerCanvas('countries' ,'Countries' ,'countries' ,false ,'clip'   ,false       ,0)
+	this.createLayerCanvas('hilite'    ,false       ,'hilite'    ,false ,'hilite' ,false       ,0)
+	this.createLayerCanvas('sketch'    ,false       ,'sketch'    ,false ,'sketch' ,false       ,0)
+	this.createLayerCanvas('custom01'  ,'Custom 1'  ,'custom01'  ,false ,'custom' ,false       ,0)
+	this.createLayerCanvas('viewport'  ,'Viewport'  ,false       ,false ,false    ,false       ,0)
 
 	//voyc.$('viewport').style.opacity = .5
 
@@ -563,7 +562,7 @@ voyc.World.prototype.clearLayer = function(id) {
 }
 
 voyc.World.prototype.clearLayers = function() {
-	for (var lay in this.layer) 
+	for (var lay in this.layer)
 		this.layer[lay].ctx.clearRect(0,0,this.w,this.h)
 }
 
@@ -571,7 +570,7 @@ voyc.World.prototype.clearLayers = function() {
 
 voyc.World.prototype.stepFrame = function() {
 	if (!this.animation.length) return
-	++this.counter 
+	++this.counter
 	if (this.counter >= this.animation.length)
 		this.counter=0
 	for (var i=0; i<this.animation.length; i++)
@@ -590,7 +589,7 @@ voyc.World.prototype.testHit = function(pt) {
 		var layer = this.layer[id]
 		if (layer.enabled) {
 			// rivers, mountains and cities have scalerank, each with a different value
-			var zoomScaleRank = 6 //this.calcRank(id) 
+			var zoomScaleRank = 6 //this.calcRank(id)
 			geom =  this.iterator['hittest'].iterateCollection(layer.data, this.projection, pt, this.time.now, zoomScaleRank)
 			if (geom)
 				break
@@ -666,22 +665,25 @@ voyc.World.prototype.drawLayer = function(id) {
 	var layer = this.layer[id]
 	if (!layer.enabled) return
 
-	var zoomScaleRank = this.calcRank(id) 
+	var zoomScaleRank = this.calcRank(id)
 
 	layer.iterator.iterateCollection(
-		layer.data, 
-		this.projection, 
-		layer.ctx, 
+		layer.data,
+		this.projection,
+		layer.ctx,
 		layer.palette,
 		zoomScaleRank)
 }
 
 voyc.World.prototype.calcRank = function(id) {
 	// https://curriculum.voyc.com/doku.php?id=geo_design_notes#scale
-	var table = this.palette[id]
+	//
+	//var table = this.palette[id]
+	var layer = this.layer[id]
+	var table = layer.palette
 	if (!table)
 		debugger;
-	var scale = this.projection.uscale 
+	var scale = this.projection.uscale
 	var rank = table.length
 	for (var r=0; r<table.length; r++) {
 		if (scale > table[r].scale) {
@@ -695,9 +697,9 @@ voyc.World.prototype.calcRank = function(id) {
 voyc.World.prototype.drawSketch = function(pt) {
 	var layer = this.layer['sketch']
 	layer.iterator.iterateCollection(
-		layer.data, 
-		this.projection, 
-		layer.ctx, 
+		layer.data,
+		this.projection,
+		layer.ctx,
 		layer.palette,
 		pt)
 }
@@ -751,19 +753,19 @@ voyc.World.prototype.drawRiver = function() {
 	var layer = this.layer[id]
 	if (!layer.enabled) return
 
-	var zoomScaleRank = this.calcRank(id) 
+	var zoomScaleRank = this.calcRank(id)
 
 	layer.iterator.iterateCollection(
-		layer.data, 
-		this.projection, 
-		layer.ctx, 
+		layer.data,
+		this.projection,
+		layer.ctx,
 		layer.palette,
 		zoomScaleRank)
 
 	for (var i=0; i<this.layer[id].offset; i++)
 		this.iterator['animate'].iterateCollection(
-			layer.data, 
-			this.projection, 
+			layer.data,
+			this.projection,
 			this.layer.rivers.overlays[i].getContext("2d"),
 			layer.palette,
 			zoomScaleRank,
@@ -774,7 +776,7 @@ voyc.World.prototype.drawTexture = function() {
 	if (this.layer.hires.enabled && (this.zoom.now >= 2))
 		this.texhi.draw({
 			projection: this.projection,
-			imageData: this.layer.hires.imageData, 
+			imageData: this.layer.hires.imageData,
 			ctx: this.layer.hires.ctx,
 			w: this.w,
 			h: this.h,
@@ -783,7 +785,7 @@ voyc.World.prototype.drawTexture = function() {
 	if (this.layer.lores.enabled)
 		this.texlo.draw({
 			projection: this.projection,
-			imageData: this.layer.lores.imageData, 
+			imageData: this.layer.lores.imageData,
 			ctx: this.layer.lores.ctx,
 			w: this.w,
 			h: this.h,
@@ -816,21 +818,24 @@ voyc.World.prototype.drawEmpire = function() {
 	var layer = this.layer['empire']
 	if (!layer.enabled) return
 	layer.iterator.iterateCollection(
-		layer.data, 
-		this.projection, 
-		layer.ctx, 
+		layer.data,
+		this.projection,
+		layer.ctx,
 		layer.palette,
 		this.time.now)
 }
 
 voyc.World.prototype.drawCustom = function() {
-	var layer = this.layer['custom01']
-	if (!layer.enabled) return
-	layer.iterator.iterateCollection(
-		layer.data, 
-		this.projection, 
-		layer.ctx, 
-		this.palette['custom'])
+	for (var layernm in this.layer) {
+		var layer = this.layer[layernm]
+		if (layer.enabled && layer.iterator instanceof voyc.GeoIteratorCustom) {
+			layer.iterator.iterateCollection(
+				layer.data,
+				this.projection,
+				layer.ctx,
+				this.palette['custom'])
+		}
+	}
 }
 
 voyc.World.prototype.setupPalette = function() {
@@ -838,7 +843,7 @@ voyc.World.prototype.setupPalette = function() {
 		for (var palette of this.palette[id]) {
 			if (palette.fill) {
 				if (palette.opac)
-					palette.fill = voyc.prepString('rgba($1,$2,$3,$4)', 
+					palette.fill = voyc.prepString('rgba($1,$2,$3,$4)',
 						[palette.fill[0],palette.fill[1],palette.fill[2],palette.opac])
 				else
 					palette.fill = voyc.prepString('rgb($1,$2,$3)', palette.fill)
@@ -864,7 +869,7 @@ voyc.World.prototype.makePattern = function( img, color) {
 
 	// start with image
 	var pat = ctx.createPattern(img, 'repeat')
-	ctx.fillStyle =pat 
+	ctx.fillStyle =pat
 	ctx.fillRect(0,0,canvas.width,canvas.height)
 
 	// mask in the color
@@ -973,7 +978,7 @@ voyc.World.prototype.getGeom = function(id,fc) {
 	for (var geom of voyc.data[layer].geometries)
 		if (geom.id == id)
 			return geom
-	return false 
+	return false
 }
 
 voyc.feature2layer = {

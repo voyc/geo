@@ -88,6 +88,42 @@ create table geo.bib ( --bibliography source
 	inserttm timestamp default (now() at time zone 'utc')
 );
 
+--drop table geo.usergeo cascade;
+create table geo.usergeo ( --geo plus userid, for custom user data
+	id serial primary key,
+	userid integer default 0,  --foreign key to user table
+	name varchar not null,
+	aka  varchar default '',  --comma-separated alt names
+
+	layernm  varchar default '', --foreign key to layer table
+	scale    integer default 0,
+	pop      integer default 0,   -- population
+	elev     integer default 0,  -- meters above sea level
+
+	forebear integer default 0, --hierarchy, foreign key to this table
+	parent   integer default 0, --hierarchy, foreign key to this table
+	palette  varchar default '', --json string of palette object
+	
+	timebegin double precision default 0,
+	timeend   double precision default 0,
+	
+	--geom geom,  -- use AddGeometry() function after the create
+	mapprecision integer default 0,  --0 to 100, pct blur
+	
+	storyurl varchar default '',
+	wikikey varchar default '',
+	region varchar default '',
+	descr varchar default '',
+
+	insertid integer default 0,   --foreign key to user table
+	inserttm timestamp default (now() at time zone 'utc'), 
+	updateid integer default 0,   --foreign key to user table
+	updatetm timestamp default (now() at time zone 'utc')
+);
+select AddGeometryColumn('geo','usergeo','geom','0','GEOMETRY',2);
+
+
+
 /*
 --list schemas, tables
 select table_schema, table_name from information_schema.tables where table_schema not in ('public','pg_catalog','information_schema') group by table_schema, table_name order by table_schema,table_name;

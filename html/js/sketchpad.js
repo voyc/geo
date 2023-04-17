@@ -23,7 +23,9 @@ voyc.SketchPad.prototype = {
 	setup: function() {
 		this.observer = new voyc.Observer()
 		var self = this
-		this.observer.subscribe('saveshape-submitted'           ,'sketchpad' ,function(note) { self.onSave           (note) })
+		this.observer.subscribe('saveshape-submitted','sketchpad' ,function(note) { 
+			self.onSave(note)
+		})
 	},
 
 	// ---- public
@@ -49,11 +51,44 @@ voyc.SketchPad.prototype = {
 	},
 
 	onSave: function(w) {
+		// get inputs from modal save dialog
+		var layer = w.payload.inputs.layer.value
+		var name = w.payload.inputs.name.value
+
+		// find active layer
+		if (typeof(voyc.data[layer]) == 'undefined') {
+			voyc.data[layer] = {
+				name: layer,
+				type: 'GeometryCollection',
+				geometries: []
+			}
+			voyc.geo.world.createLayerCanvas(
+				layer,		// id
+				layer,		// menulabel
+				layer,		// dataid
+				false,		// useImageData
+				'custom',	// iterator
+				false,		// container
+				0		// offset
+			)
+			voyc.geo.world.layer[layer].palette = voyc.geo.world.palette['custom']
+
+			voyc.geo.hud.populateLayerMenu()
+		}
+
+		// set name, begin, end into geom object
+		// mark the new shape as dirty
+
+		// move current shape to active layer and redraw the layer
 		var movegeom = voyc.clone(this.geom)
-		voyc.data.custom01.geometries.push(movegeom)
+		voyc.data[layer].geometries.push(movegeom)
+		voyc.geo.world.drawLayer(layer)
+
+		// create a new empty sketch object and redraw the sketch layer
 		this.newGeom()
 		this.draw()
-		voyc.geo.world.drawCustom()
+
+		// close the modal save dialog
 		voyc.geo.hud.closeModal()
 	},
 
