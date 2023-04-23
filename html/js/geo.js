@@ -56,7 +56,6 @@ voyc.Geo.prototype.setup = function () {
 		{key:'point'   ,path:'i/yellow-dot-lg-n.gif'},
 	];
 	this.asset = new voyc.Asset();
-	var self = this;
 	this.asset.load(list, function(success, key) {
 		if (!key)
 			self.setupContinue();	
@@ -106,6 +105,7 @@ voyc.Geo.prototype.setupContinue = function () {
 	if (this.options.animation)
 		this.game.start()
 
+	var self = this;
 	this.observer.publish('setup-complete', 'geo', {});
 }
 
@@ -132,75 +132,7 @@ voyc.Geo.prototype.getOption = function (key) {
 	return this.options[key]
 }
 
-// -------- demo from Account
-
-voyc.Geo.prototype.onProfileRequested = function(note) {
-	var svcname = 'getprofile';
-	var data = {};
-	data['si'] = voyc.getSessionId();
-	
-	// call svc
-	var self = this;
-	this.comm.request(svcname, data, function(ok, response, xhr) {
-		if (!ok) {
-			response = { 'status':'system-error'};
-		}
-		self.observer.publish('getprofile-received', 'geo', response);
-	});
-	this.observer.publish('getprofile-posted', 'geo', {});
-}
-
-voyc.Geo.prototype.onGetProfileReceived = function(note) {
-	var response = note.payload;
-	if (response['status'] == 'ok') {
-		console.log('getprofile success');
-		voyc.$('gender').value = response['gender'];
-		voyc.$('photo' ).value = response['photo' ];
-		voyc.$('phone' ).value = response['phone' ];
-	}
-	else {
-		console.log('getprofile failed');
-	}
-}
-
-voyc.Geo.prototype.onProfileSubmitted = function(note) {
-	var svcname = 'setprofile';
-	var inputs = note.payload.inputs;
-
-	// build data array of name/value pairs from user input
-	var data = {};
-	data['si'] = voyc.getSessionId();
-	data['gender'] = inputs['gender'].value;
-	data['photo' ] = inputs['photo' ].value;
-	data['phone' ] = inputs['phone' ].value;
-	
-	// call svc
-	var self = this;
-	this.comm.request(svcname, data, function(ok, response, xhr) {
-		if (!ok) {
-			response = { 'status':'system-error'};
-		}
-
-		self.observer.publish('setprofile-received', 'geo', response);
-
-		if (response['status'] == 'ok') {
-			console.log('setprofile success' + response['message']);
-		}
-		else {
-			console.log('setprofile failed');
-		}
-	});
-
-	this.observer.publish('setprofile-posted', 'geo', {});
-}
-
-voyc.Geo.prototype.onSetProfilePosted = function(note) {
-	console.log('setprofile posted');
-}
-
-voyc.Geo.prototype.onSetProfileReceived = function(note) {
-	console.log('setprofile received');
-}
+// --------
 
 voyc.Geo.prototype.animate = function(boo) {
 	if (boo)

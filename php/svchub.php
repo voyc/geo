@@ -14,8 +14,7 @@ writeHeader();
 
 $supported_svcs = array(
 	'search',
-	'getprofile',
-	'setprofile'
+	'setgeo',
 );
 
 function validateSvc($taint) {

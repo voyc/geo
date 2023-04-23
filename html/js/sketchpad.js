@@ -21,11 +21,10 @@ voyc.SketchPad = function (canvas, touchpad, options) {
 
 voyc.SketchPad.prototype = {
 	setup: function() {
+		this.comm = voyc.geo.comm
 		this.observer = new voyc.Observer()
 		var self = this
-		this.observer.subscribe('saveshape-submitted','sketchpad' ,function(note) { 
-			self.onSave(note)
-		})
+		this.observer.subscribe('saveshape-submitted','sketchpad' ,function(note) { self.onSave(note) })
 	},
 
 	// ---- public
@@ -48,48 +47,6 @@ voyc.SketchPad.prototype = {
 	},
 
 	finish: function() {
-	},
-
-	onSave: function(w) {
-		// get inputs from modal save dialog
-		var layer = w.payload.inputs.layer.value
-		var name = w.payload.inputs.name.value
-
-		// find active layer
-		if (typeof(voyc.data[layer]) == 'undefined') {
-			voyc.data[layer] = {
-				name: layer,
-				type: 'GeometryCollection',
-				geometries: []
-			}
-			voyc.geo.world.createLayerCanvas(
-				layer,		// id
-				layer,		// menulabel
-				layer,		// dataid
-				false,		// useImageData
-				'custom',	// iterator
-				false,		// container
-				0		// offset
-			)
-			voyc.geo.world.layer[layer].palette = voyc.geo.world.palette['custom']
-
-			voyc.geo.hud.populateLayerMenu()
-		}
-
-		// set name, begin, end into geom object
-		// mark the new shape as dirty
-
-		// move current shape to active layer and redraw the layer
-		var movegeom = voyc.clone(this.geom)
-		voyc.data[layer].geometries.push(movegeom)
-		voyc.geo.world.drawLayer(layer)
-
-		// create a new empty sketch object and redraw the sketch layer
-		this.newGeom()
-		this.draw()
-
-		// close the modal save dialog
-		voyc.geo.hud.closeModal()
 	},
 
 	cancel: function() {
@@ -132,6 +89,7 @@ voyc.SketchPad.prototype = {
 		var distance = voyc.length(pt,this.ptPrev)
 		if ((distance > 20) || !this.ptPrev) {
 			var co = voyc.geo.world.projection.invert(pt)
+			co.pop() // note: invert normally used by project()
 			this.coords.push(co)
 			this.draw()
 			this.ptPrev = pt
@@ -154,6 +112,75 @@ voyc.SketchPad.prototype = {
 	draw: function (pt) {
 		voyc.geo.world.drawSketch(pt)
 	}
+}
+
+
+voyc.SketchPad.prototype.onSave = function(note) {
+	// build data array of name/value pairs from user input
+	var inputs = note.payload.inputs
+	var data = {}
+	data['si'] = voyc.getSessionId()
+	data['id'] = 0 //inputs['id'].value
+	data['name' ] = inputs['name' ].value
+	data['layernm' ] = inputs['layer' ].value
+	data['timebegin'] = inputs['begin'].value
+	data['timeend'] = inputs['end'].value
+	data['geom'] = JSON.stringify({
+		type:this.geom.type,
+		coordinates:this.geom.coordinates
+	})
+
+	// call svc
+	var svcname = 'setgeo'
+	var self = this;
+	this.comm.request(svcname, data, function(ok, response, xhr) {
+		if (!ok) response = { 'status':'system-error'};
+
+		if (response['status'] == 'ok') {
+			console.log('setgeo success')
+			self.onSaved(data, response)
+			voyc.geo.hud.closeModal()  // finished
+		}
+		else {
+			console.log('setgeo failed')
+			voyc.killWait()  // unfreeze the modal dialog, try again
+		}
+	});
+
+	voyc.wait() // freeze the modal dialog
+}
+
+voyc.SketchPad.prototype.onSaved = function(data, response) {
+	// find active layer
+	var layernm = data['layernm']
+	if (typeof(voyc.data[layernm]) == 'undefined') {
+		voyc.data[layernm] = {
+			name: layernm,
+			type: 'GeometryCollection',
+			geometries: []
+		}
+		voyc.geo.world.createLayerCanvas(
+			layernm,		// id
+			layernm,		// menulabel
+			layernm,		// dataid
+			false,		// useImageData
+			'custom',	// iterator
+			false,		// container
+			0		// offset
+		)
+		voyc.geo.world.layer[layernm].palette = voyc.geo.world.palette['custom']
+
+		voyc.geo.hud.populateLayerMenu()
+	}
+
+	// move current shape from sketch to active layer and redraw the layer
+	var movegeom = voyc.clone(this.geom)
+	voyc.data[layernm].geometries.push(movegeom)
+	voyc.geo.world.drawLayer(layernm)
+
+	// create a new empty sketch object and redraw the sketch layer
+	this.newGeom()
+	this.draw()
 }
 
 voyc.defaultGeom = {

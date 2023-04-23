@@ -7,5 +7,5 @@ DirectoryIndex index.php index.html
 RewriteRule ^svc svc.php
 
 # apply php.ini to all folders
-lsapi_phpini /home/voyccom/webprod/sandbox/sandbox/html/php.ini
+lsapi_phpini /home/voyccom/webprod/geo/geo/html/php.ini
 
